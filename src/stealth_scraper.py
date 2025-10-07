@@ -35,13 +35,14 @@ class StealthSerpScraper:
         os.makedirs(logs_dir, exist_ok=True)
         os.makedirs(data_dir, exist_ok=True)
 
-        # Configurar logging
+        # Configurar logging con path absoluto
+        log_file_path = os.path.join(logs_dir, 'scraper.log')
         logging.basicConfig(
             level=logging.INFO,
             format='[%(asctime)s] %(levelname)s - %(message)s',
             datefmt='%H:%M:%S',
             handlers=[
-                logging.FileHandler('../logs/scraper.log'),
+                logging.FileHandler(log_file_path),
                 logging.StreamHandler()
             ]
         )
@@ -441,15 +442,21 @@ class StealthSerpScraper:
         
         # Guardar como CSV
         df = pd.DataFrame(results)
-        csv_path = f"../data/{filename}.csv"
-        df.to_csv(csv_path, index=False, encoding='utf-8')
+
+        # Path absoluto para data (calculado desde src/)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        data_dir_abs = os.path.join(parent_dir, 'data')
+
+        data_file_path = os.path.join(data_dir_abs, f"{filename}.csv")
+        df.to_csv(data_file_path, index=False, encoding='utf-8')
 
         # Guardar como JSON
-        json_path = f"../data/{filename}.json"
-        with open(json_path, 'w', encoding='utf-8') as f:
+        json_file_path = os.path.join(data_dir_abs, f"{filename}.json")
+        with open(json_file_path, 'w', encoding='utf-8') as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
 
-        self.logger.info(f"Results saved to {csv_path} and {json_path}")
+        self.logger.info(f"Results saved to {data_file_path} and {json_file_path}")
         
         # Estadísticas
         total_keywords = len(set([r['keyword'] for r in results]))

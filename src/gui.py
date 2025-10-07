@@ -321,13 +321,19 @@ class KeywordScraperGUI:
         # Botones de control
         button_frame = ctk.CTkFrame(controls_frame)
         button_frame.pack(fill="x", pady=10)
-        
-        self.start_button = ctk.CTkButton(button_frame, text="🚀 Iniciar Scraping", 
-                                         command=self.start_scraping, 
+
+        # Buttons en una fila: Test API | Iniciar Scraping | Detener
+        test_api_button = ctk.CTkButton(button_frame, text="🧪 Probar API",
+                                       command=self.test_google_api,
+                                       fg_color="orange", hover_color="dark orange")
+        test_api_button.pack(side="left", padx=5)
+
+        self.start_button = ctk.CTkButton(button_frame, text="🚀 Iniciar Scraping",
+                                         command=self.start_scraping,
                                          fg_color="green", hover_color="dark green")
         self.start_button.pack(side="left", padx=5)
-        
-        self.stop_button = ctk.CTkButton(button_frame, text="⏹️ Detener", 
+
+        self.stop_button = ctk.CTkButton(button_frame, text="⏹️ Detener",
                                         command=self.stop_scraping,
                                         fg_color="red", hover_color="dark red",
                                         state="disabled")
@@ -738,6 +744,80 @@ class KeywordScraperGUI:
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error de conexión", f"Error conectando con Google API: {e}")
             return False
+
+    def test_google_api(self):
+        """Prueba rápida las credenciales de Google API"""
+        self.log_message("🧪 Probando credenciales de Google API...")
+
+        api_key = self.api_key_var.get().strip()
+        search_engine_id = self.search_engine_id_var.get().strip()
+
+        if not api_key:
+            messagebox.showwarning("Error", "No hay API Key configurada. Ve a la pestaña '🔐 Google API' y configura tus credenciales.")
+            return
+
+        if not search_engine_id:
+            messagebox.showwarning("Error", "No hay Search Engine ID configurado. Ve a la pestaña '🔐 Google API' y configura tus credenciales.")
+            return
+
+        # Validar formato básico
+        if not api_key.startswith("AIza"):
+            messagebox.showwarning("Error", "La API Key debe comenzar con 'AIza'")
+            return
+
+        try:
+            import requests
+            # Probar una búsqueda simple
+            url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q=scraper&q=num=1"
+            response = requests.get(url, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                if 'items' in data and len(data['items']) > 0:
+                    result = data['items'][0]
+                    messagebox.showinfo("✅ API Funcionando",
+                                      f"✅ Las credenciales funcionan correctamente!\n\n"
+                                      f"🔍 Búsqueda de prueba: '{result['title'][:50]}...'\n\n"
+                                      f"🏆 Tu scraper está listo para funcionar! 🙌")
+                    self.log_message(f"✅ API funcionando - Encontrado: {result['title']}")
+                else:
+                    messagebox.showinfo("📋 API Válida",
+                                      "✅ Las credenciales son válidas pero no encontraron resultados para 'scraper'.\n\n"
+                                      "Este es un comportamiento normal - significa que tus credenciales funcionan correctamente.")
+                    self.log_message("✅ API válida pero sin resultados de prueba")
+            elif response.status_code == 403:
+                data = response.json()
+                error_msg = data.get('error', {}).get('message', 'Error de autenticación')
+
+                if "DAILY_LIMIT_EXCEEDED" in error_msg or "quota" in error_msg.lower():
+                    messagebox.showwarning("⚠️ Límite Alcanzado",
+                                         "Has alcanzado el límite diario de la API gratuita (100 consultas).\n\n"
+                                         "💡 Puedes:\n"
+                                         "• Esperar al día siguiente (se resetean las cuotas)\n"
+                                         "• Actualizar a un plan pago de Google\n"
+                                         "• Usar diferentes credenciales\n\n"
+                                         "Las consultas funcionarán correctamente mañana.")
+
+                else:
+                    messagebox.showerror("❌ Error de API",
+                                       f"❌ Error de autenticación: {error_msg}\n\n"
+                                       "💡 Verifica tus credenciales en la pestaña '🔐 Google API'")
+                self.log_message(f"❌ Error de API: {error_msg}")
+            else:
+                messagebox.showerror("❌ Error HTTP",
+                                   f"❌ Error de conexión HTTP {response.status_code}\n\n"
+                                   f"{response.text[:200]}")
+                self.log_message(f"❌ Error HTTP {response.status_code}")
+
+        except requests.exceptions.RequestException as e:
+            messagebox.showerror("❌ Error de Conexión",
+                               f"No se pudo conectar con Google API:\n{e}\n\n"
+                               "💡 Verifica tu conexión a internet.")
+            self.log_message(f"❌ Error de conexión: {e}")
+        except Exception as e:
+            messagebox.showerror("❌ Error",
+                               f"Error desconocido: {e}")
+            self.log_message(f"❌ Error inesperado: {e}")
 
     def save_config(self):
         """Guarda la configuración actual en .env"""
