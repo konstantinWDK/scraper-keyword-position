@@ -10,23 +10,21 @@ Scraper avanzado de posiciones de keywords con técnicas anti-detección para Go
 ✅ **Análisis de posiciones** - Tracking completo de rankings  
 ✅ **Exportación múltiple** - CSV, JSON, análisis estadístico  
 ✅ **Configuración flexible** - Delays, países, idiomas personalizables  
+✅ **Interfaz gráfica** - GUI moderna y fácil de usar
 
 ## 📦 Instalación Rápida
 
+### Instalación Automática (Recomendada)
 ```bash
 git clone <tu-repo>
 cd scraper-keyword-position
-chmod +x install.sh
-./install.sh
+./install
 ```
 
 ### Instalación Manual
-
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp config/.env.example config/.env
+# Solo instalar dependencias (Python ya debe estar instalado)
+python setup.py
 ```
 
 ## ⚙️ Configuración
@@ -50,12 +48,12 @@ PAGES_TO_SCRAPE=1
 
 ## 🔧 Uso
 
-### Activar entorno virtual
+### Interfaz Gráfica (Recomendado)
 ```bash
-source venv/bin/activate
+python src/gui.py
 ```
 
-### Comandos básicos
+### Línea de Comandos
 
 ```bash
 # Modo de prueba
@@ -93,6 +91,7 @@ python src/main.py --suggest "marketing digital" --country ES
 scraper-keyword-position/
 ├── src/
 │   ├── main.py              # Script principal
+│   ├── gui.py              # Interfaz gráfica
 │   ├── stealth_scraper.py   # Motor de scraping
 │   └── utils.py             # Utilidades y análisis
 ├── config/
@@ -102,7 +101,8 @@ scraper-keyword-position/
 ├── data/                    # Resultados exportados
 ├── logs/                    # Logs del scraper
 ├── requirements.txt         # Dependencias
-└── install.sh              # Script de instalación
+├── setup.py                # Instalador de dependencias
+└── install                 # Script de instalación simple
 ```
 
 ## 📊 Formatos de Salida

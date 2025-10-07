@@ -1,0 +1,11 @@
+"Host/IP";"Port";"Login";"Password";"Type";"Level";"Country";"Tag(s)";"Speed";"Alive";"Can Resolve Domain to IP"
+"3.15.192.0";"8159";"";"";"CONNECT";"Elite";"UNITED STATES";"Public";"0,108";"9m";-
+"3.107.252.199";"10065";"";"";"CONNECT";"Elite";"AUSTRALIA";"Public";"0,300";"10m";-
+"4.156.78.45";"80";"";"";"WEB";"Transparent";"UNITED STATES";"Public";"0,093";"9m";X
+"4.195.16.140";"80";"";"";"WEB";"Elite";"AUSTRALIA";"Public supremenewyork";"0,255";"9m";X
+"4.245.123.244";"80";"";"";"WEB";"Elite";"NETHERLANDS";"Public supremenewyork";"0,045";"8m";X
+"8.17.0.15";"8080";"";"";"WEB";"Transparent";"UNITED STATES";"Public";"0,134";"7m";X
+"8.130.34.237";"80";"";"";"CONNECT";"Elite";"CHINA";"Public";"0,304";"9m";X
+"8.130.71.75";"80";"";"";"CONNECT";"Elite";"CHINA";"Public";"0,322";"6m";X
+"8.130.90.177";"80";"";"";"CONNECT";"Elite";"CHINA";"Public";"0,300";"7m";X
+"8.210.83.33";"80";"";"";"CONNECT";"Elite";"CHINA";"Public";"0,280";"8m";X

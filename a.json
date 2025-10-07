@@ -1,0 +1,9 @@
+{
+  "domain": "directoriodearte.com",
+  "pages": 1,
+  "country": "ES",
+  "language": "en",
+  "min_delay": 5,
+  "max_delay": 15,
+  "proxies": "# Formato: usuario:pass@ip:puerto o ip:puerto"
+}

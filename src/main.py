@@ -15,7 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.settings import Config, config
 from stealth_scraper import StealthSerpScraper
-from utils import KeywordManager, ResultsAnalyzer
+from utils import KeywordManager, ResultsAnalyzer, ProxyManager, ProxyTester
 from colorama import Fore, Style, init
 
 # Inicializar colorama para colores en terminal
@@ -74,6 +74,16 @@ Ejemplos de uso:
     parser.add_argument('--analyze-file', 
                        help='Archivo específico para analizar')
     
+    # Gestión de proxies
+    parser.add_argument('--import-proxies', 
+                       help='Importar proxies desde archivo CSV')
+    parser.add_argument('--load-proxies', 
+                       help='Cargar proxies desde archivo de texto')
+    parser.add_argument('--test-proxies', action='store_true',
+                       help='Probar proxies cargados')
+    parser.add_argument('--proxy-stats', action='store_true',
+                       help='Mostrar estadísticas de proxies')
+    
     # Modo de prueba
     parser.add_argument('--test', action='store_true',
                        help='Modo de prueba con una keyword')
@@ -87,6 +97,49 @@ Ejemplos de uso:
     # Mostrar configuración si se solicita
     if args.config:
         Config.print_config()
+        return
+    
+    # Gestión de proxies
+    if args.import_proxies:
+        print(f"{Fore.BLUE}📥 Importando proxies desde: {args.import_proxies}{Style.RESET_ALL}")
+        proxies = ProxyManager.import_from_csv(args.import_proxies)
+        if proxies:
+            ProxyManager.save_proxies(proxies, 'imported_proxies')
+            ProxyManager.show_proxy_stats(proxies)
+        return
+    
+    if args.load_proxies:
+        print(f"{Fore.BLUE}📥 Cargando proxies desde: {args.load_proxies}{Style.RESET_ALL}")
+        proxies = ProxyManager.load_proxies(args.load_proxies)
+        if proxies:
+            ProxyManager.show_proxy_stats(proxies)
+        return
+    
+    if args.test_proxies:
+        print(f"{Fore.BLUE}🧪 Probando proxies...{Style.RESET_ALL}")
+        # Cargar proxies desde archivo por defecto o usar los de configuración
+        proxy_file = 'proxies_formatted.txt' if os.path.exists('proxies_formatted.txt') else None
+        if proxy_file:
+            proxies = ProxyManager.load_proxies(proxy_file)
+        else:
+            proxies = config.get('PROXIES', [])
+        
+        if proxies:
+            working_proxies = ProxyManager.filter_working_proxies(proxies)
+            if working_proxies:
+                ProxyManager.save_proxies(working_proxies, 'working_proxies')
+        return
+    
+    if args.proxy_stats:
+        print(f"{Fore.BLUE}📊 Estadísticas de proxies...{Style.RESET_ALL}")
+        # Cargar proxies desde archivo por defecto o usar los de configuración
+        proxy_file = 'proxies_formatted.txt' if os.path.exists('proxies_formatted.txt') else None
+        if proxy_file:
+            proxies = ProxyManager.load_proxies(proxy_file)
+        else:
+            proxies = config.get('PROXIES', [])
+        
+        ProxyManager.show_proxy_stats(proxies)
         return
     
     # Analizar resultados existentes
