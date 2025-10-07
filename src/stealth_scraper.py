@@ -31,7 +31,7 @@ class StealthSerpScraper:
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',
             handlers=[
-                logging.FileHandler('logs/scraper.log'),
+                logging.FileHandler('../logs/scraper.log'),
                 logging.StreamHandler()
             ]
         )
@@ -431,14 +431,14 @@ class StealthSerpScraper:
         
         # Guardar como CSV
         df = pd.DataFrame(results)
-        csv_path = f"data/{filename}.csv"
+        csv_path = f"../data/{filename}.csv"
         df.to_csv(csv_path, index=False, encoding='utf-8')
-        
+
         # Guardar como JSON
-        json_path = f"data/{filename}.json"
+        json_path = f"../data/{filename}.json"
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
-        
+
         self.logger.info(f"Results saved to {csv_path} and {json_path}")
         
         # Estadísticas
