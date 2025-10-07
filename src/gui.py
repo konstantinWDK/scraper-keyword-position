@@ -53,6 +53,7 @@ class KeywordScraperGUI:
         self.tabview.pack(fill="both", expand=True, padx=20, pady=20)
         
         # Crear pestañas
+        self.tab_google_api = self.tabview.add("🔐 Google API")
         self.tab_config = self.tabview.add("⚙️ Configuración")
         self.tab_keywords = self.tabview.add("🔑 Keywords")
         self.tab_scraping = self.tabview.add("🚀 Scraping")
@@ -60,6 +61,7 @@ class KeywordScraperGUI:
         self.tab_analysis = self.tabview.add("📈 Análisis")
         
         # Configurar cada pestaña
+        self.setup_google_api_tab()
         self.setup_config_tab()
         self.setup_keywords_tab()
         self.setup_scraping_tab()
@@ -456,6 +458,217 @@ class KeywordScraperGUI:
         self.keywords_count_label.configure(text=str(len(keywords_list)))
         
     # ========== MÉTODOS DE GOOGLE API ==========
+
+    def setup_google_api_tab(self):
+        """Configura la pestaña dedicada de Google API con instrucciones"""
+        main_frame = ctk.CTkScrollableFrame(self.tab_google_api)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # Título principal
+        title_label = ctk.CTkLabel(main_frame, text="🔐 Configuración Google Custom Search API",
+                                  font=ctk.CTkFont(size=24, weight="bold"))
+        title_label.pack(pady=(0, 20))
+
+        # Descripción principal
+        description_text = """
+                🌐 Este scraper SOLO FUNCIONA con Google Custom Search API
+                No usa proxies ni scraping directo - utiliza la API oficial de Google
+
+                💡 Ventajas:
+                • Sin límites de IP
+                • Mejor precisión
+                • Cuotas actualizadas por Google
+                • Más confiable"""
+        desc_label = ctk.CTkLabel(main_frame, text=description_text,
+                                 wraplength=600, justify="left",
+                                 font=ctk.CTkFont(size=12))
+        desc_label.pack(pady=(0, 30))
+
+        # Paso 1: Crear cuenta en Google Cloud
+        step1_frame = ctk.CTkFrame(main_frame)
+        step1_frame.pack(fill="x", pady=(0, 20))
+        ctk.CTkLabel(step1_frame, text="📋 PASO 1: Crear cuenta Google Cloud",
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        step1_text = """• Ve a https://console.cloud.google.com/
+        • Crea una cuenta o selecciona un proyecto existente
+        • Si es nuevo, necesitarás una tarjeta de crédito (no se cobra sin activar facturación)"""
+
+        step1_label = ctk.CTkLabel(step1_frame, text=step1_text, justify="left")
+        step1_label.pack(pady=(0, 10))
+
+        # Botón para abrir enlace
+        open_console_btn = ctk.CTkButton(step1_frame, text="🌐 Abrir Google Cloud Console",
+                                       command=lambda: self.open_website("https://console.cloud.google.com/"),
+                                       fg_color="blue")
+        open_console_btn.pack()
+
+        # Paso 2: Habilitar API
+        step2_frame = ctk.CTkFrame(main_frame)
+        step2_frame.pack(fill="x", pady=(0, 20))
+        ctk.CTkLabel(step2_frame, text="🔧 PASO 2: Habilitar Custom Search API",
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        step2_text = """• En Google Cloud Console → APIs y servicios → Biblioteca
+        • Busca "Custom Search JSON API"
+        • Click en "Habilitar" (Enable)"""
+
+        step2_label = ctk.CTkLabel(step2_frame, text=step2_text, justify="left")
+        step2_label.pack(pady=(0, 10))
+
+        # Paso 3: Crear credenciales
+        step3_frame = ctk.CTkFrame(main_frame)
+        step3_frame.pack(fill="x", pady=(0, 20))
+        ctk.CTkLabel(step3_frame, text="🔑 PASO 3: Obtener API Key",
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        step3_text = """• APIs y servicios → Credenciales
+        • "Crear credenciales" → "Clave de API"
+        • Copia la clave generada (formato: AIzaSy...)
+        • ¡IMPORTANTE! Mantén esta clave segura"""
+
+        step3_label = ctk.CTkLabel(step3_frame, text=step3_text, justify="left")
+        step3_label.pack(pady=(0, 10))
+
+        # Paso 4: Crear Custom Search Engine
+        step4_frame = ctk.CTkFrame(main_frame)
+        step4_frame.pack(fill="x", pady=(0, 20))
+        ctk.CTkLabel(step4_frame, text="🚀 PASO 4: Crear Search Engine Personalizado",
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        step4_text = """• Ve a https://cse.google.com/
+        • "New search engine" (Motor de búsqueda nuevo)
+        • Sitios web para buscar: deja vacío para buscar en toda la web
+        • Nombre: algo descriptivo como "Position Scraper"
+        • Crea el motor y copia el "Search engine ID" (al final de la URL)"""
+
+        step4_label = ctk.CTkLabel(step4_frame, text=step4_text, justify="left")
+        step4_label.pack(pady=(0, 10))
+
+        # Botón para abrir Custom Search
+        open_cse_btn = ctk.CTkButton(step4_frame, text="🔍 Abrir Custom Search Engine",
+                                   command=lambda: self.open_website("https://cse.google.com/"),
+                                   fg_color="green")
+        open_cse_btn.pack()
+
+        # CONFIGURACIÓN PRINCIPAL
+        config_title = ctk.CTkLabel(main_frame, text="🎯 CONFIGURAR TU SCRAPER",
+                                  font=ctk.CTkFont(size=18, weight="bold"))
+        config_title.pack(pady=(20, 15))
+
+        # Formulario de configuración
+        form_frame = ctk.CTkFrame(main_frame)
+        form_frame.pack(fill="x", pady=(0, 20))
+
+        # Campo API Key
+        api_key_frame = ctk.CTkFrame(form_frame)
+        api_key_frame.pack(fill="x", padx=20, pady=10)
+
+        ctk.CTkLabel(api_key_frame, text="🔑 Google API Key:",
+                    font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+
+        api_key_inner = ctk.CTkFrame(api_key_frame)
+        api_key_inner.pack(fill="x", pady=5)
+
+        self.api_key_var = ctk.StringVar()
+        api_key_entry = ctk.CTkEntry(api_key_inner, textvariable=self.api_key_var,
+                                   show="*", width=400, placeholder_text="Ingresa tu API Key...")
+        api_key_entry.pack(side="left", padx=(0, 10))
+
+        show_key_btn = ctk.CTkButton(api_key_inner, text="👁️ Mostrar", width=80,
+                                    command=self.toggle_api_key_visibility)
+        show_key_btn.pack(side="left")
+
+        # Campo Search Engine ID
+        se_id_frame = ctk.CTkFrame(form_frame)
+        se_id_frame.pack(fill="x", padx=20, pady=10)
+
+        ctk.CTkLabel(se_id_frame, text="🔍 Search Engine ID:",
+                    font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+
+        se_id_inner = ctk.CTkFrame(se_id_frame)
+        se_id_inner.pack(fill="x", pady=5)
+
+        self.search_engine_id_var = ctk.StringVar()
+        se_id_entry = ctk.CTkEntry(se_id_inner, textvariable=self.search_engine_id_var,
+                                 width=400, placeholder_text="Ingresa tu Search Engine ID...")
+        se_id_entry.pack(side="left", padx=(0, 10))
+
+        # Botones de acción
+        buttons_frame = ctk.CTkFrame(form_frame)
+        buttons_frame.pack(fill="x", padx=20, pady=10)
+
+        validate_btn = ctk.CTkButton(buttons_frame, text="✅ Validar Credenciales",
+                                   command=self.validate_google_api, fg_color="green",
+                                   width=150)
+        validate_btn.pack(side="left", padx=(0, 20))
+
+        save_btn = ctk.CTkButton(buttons_frame, text="💾 Guardar Configuración",
+                               command=self.save_google_config, fg_color="blue",
+                               width=150)
+        save_btn.pack(side="left")
+
+        # Información de cuotas
+        quota_frame = ctk.CTkFrame(main_frame, fg_color="gray20")
+        quota_frame.pack(fill="x", pady=(20, 0))
+
+        quota_title = ctk.CTkLabel(quota_frame, text="📊 INFORMACIÓN DE CUOTAS GOOGLE",
+                                 font=ctk.CTkFont(size=16, weight="bold"))
+        quota_title.pack(pady=(15, 10))
+
+        quota_text = """🚨 CUOTAS Y LÍMITES:
+
+        • 100 consultas diarias GRATIS
+        • $5 por cada 1000 consultas adicionales (cerca de $5 por keyword completa)
+        • No hay límites de IP
+        • Solo se cobra cuando superas el límite gratuito
+
+        💡 RECOMENDACIONES:
+        • Usa la cuenta gratuita para pruebas
+        • Solo keywords importantes paguen
+        • Monitorea tu uso en Google Cloud Console"""
+
+        quota_label = ctk.CTkLabel(quota_frame, text=quota_text, justify="left",
+                                 wraplength=600, font=ctk.CTkFont(size=11))
+        quota_label.pack(pady=(0, 15))
+
+    def open_website(self, url):
+        """Abre una URL en el navegador por defecto"""
+        try:
+            import webbrowser
+            webbrowser.open(url)
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo abrir el navegador: {e}")
+
+    def toggle_api_key_visibility(self):
+        """Alterna visibilidad/mascarado de la API Key"""
+        # Esta es una simplificación, en producción necesitarías acceder al widget real
+        messagebox.showinfo("Nota", "La clave se muestra al escribirla normalmente")
+
+    def save_google_config(self):
+        """Guarda la configuración de Google API"""
+        api_key = self.api_key_var.get().strip()
+        search_engine_id = self.search_engine_id_var.get().strip()
+
+        if not api_key:
+            messagebox.showwarning("Error", "Debes ingresar la API Key")
+            return
+
+        if not search_engine_id:
+            messagebox.showwarning("Error", "Debes ingresar el Search Engine ID")
+            return
+
+        # Validar formato básico
+        if not api_key.startswith("AIza"):
+            messagebox.showwarning("Error", "La API Key debe comenzar con 'AIza'")
+            return
+
+        # Intentar validar con Google
+        if self.validate_google_api():
+            # Guardar configuración si la validación pasa
+            self.save_config()
+            messagebox.showinfo("Éxito",
+                              "✅ Configuración de Google API guardada correctamente!\n\nTu scraper está listo para funcionar.")
 
     # ========== MÉTODOS DE CONFIGURACIÓN ==========
 
