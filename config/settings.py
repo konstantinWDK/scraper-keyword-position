@@ -26,10 +26,15 @@ class Config:
     DEFAULT_COUNTRY = os.getenv('DEFAULT_COUNTRY', 'US')
     DEFAULT_LANGUAGE = os.getenv('DEFAULT_LANGUAGE', 'en')
     PAGES_TO_SCRAPE = int(os.getenv('PAGES_TO_SCRAPE', 1))
-    
+
+    # Configuración de Google API
+    GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', '')
+    GOOGLE_SEARCH_ENGINE_ID = os.getenv('GOOGLE_SEARCH_ENGINE_ID', '')
+    USE_GOOGLE_API = os.getenv('USE_GOOGLE_API', 'false').lower() == 'true'
+
     # Configuración de logs
     LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
-    
+
     # Configuración de resultados
     SAVE_JSON = os.getenv('SAVE_JSON', 'true').lower() == 'true'
     SAVE_CSV = os.getenv('SAVE_CSV', 'true').lower() == 'true'
@@ -52,6 +57,9 @@ class Config:
             'DEFAULT_COUNTRY': cls.DEFAULT_COUNTRY,
             'DEFAULT_LANGUAGE': cls.DEFAULT_LANGUAGE,
             'PAGES_TO_SCRAPE': cls.PAGES_TO_SCRAPE,
+            'GOOGLE_API_KEY': cls.GOOGLE_API_KEY,
+            'GOOGLE_SEARCH_ENGINE_ID': cls.GOOGLE_SEARCH_ENGINE_ID,
+            'USE_GOOGLE_API': cls.USE_GOOGLE_API,
             'LOG_LEVEL': cls.LOG_LEVEL,
             'SAVE_JSON': cls.SAVE_JSON,
             'SAVE_CSV': cls.SAVE_CSV,
