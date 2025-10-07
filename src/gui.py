@@ -122,15 +122,44 @@ class KeywordScraperGUI:
                                        variable=self.language_var, width=100)
         language_combo.pack(side="left")
         
-        # Columna derecha - Delays y proxies
+        # Columna derecha - Delays, API Google y proxies
         right_frame = ctk.CTkFrame(config_frame)
         right_frame.pack(side="right", fill="both", expand=True, padx=(5, 0))
-        
+
+        # API Google
+        google_frame = ctk.CTkFrame(right_frame)
+        google_frame.pack(fill="x", padx=10, pady=5)
+        ctk.CTkLabel(google_frame, text="Google API (Opcional):", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+
+        # API Key
+        api_key_frame = ctk.CTkFrame(google_frame)
+        api_key_frame.pack(fill="x", pady=2)
+        ctk.CTkLabel(api_key_frame, text="API Key:").pack(side="left")
+        self.api_key_var = ctk.StringVar()
+        api_key_entry = ctk.CTkEntry(api_key_frame, textvariable=self.api_key_var, show="*", width=200)
+        api_key_entry.pack(side="right")
+
+        # Search Engine ID
+        se_id_frame = ctk.CTkFrame(google_frame)
+        se_id_frame.pack(fill="x", pady=2)
+        ctk.CTkLabel(se_id_frame, text="Search Engine ID:").pack(side="left")
+        self.search_engine_id_var = ctk.StringVar()
+        se_id_entry = ctk.CTkEntry(se_id_frame, textvariable=self.search_engine_id_var, width=200)
+        se_id_entry.pack(side="right")
+
+        # Modo de operación
+        mode_frame = ctk.CTkFrame(google_frame)
+        mode_frame.pack(fill="x", pady=5)
+        self.use_api_var = ctk.BooleanVar(value=False)
+        api_checkbox = ctk.CTkCheckBox(mode_frame, text="Usar Google API (sin proxies)",
+                                      variable=self.use_api_var, command=self.toggle_scraping_mode)
+        api_checkbox.pack()
+
         # Delays
         delays_frame = ctk.CTkFrame(right_frame)
         delays_frame.pack(fill="x", padx=10, pady=5)
         ctk.CTkLabel(delays_frame, text="Delays (segundos):", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
-        
+
         # Delay mínimo
         min_delay_frame = ctk.CTkFrame(delays_frame)
         min_delay_frame.pack(fill="x", pady=5)
@@ -138,7 +167,7 @@ class KeywordScraperGUI:
         self.min_delay_var = ctk.StringVar(value="5")
         min_delay_entry = ctk.CTkEntry(min_delay_frame, textvariable=self.min_delay_var, width=60)
         min_delay_entry.pack(side="right")
-        
+
         # Delay máximo
         max_delay_frame = ctk.CTkFrame(delays_frame)
         max_delay_frame.pack(fill="x", pady=5)
@@ -587,29 +616,103 @@ class KeywordScraperGUI:
 
     # ========== MÉTODOS DE CONFIGURACIÓN ==========
 
-    def save_config(self):
-        """Guarda la configuración actual"""
+    def toggle_scraping_mode(self):
+        """Cambia entre modo scraping directo y API de Google"""
+        use_api = self.use_api_var.get()
+
+        if use_api:
+            self.log_message("🌐 Cambiado a modo Google API - Sin límites de IP")
+            # Ocultar/deshabilitar sección de proxies cuando se usa API
+            self.proxies_text.configure(state="disabled")
+            self.test_proxies_button.configure(state="disabled")
+        else:
+            self.log_message("🔧 Cambiado a modo scraping directo - Con proxies")
+            # Habilitar sección de proxies
+            self.test_proxies_button.configure(state="normal")
+
+    def validate_google_api(self):
+        """Valida las credenciales de Google API"""
+        api_key = self.api_key_var.get().strip()
+        search_engine_id = self.search_engine_id_var.get().strip()
+
+        if not api_key or not search_engine_id:
+            messagebox.showwarning("Advertencia", "Ingresa tanto la API Key como el Search Engine ID")
+            return False
+
         try:
-            config_data = {
-                'domain': self.domain_entry.get(),
-                'pages': int(self.pages_var.get()),
-                'country': self.country_var.get(),
-                'language': self.language_var.get(),
-                'min_delay': int(self.min_delay_var.get()),
-                'max_delay': int(self.max_delay_var.get()),
-                'proxies': self.proxies_text.get("1.0", "end-1c").strip()
+            import requests
+            # Probar una búsqueda simple
+            url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q=test"
+            response = requests.get(url, timeout=10)
+
+            if response.status_code == 200:
+                messagebox.showinfo("Éxito", "✅ Credenciales válidas - API de Google configurada correctamente")
+                self.log_message("✅ API de Google validada correctamente")
+                return True
+            else:
+                error_data = response.json()
+                error_msg = error_data.get('error', {}).get('message', 'Error desconocido')
+                messagebox.showerror("Error de API", f"Error de validación: {error_msg}")
+                return False
+
+        except requests.exceptions.RequestException as e:
+            messagebox.showerror("Error de conexión", f"Error conectando con Google API: {e}")
+            return False
+
+    def save_config(self):
+        """Guarda la configuración actual en .env"""
+        try:
+            # Leer .env existente
+            env_file = os.path.join(os.path.dirname(__file__), '..', 'config', '.env')
+
+            env_lines = []
+            if os.path.exists(env_file):
+                with open(env_file, 'r', encoding='utf-8') as f:
+                    env_lines = f.readlines()
+
+            # Actualizar/crear variables de Google API
+            api_key = self.api_key_var.get().strip()
+            search_engine_id = self.search_engine_id_var.get().strip()
+
+            # Buscar y reemplazar líneas existentes
+            updated_lines = []
+            google_vars = {
+                'GOOGLE_API_KEY': api_key,
+                'GOOGLE_SEARCH_ENGINE_ID': search_engine_id,
+                'USE_GOOGLE_API': 'true' if self.use_api_var.get() else 'false'
             }
-            
-            file_path = filedialog.asksaveasfilename(
-                defaultextension=".json",
-                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
-            )
-            
-            if file_path:
-                with open(file_path, 'w', encoding='utf-8') as f:
-                    json.dump(config_data, f, indent=2, ensure_ascii=False)
-                messagebox.showinfo("Éxito", "Configuración guardada correctamente")
-                
+
+            vars_found = {key: False for key in google_vars}
+
+            for line in env_lines:
+                line_strip = line.strip()
+                if not line_strip or line_strip.startswith('#'):
+                    updated_lines.append(line)
+                    continue
+
+                var_name = line_strip.split('=')[0]
+                if var_name in google_vars:
+                    updated_lines.append(f'{var_name}={google_vars[var_name]}\n')
+                    vars_found[var_name] = True
+                else:
+                    updated_lines.append(line)
+
+            # Agregar variables no encontradas
+            for var_name, value in google_vars.items():
+                if not vars_found[var_name]:
+                    updated_lines.append(f'{var_name}={value}\n')
+
+            # Guardar archivo .env
+            with open(env_file, 'w', encoding='utf-8') as f:
+                f.writelines(updated_lines)
+
+            # Validar API si está habilitada
+            if self.use_api_var.get():
+                self.validate_google_api()
+
+            messagebox.showinfo("Éxito", "Configuración guardada en config/.env")
+            self.log_message("💾 Configuración guardada correctamente")
+
         except Exception as e:
             messagebox.showerror("Error", f"Error guardando configuración: {e}")
             
