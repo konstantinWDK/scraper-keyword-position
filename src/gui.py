@@ -43,21 +43,41 @@ class KeywordScraperGUI:
         self.current_results = []
         self.keywords_list = []
 
+        # Variables de configuración
+        self.api_key_var = ctk.StringVar()
+        self.search_engine_id_var = ctk.StringVar()
+        self.use_api_var = ctk.BooleanVar(value=True)
+
+        # Variables de configuración de scraper
+        self.domain_entry = None
+        self.pages_var = ctk.DoubleVar(value=1.0)
+        self.country_var = ctk.StringVar(value="US")
+        self.language_var = ctk.StringVar(value="en")
+        self.min_delay_var = ctk.StringVar(value="5")
+        self.max_delay_var = ctk.StringVar(value="15")
+
+        # Variables de resultados
+        self.results_tree = None
+        self.stats_label = None
+        self.logs_text = None
+        self.progress_bar = None
+        self.progress_label = None
+        self.start_button = None
+        self.stop_button = None
+        self.config_info_label = None
+        self.keywords_count_label = None
+        self.keywords_text = None
+        self.suggest_entry = None
+
         # Crear directorios necesarios
         for directory in ['data', 'logs', 'config']:
             os.makedirs(directory, exist_ok=True)
 
-        # Cargar configuraciones existentes al iniciar
-        self.load_saved_config()
-
-        # Cargar configuraciones existentes al iniciar
-        self.load_saved_config()
-
-        # Cargar configuraciones existentes al iniciar
-        self.load_saved_config()
-
         # Configurar layout
         self.setup_gui()
+
+        # Cargar configuraciones existentes al iniciar
+        self.load_saved_config()
 
     def load_saved_config(self):
         """Carga las credenciales guardadas al iniciar"""

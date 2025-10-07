@@ -8,6 +8,7 @@ Uso: python run_gui.py
 
 import sys
 import os
+import argparse
 
 def main():
     """Función principal - lanza la interfaz gráfica"""
