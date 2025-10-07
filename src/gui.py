@@ -69,6 +69,13 @@ class KeywordScraperGUI:
         self.keywords_text = None
         self.suggest_entry = None
 
+        # Variables de keywords relacionadas
+        self.related_keyword_entry = None
+        self.related_text = None
+        self.related_count_label = None
+        self.add_to_keywords_button = None
+        self.related_suggestions = []
+
         # Crear directorios necesarios
         for directory in ['data', 'logs', 'config']:
             os.makedirs(directory, exist_ok=True)
@@ -113,23 +120,312 @@ class KeywordScraperGUI:
         # Crear pestañas principales
         self.tabview = ctk.CTkTabview(self.root)
         self.tabview.pack(fill="both", expand=True, padx=20, pady=20)
-        
+
         # Crear pestañas
         self.tab_google_api = self.tabview.add("🔐 Google API")
         self.tab_config = self.tabview.add("⚙️ Configuración")
         self.tab_keywords = self.tabview.add("🔑 Keywords")
+        self.tab_related = self.tabview.add("🔍 Keywords Relacionadas")
         self.tab_scraping = self.tabview.add("🚀 Scraping")
         self.tab_results = self.tabview.add("📊 Resultados")
         self.tab_analysis = self.tabview.add("📈 Análisis")
-        
+
         # Configurar cada pestaña
         self.setup_google_api_tab()
         self.setup_config_tab()
         self.setup_keywords_tab()
+        self.setup_related_tab()
         self.setup_scraping_tab()
         self.setup_results_tab()
         self.setup_analysis_tab()
-        
+
+    def setup_related_tab(self):
+        """Configura la pestaña de keywords relacionadas"""
+        main_frame = ctk.CTkFrame(self.tab_related)
+        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Título
+        title_label = ctk.CTkLabel(main_frame, text="🔍 Keywords Relacionadas",
+                                  font=ctk.CTkFont(size=20, weight="bold"))
+        title_label.pack(pady=(10, 20))
+
+        # Descripción
+        description_text = """
+        Obtén sugerencias de keywords relacionadas directamente desde Google Suggest.
+        Ingresa una keyword y descubre las búsquedas relacionadas que hacen los usuarios.
+        """
+        ctk.CTkLabel(main_frame, text=description_text, wraplength=500,
+                    justify="left").pack(pady=(0, 20))
+
+        # Frame de entrada
+        input_frame = ctk.CTkFrame(main_frame)
+        input_frame.pack(fill="x", padx=10, pady=5)
+
+        ctk.CTkLabel(input_frame, text="🏷️ Keyword principal:",
+                    font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(10,5))
+
+        # Campo de entrada de keyword
+        input_container = ctk.CTkFrame(input_frame)
+        input_container.pack(fill="x", pady=5)
+
+        self.related_keyword_entry = ctk.CTkEntry(input_container,
+                                                 placeholder_text="Ingresa una keyword principal...")
+        self.related_keyword_entry.pack(side="left", padx=(0, 10), fill="x", expand=True)
+
+        generate_button = ctk.CTkButton(input_container, text="🚀 Obtener Relacionadas",
+                                       command=self.find_related_keywords,
+                                       fg_color="blue", width=150)
+        generate_button.pack(side="right")
+
+        # Frame de resultados
+        results_frame = ctk.CTkFrame(main_frame)
+        results_frame.pack(fill="both", expand=True, padx=10, pady=5)
+
+        # Título de resultados
+        results_title_frame = ctk.CTkFrame(results_frame)
+        results_title_frame.pack(fill="x", pady=(10, 5))
+
+        ctk.CTkLabel(results_title_frame, text="📋 Keywords Relacionadas:",
+                    font=ctk.CTkFont(size=14, weight="bold")).pack(side="left")
+
+        # Contador de sugerencias
+        self.related_count_label = ctk.CTkLabel(results_title_frame, text="(0 sugerencias)")
+        self.related_count_label.pack(side="right")
+
+        # Área de texto para mostrar resultados
+        self.related_text = ctk.CTkTextbox(results_frame, font=ctk.CTkFont(family="Consolas", size=12),
+                                          wrap="word")
+        self.related_text.pack(fill="both", expand=True, padx=10, pady=5)
+
+        # Botones de acción
+        action_frame = ctk.CTkFrame(results_frame)
+        action_frame.pack(fill="x", pady=(5, 10))
+
+        self.add_to_keywords_button = ctk.CTkButton(action_frame, text="➕ Añadir a Keywords Principales",
+                                                   command=self.add_related_to_keywords,
+                                                   fg_color="green", state="disabled")
+        self.add_to_keywords_button.pack(side="left", padx=(10, 5))
+
+        ctk.CTkButton(action_frame, text="💾 Guardar Lista",
+                     command=self.save_related_keywords).pack(side="left", padx=5)
+
+        ctk.CTkButton(action_frame, text="🧹 Limpiar",
+                     command=self.clear_related_keywords).pack(side="right", padx=5)
+
+    def find_related_keywords(self):
+        """Busca keywords relacionadas usando Google Suggest API"""
+        keyword = self.related_keyword_entry.get().strip()
+
+        if not keyword:
+            messagebox.showwarning("Advertencia", "Ingresa una keyword principal")
+            return
+
+        # Validar credenciales de Google
+        api_key = self.api_key_var.get().strip()
+        search_engine_id = self.search_engine_id_var.get().strip()
+
+        if not api_key or not search_engine_id:
+            messagebox.showwarning("Error", "Configura tus credenciales de Google API primero\n\nVe a la pestaña '🔐 Google API'")
+            return
+
+        # Limpiar resultados anteriores
+        self.clear_related_keywords()
+
+        # Mostrar mensaje de carga
+        self.related_text.configure(state="normal")
+        self.related_text.insert("1.0", f"🔍 Buscando keywords relacionadas para '{keyword}'...\n\nPor favor espera...")
+        self.related_text.configure(state="disabled")
+
+        # Actualizar contador
+        self.related_count_label.configure(text="(buscando...)")
+
+        def search_thread():
+            try:
+                self.log_message(f"🔍 Buscando keywords relacionadas para: '{keyword}'")
+
+                # Realizar varias búsquedas para obtener más sugerencias
+                suggestions = []
+                variations = [
+                    keyword,
+                    f"{keyword} online",
+                    f"{keyword} tutorial",
+                    f"{keyword} guía",
+                    f"{keyword} gratis",
+                    f"{keyword} 2025",
+                    f"{keyword} cómo",
+                    f"{keyword} precio",
+                ]
+
+                # Crear scraper si no existe
+                if not self.scraper:
+                    from config.settings import config
+                    self.scraper = StealthSerpScraper(config)
+
+                # Buscar sugerencias para cada variación
+                for variation in variations:
+                    try:
+                        suggests = self.scraper.google_suggest_scraper(
+                            variation,
+                            country=self.country_var.get(),
+                            language=self.language_var.get()
+                        )
+
+                        if suggests:
+                            # Filtrar sugerencias que contengan la keyword original
+                            filtered = [s for s in suggests if keyword.lower() in s.lower() or s.lower() in keyword.lower()]
+                            suggestions.extend(filtered)
+
+                    except Exception as e:
+                        self.log_message(f"⚠️ Error buscando variación '{variation}': {str(e)[:50]}")
+                        continue
+
+                # Eliminar duplicados y limitar
+                unique_suggestions = []
+                for suggestion in suggestions:
+                    if suggestion not in unique_suggestions and suggestion.lower() != keyword.lower():
+                        unique_suggestions.append(suggestion)
+
+                unique_suggestions = unique_suggestions[:50]  # Limitar a 50 sugerencias
+
+                # Mostrar resultados
+                result_text = f"🎯 Keyword principal: '{keyword}'\n✨ Sugerencias encontradas: {len(unique_suggestions)}\n\n"
+
+                if unique_suggestions:
+                    result_text += "📋 Keywords relacionadas:\n\n"
+
+                    # Mostrar en lista ordenada
+                    for i, suggestion in enumerate(unique_suggestions[:20], 1):  # Mostrar solo primeras 20
+                        result_text += f"{i:2d}. {suggestion}\n"
+
+                    if len(unique_suggestions) > 20:
+                        result_text += f"\n💡 ... y {len(unique_suggestions) - 20} más (scroll para ver todas)\n\nTodas las sugerencias se pueden añadir a keywords principales"
+
+                    # Resultados adicionales en scroll
+                    for suggestion in unique_suggestions[20:]:
+                        result_text += f"   {suggestion}\n"
+
+                else:
+                    result_text += "❌ No se encontraron sugerencias nuevas para esta keyword.\n💡 Prueba con una keyword más popular o generadora."
+
+                # Actualizar interfaz
+                self.related_text.configure(state="normal")
+                self.related_text.delete("1.0", "end")
+                self.related_text.insert("1.0", result_text)
+                self.related_text.configure(state="disabled")
+
+                # Actualizar contador y habilitar botón
+                self.related_count_label.configure(text=f"({len(unique_suggestions)} sugerencias)")
+
+                if unique_suggestions:
+                    self.add_to_keywords_button.configure(state="normal")
+                    # Guardar sugerencias para poder añadirlas después
+                    self.related_suggestions = unique_suggestions
+                else:
+                    self.add_to_keywords_button.configure(state="disabled")
+
+                self.log_message(f"✅ Encontradas {len(unique_suggestions)} keywords relacionadas")
+
+            except Exception as e:
+                error_msg = f"❌ Error buscando keywords relacionadas:\n\n{str(e)}\n\n💡 Verifica tu conexión a internet y credenciales de Google."
+                self.related_text.configure(state="normal")
+                self.related_text.delete("1.0", "end")
+                self.related_text.insert("1.0", error_msg)
+                self.related_text.configure(state="disabled")
+                self.related_count_label.configure(text="(error)")
+                self.add_to_keywords_button.configure(state="disabled")
+                self.log_message(f"❌ Error en búsqueda de keywords relacionadas: {str(e)[:100]}")
+
+        # Ejecutar en hilo separado
+        threading.Thread(target=search_thread, daemon=True).start()
+
+    def add_related_to_keywords(self):
+        """Añade las keywords relacionadas a la lista principal"""
+        if not hasattr(self, 'related_suggestions') or not self.related_suggestions:
+            messagebox.showwarning("Aviso", "No hay sugerencias para añadir")
+            return
+
+        # Obtener keywords actuales
+        current_text = self.keywords_text.get("1.0", "end-1c")
+        current_keywords = [k.strip() for k in current_text.split('\n') if k.strip()]
+
+        # Combinar y eliminar duplicados (ignorando mayúsculas/minúsculas)
+        all_keywords_set = set(k.lower() for k in current_keywords)
+        new_keywords = []
+
+        for suggestion in self.related_suggestions:
+            if suggestion.lower() not in all_keywords_set:
+                new_keywords.append(suggestion)
+            else:
+                all_keywords_set.add(suggestion.lower())
+
+        # Añadir nuevas keywords
+        if new_keywords:
+            combined_keywords = current_keywords + new_keywords
+
+            # Actualizar texto
+            self.keywords_text.delete("1.0", "end")
+            self.keywords_text.insert("1.0", "\n".join(combined_keywords))
+
+            # Actualizar contador
+            self.update_keywords_count()
+
+            success_msg = f"✅ Añadidas {len(new_keywords)} keywords nuevas a la lista principal\n\n📊 Lista actual: {len(combined_keywords)} keywords totales"
+            messagebox.showinfo("Éxito", success_msg)
+            self.log_message(f"✅ Añadidas {len(new_keywords)} keywords relacionadas a la lista")
+
+            # Limpiar sugerencias después de añadir
+            self.clear_related_keywords()
+
+        else:
+            messagebox.showinfo("Información", "Todas las sugerencias ya estaban en tu lista de keywords principales")
+
+    def clear_related_keywords(self):
+        """Limpia el área de keywords relacionadas"""
+        self.related_text.configure(state="normal")
+        self.related_text.delete("1.0", "end")
+        self.related_text.configure(state="disabled")
+
+        self.related_count_label.configure(text="(0 sugerencias)")
+        self.add_to_keywords_button.configure(state="disabled")
+
+        # Limpiar sugerencias guardadas
+        self.related_suggestions = []
+
+        # Limpiar campo de entrada
+        self.related_keyword_entry.delete(0, "end")
+
+    def save_related_keywords(self):
+        """Guarda la lista de keywords relacionadas en un archivo"""
+        if not hasattr(self, 'related_suggestions') or not self.related_suggestions:
+            messagebox.showwarning("Aviso", "No hay sugerencias para guardar")
+            return
+
+        try:
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".txt",
+                filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+            )
+
+            if file_path:
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    # Añadir comentario inicial
+                    keyword_principal = self.related_keyword_entry.get().strip()
+                    if keyword_principal:
+                        f.write(f"# Keywords relacionadas con: {keyword_principal}\n")
+                        f.write(f"# Generadas el: {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+
+                    # Escribir cada sugerencia
+                    for suggestion in self.related_suggestions:
+                        f.write(f"{suggestion}\n")
+
+                messagebox.showinfo("Éxito", f"Keywords relacionadas guardadas en {file_path}")
+
+                keyword_principal = self.related_keyword_entry.get().strip() or "sin_keword_principal"
+                self.log_message(f"💾 Guardadas {len(self.related_suggestions)} keywords relacionadas en {file_path}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error guardando keywords relacionadas: {e}")
+
     def setup_config_tab(self):
         """Configura la pestaña de configuración"""
         # Frame principal
