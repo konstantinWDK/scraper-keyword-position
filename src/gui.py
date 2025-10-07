@@ -318,11 +318,41 @@ class KeywordScraperGUI:
         self.config_info_label = ctk.CTkLabel(info_frame, text=config_info)
         self.config_info_label.pack()
         
+        # Calculadora de costos en tiempo real
+        cost_calculator_frame = ctk.CTkFrame(controls_frame)
+        cost_calculator_frame.pack(fill="x", pady=10)
+
+        ctk.CTkLabel(cost_calculator_frame, text="💰 Calculadora de Costos:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+
+        # Contadores de consultas
+        self.cost_labels_frame = ctk.CTkFrame(cost_calculator_frame)
+        self.cost_labels_frame.pack(fill="x", pady=5)
+
+        # Inicializar contadores
+        self.total_consults = 0
+        self.total_cost = 0.0
+        self.today_consults = 0
+
+        # Etiquetas de costo
+        self.free_consults_label = ctk.CTkLabel(self.cost_labels_frame, text="Consultas gratis (100/día restantes): 100")
+        self.free_consults_label.pack(side="left", padx=(0, 20))
+
+        self.paid_consults_label = ctk.CTkLabel(self.cost_labels_frame, text="Consultas pagas: $0.00")
+        self.paid_consults_label.pack(side="left", padx=(0, 20))
+
+        self.total_cost_label = ctk.CTkLabel(self.cost_labels_frame, text="💸 Costo total: $0.00", font=ctk.CTkFont(weight="bold"))
+        self.total_cost_label.pack(side="right")
+
         # Botones de control
         button_frame = ctk.CTkFrame(controls_frame)
         button_frame.pack(fill="x", pady=10)
 
-        # Buttons en una fila: Test API | Iniciar Scraping | Detener
+        # Botones en fila: Reiniciar | Test API | Iniciar | Detener
+        reset_button = ctk.CTkButton(button_frame, text="🔄 Reiniciar Sesión",
+                                    command=self.reset_session,
+                                    fg_color="purple", hover_color="dark purple")
+        reset_button.pack(side="left", padx=5)
+
         test_api_button = ctk.CTkButton(button_frame, text="🧪 Probar API",
                                        command=self.test_google_api,
                                        fg_color="orange", hover_color="dark orange")
@@ -486,6 +516,21 @@ class KeywordScraperGUI:
         keywords_list = [k.strip() for k in keywords_text.split('\n') if k.strip()]
         self.keywords_list = keywords_list
         self.keywords_count_label.configure(text=str(len(keywords_list)))
+
+    def update_cost_display(self):
+        """Actualiza la visualización de costos"""
+        # Calcular consultas gratuitas restantes
+        free_remaining = max(0, 100 - self.today_consults)
+        free_cost = " - GRATIS 💚"
+
+        # Calcular consultas pagas (solo se paga después del límite gratuito)
+        paid_consults = max(0, self.today_consults - 100)
+        paid_cost = self.total_cost - (100 * 0.005) if paid_consults > 0 else 0
+
+        # Actualizar etiquetas
+        self.free_consults_label.configure(text=f"Consultas gratis (100/día restantes): {free_remaining}{free_cost}")
+        self.paid_consults_label.configure(text=f"Consultas pagas: ${paid_cost:.2f}")
+        self.total_cost_label.configure(text=f"💸 Costo total: ${self.total_cost:.2f}", font=ctk.CTkFont(weight="bold"))
         
     # ========== MÉTODOS DE GOOGLE API ==========
 
@@ -1085,6 +1130,75 @@ class KeywordScraperGUI:
         # Iniciar scraping en hilo separado
         threading.Thread(target=self.scraping_thread, daemon=True).start()
         
+    def reset_session(self):
+        """Reinicia la sesión completa - limpia resultados, contadores y formatos"""
+        try:
+            # Preguntar confirmación
+            if not messagebox.askyesno("Reiniciar Sesión",
+                                     "¿Estás seguro de reiniciar la sesión?\n\nSe perderán todos los resultados actuales."):
+                return
+
+            # Limpiar resultados actuales
+            self.current_results = []
+            self.keywords_list = []
+
+            # Limpiar tablas
+            for item in self.results_tree.get_children():
+                self.results_tree.delete(item)
+            self.results_tree.delete(*self.results_tree.get_children())
+
+            # Limpiar campos de keywords
+            self.keywords_text.delete("1.0", "end")
+            self.keywords_count_label.configure(text="0")
+
+            # Limpiar contadores de costos
+            self.total_consults = 0
+            self.total_cost = 0.0
+            self.today_consults = 0
+            self.update_cost_display()
+
+            # Limpiar área de logs
+            self.logs_text.configure(state="normal")
+            self.logs_text.delete("1.0", "end")
+            self.logs_text.configure(state="disabled")
+
+            # Limpiar estadísticas
+            if hasattr(self, 'stats_label') and self.stats_label:
+                self.stats_label.configure(text="Total resultados: 0 | Keywords únicas: 0 | Posición promedio: 0.0")
+
+            # Limpiar gráficos de análisis
+            try:
+                for ax in [self.ax1, self.ax2, self.ax3, self.ax4]:
+                    ax.clear()
+                self.canvas.draw()
+            except:
+                pass
+
+            # Reiniciar barra de progreso
+            self.progress_bar.set(0)
+            self.progress_label.configure(text="Listo para comenzar")
+
+            # Limpiar dominio
+            if self.domain_entry:
+                self.domain_entry.delete(0, "end")
+
+            # Actualizar información de configuración
+            self.update_config_info()
+
+            # Detener cualquier proceso activo
+            if self.is_running:
+                self.is_running = False
+                self.start_button.configure(state="normal")
+                self.stop_button.configure(state="disabled")
+
+            self.log_message("🔄 Sesión reiniciada completamente")
+            messagebox.showinfo("Sesión Reiniciada",
+                              "¡Sesión reiniciada exitosamente!\n\nResultado y configuración limpiados.")
+
+        except Exception as e:
+            self.log_message(f"❌ Error reiniciando sesión: {e}")
+            messagebox.showerror("Error", f"Error reiniciando sesión: {e}")
+
     def stop_scraping(self):
         """Detiene el proceso de scraping"""
         self.is_running = False
