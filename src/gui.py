@@ -427,29 +427,43 @@ class KeywordScraperGUI:
         table_frame = ctk.CTkFrame(main_frame)
         table_frame.pack(fill="both", expand=True, padx=10, pady=5)
         
-        # Crear treeview para mostrar resultados
+        # Crear treeview para mostrar resultados con ordenamiento
         columns = ("keyword", "position", "title", "domain", "page")
         self.results_tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=15)
-        
-        # Configurar columnas
-        self.results_tree.heading("keyword", text="Keyword")
-        self.results_tree.heading("position", text="Posición")
-        self.results_tree.heading("title", text="Título")
-        self.results_tree.heading("domain", text="Dominio")
-        self.results_tree.heading("page", text="Página")
-        
+
+        # Diccionario para controlar el orden de sorting
+        self.tree_sort_orders = {}
+        self.current_results_backup = []  # Para mantener una copia cuando se ordene
+
+        # Configurar columnas con click para ordenar
+        self.setup_treeview_sortable("keyword", "Keyword")
+        self.setup_treeview_sortable("position", "Posición")
+        self.setup_treeview_sortable("title", "Título")
+        self.setup_treeview_sortable("domain", "Dominio")
+        self.setup_treeview_sortable("page", "Página")
+
         self.results_tree.column("keyword", width=200)
         self.results_tree.column("position", width=80)
         self.results_tree.column("title", width=300)
         self.results_tree.column("domain", width=150)
         self.results_tree.column("page", width=80)
-        
+
         # Scrollbar para la tabla
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.results_tree.yview)
         self.results_tree.configure(yscrollcommand=scrollbar.set)
-        
+
         self.results_tree.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+
+        # Botones adicionales para gestión de informes
+        reports_frame = ctk.CTkFrame(main_frame)
+        reports_frame.pack(fill="x", padx=10, pady=(10, 0))
+
+        ctk.CTkLabel(reports_frame, text="🎯 Gestión de Informes:").pack(side="left", padx=(0, 10))
+        ctk.CTkButton(reports_frame, text="📂 Cargar Informe Previo",
+                     command=self.load_previous_report).pack(side="left", padx=(0, 10))
+        ctk.CTkButton(reports_frame, text="📊 Estadísticas Detalladas",
+                     command=self.show_detailed_stats).pack(side="left", padx=(0, 10))
         
         # Estadísticas rápidas
         stats_frame = ctk.CTkFrame(main_frame)
@@ -1207,10 +1221,14 @@ class KeywordScraperGUI:
         self.log_message("⏹️ Scraping detenido por el usuario")
         
     def scraping_thread(self):
-        """Hilo principal de scraping"""
+        """Hilo principal de scraping con calculadora de costos en tiempo real"""
         try:
             self.log_message("🚀 Iniciando scraping...")
-            
+
+            # Resetear contadores de sesión actual
+            session_consults = 0
+            session_cost = 0.0
+
             # Crear scraper con configuración actual
             from config.settings import config
             custom_config = config.copy()
@@ -1221,35 +1239,59 @@ class KeywordScraperGUI:
                 'DEFAULT_COUNTRY': self.country_var.get(),
                 'DEFAULT_LANGUAGE': self.language_var.get()
             })
-            
+
             self.scraper = StealthSerpScraper(custom_config)
-            
+
             # Ejecutar scraping
             target_domain = self.domain_entry.get().strip() or None
             results = self.scraper.batch_position_check(
-                self.keywords_list, 
-                target_domain, 
+                self.keywords_list,
+                target_domain,
                 int(self.pages_var.get())
             )
-            
+
             if results and self.is_running:
                 self.current_results = results
+
+                # Calcular costos de esta sesión
+                pages_scraped = int(self.pages_var.get())
+                keywords_count = len(self.keywords_list)
+                session_consults = pages_scraped * keywords_count
+
+                # Calcular costo (100 gratis, $5 por cada 1000 adicionales)
+                if session_consults <= 100:
+                    session_cost = 0.0
+                else:
+                    paid_consults = session_consults - 100
+                    session_cost = (paid_consults / 1000) * 5.0
+
+                # Actualizar contadores globales
+                self.today_consults += session_consults
+                self.total_consults += session_consults
+                self.total_cost += session_cost
+
+                # Actualizar display de costos
+                self.update_cost_display()
+
+                # Actualizar interfaz
                 self.update_results_table()
                 self.update_stats()
+
                 self.log_message(f"✅ Scraping completado: {len(results)} resultados")
-                
+                self.log_message(f"💰 Costo de sesión: ${session_cost:.2f} ({session_consults} consultas)")
+
                 # Guardar resultados automáticamente
                 timestamp = time.strftime("%Y%m%d_%H%M%S")
                 domain_suffix = f"_{target_domain}" if target_domain else ""
                 filename = f"positions{domain_suffix}_{timestamp}"
                 self.scraper.save_results(results, filename)
                 self.log_message(f"💾 Resultados guardados en data/{filename}.csv")
-                
+
             elif not self.is_running:
                 self.log_message("❌ Scraping cancelado")
             else:
                 self.log_message("❌ No se obtuvieron resultados")
-                
+
         except Exception as e:
             self.log_message(f"❌ Error en scraping: {e}")
         finally:
@@ -1417,10 +1459,250 @@ class KeywordScraperGUI:
         except Exception as e:
             self.log_message(f"❌ Error generando análisis: {e}")
             
+    def setup_treeview_sortable(self, col_name, display_name):
+        """Configura una columna sortable en Treeview"""
+        # Configurar heading con ícono de sort
+        def sort_column():
+            if col_name in self.tree_sort_orders:
+                self.tree_sort_orders[col_name] = not self.tree_sort_orders[col_name]
+            else:
+                self.tree_sort_orders[col_name] = True
+
+            # Aplicar ordenamiento
+            self.sort_treeview_column(col_name, self.tree_sort_orders[col_name])
+
+        self.results_tree.heading(col_name, text=f"{display_name} ▼", command=sort_column)
+
+    def sort_treeview_column(self, col_name, reverse=False):
+        """Ordena la columna específica del Treeview"""
+        # Obtener datos de la tabla
+        l = [(self.results_tree.set(k, col_name), k) for k in self.results_tree.get_children('')]
+
+        # Determinar tipo de ordenamiento
+        if col_name == 'position':
+            # Ordenar numéricamente
+            l.sort(key=lambda t: int(t[0]) if t[0].isdigit() else 0, reverse=reverse)
+        elif col_name == 'page':
+            # Ordenar numéricamente
+            l.sort(key=lambda t: int(t[0]) if t[0].isdigit() else 0, reverse=reverse)
+        else:
+            # Ordenar alfabéticamente
+            l.sort(key=lambda t: t[0].lower(), reverse=reverse)
+
+        # Reordenar elementos
+        for index, (val, k) in enumerate(l):
+            self.results_tree.move(k, '', index)
+
+        # Actualizar ícono del heading
+        for col in ['keyword', 'position', 'title', 'domain', 'page']:
+            symbol = " ▲" if self.tree_sort_orders.get(col, False) else " ▼"
+            display_name = {
+                'keyword': 'Keyword',
+                'position': 'Posición',
+                'title': 'Título',
+                'domain': 'Dominio',
+                'page': 'Página'
+            }.get(col, col)
+            self.results_tree.heading(col, text=f"{display_name}{symbol if col == col_name else ' ▼'}")
+
+    def load_previous_report(self):
+        """Carga un informe CSV previo para ver históricamente"""
+        try:
+            # Listar archivos CSV en data/
+            data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+
+            if not os.path.exists(data_dir):
+                messagebox.showwarning("Aviso", "No hay directorio data/ con informes previos")
+                return
+
+            csv_files = [f for f in os.listdir(data_dir) if f.endswith('.csv')]
+
+            if not csv_files:
+                messagebox.showwarning("Aviso", "No hay archivos CSV en data/")
+                return
+
+            # Mostrar diálogo para seleccionar archivo
+            report_window = ctk.CTkToplevel(self.root)
+            report_window.title("Seleccionar Informe Previo")
+            report_window.geometry("400x300")
+            report_window.transient(self.root)
+            report_window.grab_set()
+
+            title_label = ctk.CTkLabel(report_window, text="📂 Selecciona un informe previo:",
+                                     font=ctk.CTkFont(size=16, weight="bold"))
+            title_label.pack(pady=(20, 10))
+
+            # Frame con scrollbar para lista de archivos
+            files_frame = ctk.CTkScrollableFrame(report_window)
+            files_frame.pack(fill="both", expand=True, padx=20, pady=10)
+
+            def load_selected_file(filename):
+                try:
+                    file_path = os.path.join(data_dir, filename)
+                    df = pd.read_csv(file_path)
+
+                    # Convertir a formato compatible con la aplicación
+                    results = df.to_dict('records')
+
+                    # Limpiar tabla y agregar nuevos datos
+                    for item in self.results_tree.get_children():
+                        self.results_tree.delete(item)
+
+                    for result in results:
+                        self.results_tree.insert("", "end", values=(
+                            result.get('keyword', ''),
+                            result.get('position', 0),
+                            result.get('title', '')[:80] + "..." if len(result.get('title', '')) > 80 else result.get('title', ''),
+                            result.get('domain', ''),
+                            result.get('page', 1)
+                        ))
+
+                    # Actualizar estadísticas con los datos cargados
+                    self.current_results = results
+                    self.update_stats()
+
+                    self.log_message(f"✅ Cargado informe previo: {filename} ({len(results)} resultados)")
+                    report_window.destroy()
+
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error cargando archivo: {e}")
+
+            # Crear botones para cada archivo CSV
+            for csv_file in sorted(csv_files, reverse=True):  # Más recientes primero
+                file_button = ctk.CTkButton(
+                    files_frame,
+                    text=f"{csv_file}",
+                    command=lambda f=csv_file: load_selected_file(f)
+                )
+                file_button.pack(fill="x", pady=2)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error listando archivos: {e}")
+
+    def show_detailed_stats(self):
+        """Muestra estadísticas detalladas en una ventana emergente"""
+        if not self.current_results:
+            messagebox.showwarning("Aviso", "No hay resultados para mostrar estadísticas")
+            return
+
+        try:
+            df = pd.DataFrame(self.current_results)
+
+            # Ventana de estadísticas
+            stats_window = ctk.CTkToplevel(self.root)
+            stats_window.title("📊 Estadísticas Detalladas")
+            stats_window.geometry("600x500")
+            stats_window.transient(self.root)
+
+            # Título
+            ctk.CTkLabel(stats_window, text="📈 Estadísticas Detalladas del Scraping",
+                        font=ctk.CTkFont(size=18, weight="bold")).pack(pady=20)
+
+            # Frame scrollable con estadísticas
+            stats_scroll = ctk.CTkScrollableFrame(stats_window)
+            stats_scroll.pack(fill="both", expand=True, padx=20, pady=10)
+
+            # Estadísticas generales
+            general_frame = ctk.CTkFrame(stats_scroll)
+            general_frame.pack(fill="x", pady=10)
+
+            ctk.CTkLabel(general_frame, text="📊 Estadísticas Generales:",
+                        font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=5)
+
+            # Calcular métricas
+            total_results = len(df)
+            unique_keywords = df['keyword'].nunique()
+            avg_position = df['position'].mean() if 'position' in df.columns else 0
+            best_position = df['position'].min() if 'position' in df.columns and len(df) > 0 else 0
+            worst_position = df['position'].max() if 'position' in df.columns and len(df) > 0 else 0
+
+            metrics = [
+                f"Total de resultados: {total_results}",
+                f"Keywords únicas: {unique_keywords}",
+                f"Posición promedio: {avg_position:.2f}",
+                f"Mejor posición: {best_position}",
+                f"Peor posición: {worst_position}",
+            ]
+
+            for metric in metrics:
+                ctk.CTkLabel(general_frame, text=f"• {metric}").pack(anchor="w")
+
+            # Distribucion por posiciones
+            if 'position' in df.columns:
+                pos_frame = ctk.CTkFrame(stats_scroll)
+                pos_frame.pack(fill="x", pady=10)
+
+                ctk.CTkLabel(pos_frame, text="🎯 Distribución por Posiciones:",
+                            font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=5)
+
+                # Contar por rangos
+                top3 = len(df[df['position'] <= 3])
+                top10 = len(df[df['position'] <= 10])
+                top20 = len(df[df['position'] <= 20])
+                beyond20 = len(df[df['position'] > 20])
+
+                ranges = [
+                    f"Top 3: {top3} resultados ({(top3/total_results*100):.1f}%)",
+                    f"Top 10: {top10} resultados ({(top10/total_results*100):.1f}%)",
+                    f"Top 20: {top20} resultados ({(top20/total_results*100):.1f}%)",
+                    f"Beyond 20: {beyond20} resultados ({(beyond20/total_results*100):.1f}%)",
+                ]
+
+                for range_info in ranges:
+                    ctk.CTkLabel(pos_frame, text=f"• {range_info}").pack(anchor="w")
+
+            # Top dominios
+            if 'domain' in df.columns:
+                domain_frame = ctk.CTkFrame(stats_scroll)
+                domain_frame.pack(fill="x", pady=10)
+
+                ctk.CTkLabel(domain_frame, text="🏆 Top Dominios:",
+                            font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=5)
+
+                top_domains = df['domain'].value_counts().head(10)
+
+                for domain, count in top_domains.items():
+                    percentage = (count / total_results) * 100
+                    ctk.CTkLabel(domain_frame,
+                                text=f"• {domain}: {count} resultados ({percentage:.1f}%)").pack(anchor="w")
+
+            # Distribución por páginas
+            if 'page' in df.columns:
+                page_frame = ctk.CTkFrame(stats_scroll)
+                page_frame.pack(fill="x", pady=10)
+
+                ctk.CTkLabel(page_frame, text="📄 Distribución por Páginas:",
+                            font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=5)
+
+                page_stats = df['page'].value_counts().sort_index()
+
+                for page, count in page_stats.items():
+                    percentage = (count / total_results) * 100
+                    ctk.CTkLabel(page_frame,
+                                text=f"• Página {page}: {count} resultados ({percentage:.1f}%)").pack(anchor="w")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error generando estadísticas: {e}")
+
+    def update_cost_display(self):
+        """Actualiza la visualización de costos"""
+        # Calcular consultas gratuitas restantes
+        free_remaining = max(0, 100 - self.today_consults)
+        free_cost = " - GRATIS 💚"
+
+        # Calcular consultas pagas (solo se paga después del límite gratuito)
+        paid_consults = max(0, self.today_consults - 100)
+        paid_cost = self.total_cost - (100 * 0.005) if paid_consults > 0 else 0
+
+        # Actualizar etiquetas
+        self.free_consults_label.configure(text=f"Consultas gratis (100/día restantes): {free_remaining}{free_cost}")
+        self.paid_consults_label.configure(text=f"Consultas pagas: ${paid_cost:.2f}")
+        self.total_cost_label.configure(text=f"💸 Costo total: ${self.total_cost:.2f}", font=ctk.CTkFont(weight="bold"))
+
     def update_charts(self):
         """Actualiza los gráficos con los datos actuales"""
         self.generate_analysis()
-        
+
     def run(self):
         """Ejecuta la aplicación"""
         self.root.mainloop()
