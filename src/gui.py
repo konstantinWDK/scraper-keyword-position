@@ -36,16 +36,58 @@ class KeywordScraperGUI:
         self.root.title("Keyword Position Scraper - Anti-detección 2025")
         self.root.geometry("1200x800")
         self.root.minsize(1000, 700)
-        
+
         # Variables de estado
         self.scraper = None
         self.is_running = False
         self.current_results = []
         self.keywords_list = []
-        
+
+        # Crear directorios necesarios
+        for directory in ['data', 'logs', 'config']:
+            os.makedirs(directory, exist_ok=True)
+
+        # Cargar configuraciones existentes al iniciar
+        self.load_saved_config()
+
+        # Cargar configuraciones existentes al iniciar
+        self.load_saved_config()
+
+        # Cargar configuraciones existentes al iniciar
+        self.load_saved_config()
+
         # Configurar layout
         self.setup_gui()
-        
+
+    def load_saved_config(self):
+        """Carga las credenciales guardadas al iniciar"""
+        try:
+            from config.settings import Config
+
+            # Cargar API Key
+            if hasattr(self, 'api_key_var') and Config.GOOGLE_API_KEY:
+                self.api_key_var.set(Config.GOOGLE_API_KEY)
+
+            # Cargar Search Engine ID
+            if hasattr(self, 'search_engine_id_var') and Config.GOOGLE_SEARCH_ENGINE_ID:
+                self.search_engine_id_var.set(Config.GOOGLE_SEARCH_ENGINE_ID)
+
+            # Cargar delays básicos
+            if hasattr(self, 'min_delay_var'):
+                self.min_delay_var.set(str(Config.MIN_KEYWORD_DELAY))
+            if hasattr(self, 'max_delay_var'):
+                self.max_delay_var.set(str(Config.MAX_KEYWORD_DELAY))
+
+            if hasattr(self, 'domain_entry') and hasattr(self, 'country_var') and hasattr(self, 'language_var'):
+                # Cargar otras opciones si ya fueron configuradas
+                self.country_var.set(Config.DEFAULT_COUNTRY)
+                self.language_var.set(Config.DEFAULT_LANGUAGE)
+                self.update_pages_label(Config.PAGES_TO_SCRAPE)
+
+        except Exception as e:
+            # Si hay error cargando config, iniciar con valores vacíos
+            self.log_message(f"ℹ️ Configuración inicial: {e}")
+
     def setup_gui(self):
         """Configura la interfaz gráfica principal"""
         # Crear pestañas principales
