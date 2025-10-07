@@ -176,47 +176,24 @@ class KeywordScraperGUI:
         max_delay_entry = ctk.CTkEntry(max_delay_frame, textvariable=self.max_delay_var, width=60)
         max_delay_entry.pack(side="right")
         
-        # Proxies
-        proxies_frame = ctk.CTkFrame(right_frame)
-        proxies_frame.pack(fill="both", expand=True, padx=10, pady=5)
-        ctk.CTkLabel(proxies_frame, text="Proxies (desde archivos):", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+        # Configuración del Scraping
+        scraping_frame = ctk.CTkFrame(right_frame)
+        scraping_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        ctk.CTkLabel(scraping_frame, text="Modo de Scraping:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
 
-        # Controles de carga de proxies
-        proxies_controls = ctk.CTkFrame(proxies_frame)
-        proxies_controls.pack(fill="x", pady=5)
+        # Información sobre Google API
+        info_frame = ctk.CTkFrame(scraping_frame)
+        info_frame.pack(fill="x", pady=5)
+        info_text = """🌐 Modo Google API activado automáticamente
+• Sin límites de IP
+• Requiere configurar API Key y Search Engine ID
+• Configura las credenciales arriba"""
+        ctk.CTkLabel(info_frame, text=info_text).pack(padx=10, pady=10)
 
-        # Grupo de botones para CSV
-        csv_frame = ctk.CTkFrame(proxies_controls)
-        csv_frame.pack(side="left", padx=(0, 5))
-        self.load_csv_button = ctk.CTkButton(csv_frame, text="📊 Importar CSV",
-                                           command=self.load_proxies_from_csv, width=130)
-        self.load_csv_button.pack()
-
-        # Grupo de botones para TXT
-        txt_frame = ctk.CTkFrame(proxies_controls)
-        txt_frame.pack(side="left", padx=(0, 10))
-        self.load_txt_button = ctk.CTkButton(txt_frame, text="📄 Cargar TXT",
-                                          command=self.load_proxies_from_txt, width=130)
-        self.load_txt_button.pack()
-
-        # Botones adicionales
-        extra_buttons = ctk.CTkFrame(proxies_controls)
-        extra_buttons.pack(side="right")
-        self.test_proxies_button = ctk.CTkButton(extra_buttons, text="🧪 Probar Proxies",
-                                              command=self.test_loaded_proxies, width=130)
-        self.test_proxies_button.pack(pady=(0, 2))
-        self.clear_proxies_button = ctk.CTkButton(extra_buttons, text="🗑️ Limpiar",
-                                                command=self.clear_proxies, width=130, fg_color="gray")
-        self.clear_proxies_button.pack()
-
-        self.proxies_count_label = ctk.CTkLabel(proxies_frame, text="Proxies cargados: 0")
-        self.proxies_count_label.pack(anchor="w")
-
-        # Text area para proxies (solo visualización)
-        self.proxies_text = ctk.CTkTextbox(proxies_frame, height=100)
-        self.proxies_text.pack(fill="both", expand=True, pady=5)
-        self.proxies_text.configure(state="disabled")  # Solo lectura
-        self.proxies_text.insert("1.0", "# Proxies se cargan desde CSV\n")
+        # Botón para validar credenciales
+        validate_button = ctk.CTkButton(scraping_frame, text="✅ Validar Credenciales API",
+                                      command=self.validate_google_api, fg_color="green")
+        validate_button.pack(fill="x", pady=5)
         
         # Botones de acción
         button_frame = ctk.CTkFrame(main_frame)
@@ -478,141 +455,7 @@ class KeywordScraperGUI:
         self.keywords_list = keywords_list
         self.keywords_count_label.configure(text=str(len(keywords_list)))
         
-    # ========== MÉTODOS DE PROXIES ==========
-
-    def load_proxies_from_csv(self):
-        """Carga proxies desde archivo CSV"""
-        try:
-            file_path = filedialog.askopenfilename(
-                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
-            )
-
-            if file_path:
-                from utils import ProxyManager
-
-                # Cargar y convertir proxies
-                proxies = ProxyManager.import_from_csv(file_path)
-
-                if proxies:
-                    # Mostrar proxies en el text area
-                    self.proxies_text.configure(state="normal")
-                    self.proxies_text.delete("1.0", "end")
-                    self.proxies_text.insert("1.0", "\n".join(proxies))
-                    self.proxies_text.configure(state="disabled")
-
-                    # Actualizar contador
-                    self.proxies_count_label.configure(text=f"Proxies cargados: {len(proxies)}")
-
-                    # Mostrar estadísticas
-                    ProxyManager.show_proxy_stats(proxies)
-                    self.log_message(f"✅ Cargados {len(proxies)} proxies desde {file_path}")
-                else:
-                    messagebox.showerror("Error", "No se pudieron importar proxies desde el CSV")
-
-        except Exception as e:
-            messagebox.showerror("Error", f"Error cargando proxies: {e}")
-            self.log_message(f"❌ Error cargando proxies desde CSV: {e}")
-
-    def load_proxies_from_txt(self):
-        """Carga proxies desde archivo TXT"""
-        try:
-            file_path = filedialog.askopenfilename(
-                filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
-            )
-
-            if file_path:
-                from utils import ProxyManager
-
-                # Cargar proxies usando el ProxyManager
-                proxies = ProxyManager.load_proxies(file_path)
-
-                if proxies:
-                    # Mostrar proxies en el text area
-                    self.proxies_text.configure(state="normal")
-                    self.proxies_text.delete("1.0", "end")
-                    self.proxies_text.insert("1.0", "\n".join(proxies))
-                    self.proxies_text.configure(state="disabled")
-
-                    # Actualizar contador
-                    self.proxies_count_label.configure(text=f"Proxies cargados: {len(proxies)}")
-
-                    # Mostrar estadísticas
-                    ProxyManager.show_proxy_stats(proxies)
-                    self.log_message(f"✅ Cargados {len(proxies)} proxies desde {file_path}")
-                else:
-                    messagebox.showerror("Error", "No se pudieron cargar proxies desde el archivo TXT")
-
-        except Exception as e:
-            messagebox.showerror("Error", f"Error cargando proxies: {e}")
-            self.log_message(f"❌ Error cargando proxies desde TXT: {e}")
-
-    def test_loaded_proxies(self):
-        """Prueba los proxies cargados actualmente"""
-        try:
-            # Obtener proxies del text area
-            proxies_text = self.proxies_text.get("1.0", "end-1c").strip()
-
-            if not proxies_text:
-                messagebox.showwarning("Advertencia", "No hay proxies cargados para probar")
-                return
-
-            proxies = [line.strip() for line in proxies_text.split('\n') if line.strip()]
-
-            if not proxies:
-                messagebox.showwarning("Advertencia", "No hay proxies válidos para probar")
-                return
-
-            # Preguntar confirmación para pruebas masivas
-            if len(proxies) > 10:
-                response = messagebox.askyesno(
-                    "Confirmar",
-                    f"¿Estás seguro de probar {len(proxies)} proxies? Esto puede tomar tiempo."
-                )
-                if not response:
-                    self.log_message("❌ Prueba de proxies cancelada por el usuario")
-                    return
-
-            # Ejecutar pruebas en hilo separado
-            def test_thread():
-                try:
-                    self.log_message(f"🧪 Probando {len(proxies)} proxies...")
-
-                    from utils import ProxyManager
-                    working_proxies = ProxyManager.filter_working_proxies(proxies, timeout=5)
-
-                    # Actualizar text area con solo proxies funcionando
-                    if working_proxies:
-                        self.proxies_text.configure(state="normal")
-                        self.proxies_text.delete("1.0", "end")
-                        self.proxies_text.insert("1.0", "\n".join(working_proxies))
-                        self.proxies_text.configure(state="disabled")
-                        self.proxies_count_label.configure(text=f"Proxies funcionando: {len(working_proxies)}")
-
-                        # Guardar proxies funcionando
-                        ProxyManager.save_proxies(working_proxies, 'working_proxies')
-                        self.log_message(f"✅ {len(working_proxies)} proxies funcionando guardados")
-
-                except Exception as e:
-                    self.log_message(f"❌ Error probando proxies: {e}")
-
-            threading.Thread(target=test_thread, daemon=True).start()
-
-        except Exception as e:
-            messagebox.showerror("Error", f"Error iniciando test de proxies: {e}")
-
-    def clear_proxies(self):
-        """Limpia todos los proxies cargados"""
-        try:
-            self.proxies_text.configure(state="normal")
-            self.proxies_text.delete("1.0", "end")
-            self.proxies_text.insert("1.0", "# Proxies se cargan desde archivos\n")
-            self.proxies_text.configure(state="disabled")
-
-            self.proxies_count_label.configure(text="Proxies cargados: 0")
-            self.log_message("🗑️ Proxies limpiados")
-
-        except Exception as e:
-            messagebox.showerror("Error", f"Error limpiando proxies: {e}")
+    # ========== MÉTODOS DE GOOGLE API ==========
 
     # ========== MÉTODOS DE CONFIGURACIÓN ==========
 
@@ -738,9 +581,6 @@ class KeywordScraperGUI:
                 
                 self.min_delay_var.set(str(config_data.get('min_delay', 5)))
                 self.max_delay_var.set(str(config_data.get('max_delay', 15)))
-                
-                self.proxies_text.delete("1.0", "end")
-                self.proxies_text.insert("1.0", config_data.get('proxies', ''))
                 
                 messagebox.showinfo("Éxito", "Configuración cargada correctamente")
                 

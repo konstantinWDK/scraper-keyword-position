@@ -198,178 +198,7 @@ class ResultsAnalyzer:
         except Exception as e:
             print(f"❌ Error exportando resumen: {e}")
 
-class ProxyTester:
-    """Tester de proxies"""
-    
-    @staticmethod
-    def test_proxy(proxy_string, timeout=10):
-        """Prueba un proxy"""
-        import requests
-        
-        try:
-            proxy_dict = {
-                'http': f'http://{proxy_string}',
-                'https': f'http://{proxy_string}'
-            }
-            
-            response = requests.get(
-                'http://httpbin.org/ip',
-                proxies=proxy_dict,
-                timeout=timeout
-            )
-            
-            if response.status_code == 200:
-                ip_info = response.json()
-                return True, ip_info.get('origin', 'Unknown')
-            else:
-                return False, f"HTTP {response.status_code}"
-                
-        except Exception as e:
-            return False, str(e)
-    
-    @staticmethod
-    def test_proxy_list(proxy_list):
-        """Prueba lista de proxies"""
-        print("🔍 Probando proxies...")
-        
-        working_proxies = []
-        for i, proxy in enumerate(proxy_list, 1):
-            print(f"   {i}/{len(proxy_list)} - {proxy:<30}", end=" ")
-            
-            is_working, result = ProxyTester.test_proxy(proxy)
-            
-            if is_working:
-                print(f"✅ OK - IP: {result}")
-                working_proxies.append(proxy)
-            else:
-                print(f"❌ Error: {result}")
-        
-        print(f"\n📊 Resultado: {len(working_proxies)}/{len(proxy_list)} proxies funcionando")
-        return working_proxies
 
-class ProxyManager:
-    """Gestor de proxies - Similar a KeywordManager"""
-    
-    @staticmethod
-    def load_proxies(file_path):
-        """Carga proxies desde archivo"""
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                proxies = [line.strip() for line in f.readlines() if line.strip()]
-            print(f"✅ Cargados {len(proxies)} proxies desde {file_path}")
-            return proxies
-        except FileNotFoundError:
-            print(f"❌ Archivo no encontrado: {file_path}")
-            return []
-        except Exception as e:
-            print(f"❌ Error cargando proxies: {e}")
-            return []
-    
-    @staticmethod
-    def save_proxies(proxies, filename):
-        """Guarda proxies en archivo"""
-        try:
-            # Crear directorio data si no existe
-            os.makedirs('data', exist_ok=True)
-            
-            file_path = f"data/{filename}.txt"
-            with open(file_path, 'w', encoding='utf-8') as f:
-                for proxy in proxies:
-                    f.write(f"{proxy}\n")
-            
-            print(f"✅ Proxies guardados en {file_path}")
-            return file_path
-        except Exception as e:
-            print(f"❌ Error guardando proxies: {e}")
-            return None
-    
-    @staticmethod
-    def deduplicate_proxies(proxies):
-        """Elimina proxies duplicados manteniendo orden"""
-        seen = set()
-        unique_proxies = []
-        for proxy in proxies:
-            if proxy not in seen:
-                seen.add(proxy)
-                unique_proxies.append(proxy)
-        return unique_proxies
-    
-    @staticmethod
-    def filter_working_proxies(proxies, timeout=5):
-        """Filtra proxies que funcionan"""
-        print(f"🔍 Probando {len(proxies)} proxies...")
-        
-        working_proxies = []
-        for i, proxy in enumerate(proxies, 1):
-            print(f"   {i}/{len(proxies)} - {proxy:<30}", end=" ")
-            
-            is_working, result = ProxyTester.test_proxy(proxy, timeout)
-            
-            if is_working:
-                print(f"✅ OK - IP: {result}")
-                working_proxies.append(proxy)
-            else:
-                print(f"❌ Error: {result}")
-        
-        print(f"\n📊 Resultado: {len(working_proxies)}/{len(proxies)} proxies funcionando")
-        return working_proxies
-    
-    @staticmethod
-    def import_from_csv(csv_file, ip_col='Host/IP', port_col='Port', 
-                       user_col='Login', pass_col='Password', delimiter=';'):
-        """Importa proxies desde archivo CSV"""
-        try:
-            import csv
-            
-            proxies = []
-            with open(csv_file, 'r', encoding='utf-8') as file:
-                reader = csv.DictReader(file, delimiter=delimiter)
-                
-                for row in reader:
-                    ip = row[ip_col].strip('"')
-                    port = row[port_col].strip('"')
-                    username = row[user_col].strip('"')
-                    password = row[pass_col].strip('"')
-                    
-                    # Formatear según tenga credenciales o no
-                    if username and password:
-                        proxy = f"{username}:{password}@{ip}:{port}"
-                    else:
-                        proxy = f"{ip}:{port}"
-                    
-                    proxies.append(proxy)
-            
-            print(f"✅ Importados {len(proxies)} proxies desde CSV")
-            return proxies
-            
-        except Exception as e:
-            print(f"❌ Error importando proxies desde CSV: {e}")
-            return []
-    
-    @staticmethod
-    def show_proxy_stats(proxies):
-        """Muestra estadísticas de los proxies"""
-        if not proxies:
-            print("❌ No hay proxies para mostrar estadísticas")
-            return
-        
-        print(f"\n📊 ESTADÍSTICAS DE PROXIES:")
-        print(f"   Total proxies: {len(proxies)}")
-        
-        # Contar tipos de proxies
-        with_auth = sum(1 for p in proxies if '@' in p)
-        without_auth = len(proxies) - with_auth
-        
-        print(f"   Con autenticación: {with_auth}")
-        print(f"   Sin autenticación: {without_auth}")
-        
-        # Mostrar primeros 10 proxies
-        print(f"\n🔍 Primeros 10 proxies:")
-        for i, proxy in enumerate(proxies[:10], 1):
-            print(f"   {i}. {proxy}")
-        
-        if len(proxies) > 10:
-            print(f"   ... y {len(proxies) - 10} más")
 
 class ConfigValidator:
     """Validador de configuración"""
@@ -379,19 +208,20 @@ class ConfigValidator:
         """Valida la configuración"""
         issues = []
         
-        # Validar proxies
-        if not config.get('PROXIES'):
-            issues.append("⚠️  No hay proxies configurados - Alto riesgo de bloqueo")
-        elif len(config['PROXIES']) < 3:
-            issues.append("⚠️  Pocos proxies configurados - Recomendado mínimo 3")
-        
         # Validar delays
         if config.get('MIN_KEYWORD_DELAY', 0) < 3:
-            issues.append("⚠️  Delay mínimo muy bajo - Riesgo de detección")
+            issues.append("⚠️  Delay mínimo muy bajo (mínimo recomendado: 3s)")
         
         # Validar configuración
         if config.get('PAGES_TO_SCRAPE', 1) > 5:
-            issues.append("⚠️  Muchas páginas - Puede ser lento y detectado")
+            issues.append("⚠️  Muchas páginas - Puede ser lento y costoso")
+        
+        # Validar API de Google
+        if config.get('USE_GOOGLE_API', 'false').lower() == 'true':
+            if not config.get('GOOGLE_API_KEY'):
+                issues.append("⚠️  Google API activada pero no hay API Key configurada")
+            if not config.get('GOOGLE_SEARCH_ENGINE_ID'):
+                issues.append("⚠️  Google API activada pero no hay Search Engine ID")
         
         return issues
     
