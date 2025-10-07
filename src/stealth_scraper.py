@@ -22,14 +22,24 @@ class StealthSerpScraper:
         self.config = config
         self.session = requests.Session()
         self.ua = UserAgent()
-        self.proxies = self.load_proxy_list()
+        self.proxies = []
         self.current_proxy_index = 0
         self.results = []
-        
+
+            # Crear directorios necesarios
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        logs_dir = os.path.join(parent_dir, 'logs')
+        data_dir = os.path.join(parent_dir, 'data')
+
+        os.makedirs(logs_dir, exist_ok=True)
+        os.makedirs(data_dir, exist_ok=True)
+
         # Configurar logging
         logging.basicConfig(
             level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s',
+            format='[%(asctime)s] %(levelname)s - %(message)s',
+            datefmt='%H:%M:%S',
             handlers=[
                 logging.FileHandler('../logs/scraper.log'),
                 logging.StreamHandler()

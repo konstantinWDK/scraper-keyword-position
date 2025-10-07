@@ -32,6 +32,10 @@ def print_banner():
     print(banner)
 
 def main():
+    # Crear directorios necesarios si no existen
+    os.makedirs('logs', exist_ok=True)
+    os.makedirs('data', exist_ok=True)
+
     parser = argparse.ArgumentParser(
         description='Scraper de posiciones de keywords con anti-detección',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -79,16 +83,60 @@ Ejemplos de uso:
                        help='Modo de prueba con una keyword')
     parser.add_argument('--config', action='store_true',
                        help='Mostrar configuración actual')
+    parser.add_argument('--test-api', action='store_true',
+                       help='Probar si la configuración de Google API funciona')
     
     args = parser.parse_args()
     
     print_banner()
-    
+
     # Mostrar configuración si se solicita
     if args.config:
         Config.print_config()
         return
-    
+
+    # Probar API si se solicita
+    if getattr(args, 'test_api', False):
+        print(f"{Fore.BLUE}🧪 Probando credenciales de Google API...{Style.RESET_ALL}")
+        try:
+            import requests
+
+            api_key = config.get('GOOGLE_API_KEY', '')
+            search_engine_id = config.get('GOOGLE_SEARCH_ENGINE_ID', '')
+
+            if not api_key:
+                print(f"{Fore.RED}❌ GOOGLE_API_KEY no configurada en .env{Style.RESET_ALL}")
+                return
+
+            if not search_engine_id:
+                print(f"{Fore.RED}❌ GOOGLE_SEARCH_ENGINE_ID no configurado en .env{Style.RESET_ALL}")
+                return
+
+            # Probar una búsqueda simple
+            url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q=test&num=1"
+            response = requests.get(url, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                if 'items' in data and len(data['items']) > 0:
+                    result = data['items'][0]
+                    print(f"{Fore.GREEN}✅ API funcionando correctamente!{Style.RESET_ALL}")
+                    print(f"   Resultado de prueba: '{result['title']}' -> {result['link']}")
+                    print(f"   Cuotas商用 del día: {data.get('searchInformation', {}).get('totalResults', 'N/A')}")
+                else:
+                    print(f"{Fore.YELLOW}⚠️  API responde pero sin resultados para 'test'{Style.RESET_ALL}")
+                    print(f"{Fore.GREEN}✅ Credenciales válidas{Style.RESET_ALL}")
+            elif response.status_code == 403:
+                data = response.json()
+                error_msg = data.get('error', {}).get('message', 'Error de autenticación')
+                print(f"{Fore.RED}❌ Error de API: {error_msg}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.RED}❌ Error HTTP {response.status_code}: {response.text[:100]}{Style.RESET_ALL}")
+
+        except Exception as e:
+            print(f"{Fore.RED}❌ Error probando API: {e}{Style.RESET_ALL}")
+
+        return
 
     # Analizar resultados existentes
     if args.analyze:
