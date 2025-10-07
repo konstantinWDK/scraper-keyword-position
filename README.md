@@ -1,16 +1,18 @@
-# 🔍 Keyword Position Scraper - Anti-detección 2025
+# 🔍 Keyword Position Scraper - Google API Edition
 
-Scraper avanzado de posiciones de keywords con técnicas anti-detección para Google SERP. Alternativa gratuita a ScrapeBox.
+**POSICIONES DE KEYWORDS USANDO SOLAMENTE GOOGLE CUSTOM SEARCH API**
+
+Alternativa ética y legal 100% Google API - Sin Selenium, Sin proxies, Sin riesgos de bloqueo.
 
 ## 🚀 Características
 
-✅ **Anti-detección avanzada** - Undetected Chrome, headers rotativos, comportamiento humano  
-✅ **Soporte de proxies** - Rotación automática de proxies  
-✅ **Google Suggest** - Generación de keywords con múltiples fuentes  
-✅ **Análisis de posiciones** - Tracking completo de rankings  
-✅ **Exportación múltiple** - CSV, JSON, análisis estadístico  
-✅ **Configuración flexible** - Delays, países, idiomas personalizables  
-✅ **Interfaz gráfica** - GUI moderna y fácil de usar
+✅ **100% Google API** - Usa Custom Search API oficial de Google
+✅ **Sin anti-detección** - API oficial = accesos garantizados
+✅ **Sin proxies** - Google maneja las cuotas internacionalmente
+✅ **Credenciales persistentes** - API Key y Search Engine ID guardados
+✅ **API de calidad** - Posiciones reales de resultados de búsqueda
+✅ **Interfaz gráfica moderna** - Configuración guiada paso a paso
+✅ **Cuotas claras** - 100 consultas gratis/día, costos predecibles
 
 ## 📦 Instalación Rápida
 

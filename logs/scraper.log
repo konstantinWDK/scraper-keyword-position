@@ -1192,3 +1192,584 @@ Stacktrace:
 #21 0x7fe2b9329c6c <unknown>
 
 2025-10-07 23:41:40,708 - INFO - Waiting 11.8s before next keyword...
+[00:29:02] INFO - Starting batch position check for 59 keywords
+[00:29:02] INFO - Processing keyword 1/59: 'marketing digital'
+[00:29:03] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:29:03] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x61a22da115ba <unknown>
+#1 0x61a22d490566 <unknown>
+#2 0x61a22d4bd90c <unknown>
+#3 0x61a22d4bf065 <unknown>
+#4 0x61a22d4b9dc8 <unknown>
+#5 0x61a22d514f78 <unknown>
+#6 0x61a22d514880 <unknown>
+#7 0x61a22d5164b2 <unknown>
+#8 0x61a22d516286 <unknown>
+#9 0x61a22d508403 <unknown>
+#10 0x61a22d4d4b02 <unknown>
+#11 0x61a22d4d57c1 <unknown>
+#12 0x61a22d9d5388 <unknown>
+#13 0x61a22d9d91ef <unknown>
+#14 0x61a22d9bc819 <unknown>
+#15 0x61a22d9d9d95 <unknown>
+#16 0x61a22d9a207f <unknown>
+#17 0x61a22d9fe3f8 <unknown>
+#18 0x61a22d9fe5d3 <unknown>
+#19 0x61a22da10553 <unknown>
+#20 0x79d80ba9caa4 <unknown>
+#21 0x79d80bb29c6c <unknown>
+
+[00:29:03] INFO - Waiting 7.2s before next keyword...
+[00:29:11] INFO - Processing keyword 2/59: 'seo'
+[00:29:12] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:29:12] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x5ecf9cba75ba <unknown>
+#1 0x5ecf9c626566 <unknown>
+#2 0x5ecf9c65390c <unknown>
+#3 0x5ecf9c655065 <unknown>
+#4 0x5ecf9c64fdc8 <unknown>
+#5 0x5ecf9c6aaf78 <unknown>
+#6 0x5ecf9c6aa880 <unknown>
+#7 0x5ecf9c6ac4b2 <unknown>
+#8 0x5ecf9c6ac286 <unknown>
+#9 0x5ecf9c69e403 <unknown>
+#10 0x5ecf9c66ab02 <unknown>
+#11 0x5ecf9c66b7c1 <unknown>
+#12 0x5ecf9cb6b388 <unknown>
+#13 0x5ecf9cb6f1ef <unknown>
+#14 0x5ecf9cb52819 <unknown>
+#15 0x5ecf9cb6fd95 <unknown>
+#16 0x5ecf9cb3807f <unknown>
+#17 0x5ecf9cb943f8 <unknown>
+#18 0x5ecf9cb945d3 <unknown>
+#19 0x5ecf9cba6553 <unknown>
+#20 0x7bb829c9caa4 <unknown>
+#21 0x7bb829d29c6c <unknown>
+
+[00:29:12] INFO - Waiting 10.9s before next keyword...
+[00:29:23] INFO - Processing keyword 3/59: 'sem'
+[00:29:24] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:29:25] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x635c32b785ba <unknown>
+#1 0x635c325f7566 <unknown>
+#2 0x635c3262490c <unknown>
+#3 0x635c32626065 <unknown>
+#4 0x635c32620dc8 <unknown>
+#5 0x635c3267bf78 <unknown>
+#6 0x635c3267b880 <unknown>
+#7 0x635c3267d4b2 <unknown>
+#8 0x635c3267d286 <unknown>
+#9 0x635c3266f403 <unknown>
+#10 0x635c3263bb02 <unknown>
+#11 0x635c3263c7c1 <unknown>
+#12 0x635c32b3c388 <unknown>
+#13 0x635c32b401ef <unknown>
+#14 0x635c32b23819 <unknown>
+#15 0x635c32b40d95 <unknown>
+#16 0x635c32b0907f <unknown>
+#17 0x635c32b653f8 <unknown>
+#18 0x635c32b655d3 <unknown>
+#19 0x635c32b77553 <unknown>
+#20 0x762304e9caa4 <unknown>
+#21 0x762304f29c6c <unknown>
+
+[00:29:25] INFO - Waiting 14.5s before next keyword...
+[00:29:39] INFO - Processing keyword 4/59: 'publicidad online'
+[00:29:40] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:29:41] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x593a61da65ba <unknown>
+#1 0x593a61825566 <unknown>
+#2 0x593a6185290c <unknown>
+#3 0x593a61854065 <unknown>
+#4 0x593a6184edc8 <unknown>
+#5 0x593a618a9f78 <unknown>
+#6 0x593a618a9880 <unknown>
+#7 0x593a618ab4b2 <unknown>
+#8 0x593a618ab286 <unknown>
+#9 0x593a6189d403 <unknown>
+#10 0x593a61869b02 <unknown>
+#11 0x593a6186a7c1 <unknown>
+#12 0x593a61d6a388 <unknown>
+#13 0x593a61d6e1ef <unknown>
+#14 0x593a61d51819 <unknown>
+#15 0x593a61d6ed95 <unknown>
+#16 0x593a61d3707f <unknown>
+#17 0x593a61d933f8 <unknown>
+#18 0x593a61d935d3 <unknown>
+#19 0x593a61da5553 <unknown>
+#20 0x7f8727a9caa4 <unknown>
+#21 0x7f8727b29c6c <unknown>
+
+[00:29:41] INFO - Waiting 13.8s before next keyword...
+[00:29:55] INFO - Processing keyword 5/59: 'redes sociales'
+[00:29:55] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:29:56] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x5a134b1905ba <unknown>
+#1 0x5a134ac0f566 <unknown>
+#2 0x5a134ac3c90c <unknown>
+#3 0x5a134ac3e065 <unknown>
+#4 0x5a134ac38dc8 <unknown>
+#5 0x5a134ac93f78 <unknown>
+#6 0x5a134ac93880 <unknown>
+#7 0x5a134ac954b2 <unknown>
+#8 0x5a134ac95286 <unknown>
+#9 0x5a134ac87403 <unknown>
+#10 0x5a134ac53b02 <unknown>
+#11 0x5a134ac547c1 <unknown>
+#12 0x5a134b154388 <unknown>
+#13 0x5a134b1581ef <unknown>
+#14 0x5a134b13b819 <unknown>
+#15 0x5a134b158d95 <unknown>
+#16 0x5a134b12107f <unknown>
+#17 0x5a134b17d3f8 <unknown>
+#18 0x5a134b17d5d3 <unknown>
+#19 0x5a134b18f553 <unknown>
+#20 0x777711c9caa4 <unknown>
+#21 0x777711d29c6c <unknown>
+
+[00:29:56] INFO - Waiting 8.4s before next keyword...
+[00:30:04] INFO - Processing keyword 6/59: 'email marketing'
+[00:30:06] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:30:06] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x631cd49b35ba <unknown>
+#1 0x631cd4432566 <unknown>
+#2 0x631cd445f90c <unknown>
+#3 0x631cd4461065 <unknown>
+#4 0x631cd445bdc8 <unknown>
+#5 0x631cd44b6f78 <unknown>
+#6 0x631cd44b6880 <unknown>
+#7 0x631cd44b84b2 <unknown>
+#8 0x631cd44b8286 <unknown>
+#9 0x631cd44aa403 <unknown>
+#10 0x631cd4476b02 <unknown>
+#11 0x631cd44777c1 <unknown>
+#12 0x631cd4977388 <unknown>
+#13 0x631cd497b1ef <unknown>
+#14 0x631cd495e819 <unknown>
+#15 0x631cd497bd95 <unknown>
+#16 0x631cd494407f <unknown>
+#17 0x631cd49a03f8 <unknown>
+#18 0x631cd49a05d3 <unknown>
+#19 0x631cd49b2553 <unknown>
+#20 0x72349da9caa4 <unknown>
+#21 0x72349db29c6c <unknown>
+
+[00:30:06] INFO - Waiting 12.6s before next keyword...
+[00:30:19] INFO - Processing keyword 7/59: 'analytics'
+[00:30:20] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:30:21] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x5cb7064e45ba <unknown>
+#1 0x5cb705f63566 <unknown>
+#2 0x5cb705f9090c <unknown>
+#3 0x5cb705f92065 <unknown>
+#4 0x5cb705f8cdc8 <unknown>
+#5 0x5cb705fe7f78 <unknown>
+#6 0x5cb705fe7880 <unknown>
+#7 0x5cb705fe94b2 <unknown>
+#8 0x5cb705fe9286 <unknown>
+#9 0x5cb705fdb403 <unknown>
+#10 0x5cb705fa7b02 <unknown>
+#11 0x5cb705fa87c1 <unknown>
+#12 0x5cb7064a8388 <unknown>
+#13 0x5cb7064ac1ef <unknown>
+#14 0x5cb70648f819 <unknown>
+#15 0x5cb7064acd95 <unknown>
+#16 0x5cb70647507f <unknown>
+#17 0x5cb7064d13f8 <unknown>
+#18 0x5cb7064d15d3 <unknown>
+#19 0x5cb7064e3553 <unknown>
+#20 0x738f0749caa4 <unknown>
+#21 0x738f07529c6c <unknown>
+
+[00:30:21] INFO - Waiting 13.5s before next keyword...
+[00:30:34] INFO - Processing keyword 8/59: 'conversion optimization'
+[00:30:35] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:30:36] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x5a639df105ba <unknown>
+#1 0x5a639d98f566 <unknown>
+#2 0x5a639d9bc90c <unknown>
+#3 0x5a639d9be065 <unknown>
+#4 0x5a639d9b8dc8 <unknown>
+#5 0x5a639da13f78 <unknown>
+#6 0x5a639da13880 <unknown>
+#7 0x5a639da154b2 <unknown>
+#8 0x5a639da15286 <unknown>
+#9 0x5a639da07403 <unknown>
+#10 0x5a639d9d3b02 <unknown>
+#11 0x5a639d9d47c1 <unknown>
+#12 0x5a639ded4388 <unknown>
+#13 0x5a639ded81ef <unknown>
+#14 0x5a639debb819 <unknown>
+#15 0x5a639ded8d95 <unknown>
+#16 0x5a639dea107f <unknown>
+#17 0x5a639defd3f8 <unknown>
+#18 0x5a639defd5d3 <unknown>
+#19 0x5a639df0f553 <unknown>
+#20 0x7bcb44a9caa4 <unknown>
+#21 0x7bcb44b29c6c <unknown>
+
+[00:30:36] INFO - Waiting 12.9s before next keyword...
+[00:30:48] INFO - Processing keyword 9/59: 'ppc'
+[00:30:50] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:30:50] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x57025b15f5ba <unknown>
+#1 0x57025abde566 <unknown>
+#2 0x57025ac0b90c <unknown>
+#3 0x57025ac0d065 <unknown>
+#4 0x57025ac07dc8 <unknown>
+#5 0x57025ac62f78 <unknown>
+#6 0x57025ac62880 <unknown>
+#7 0x57025ac644b2 <unknown>
+#8 0x57025ac64286 <unknown>
+#9 0x57025ac56403 <unknown>
+#10 0x57025ac22b02 <unknown>
+#11 0x57025ac237c1 <unknown>
+#12 0x57025b123388 <unknown>
+#13 0x57025b1271ef <unknown>
+#14 0x57025b10a819 <unknown>
+#15 0x57025b127d95 <unknown>
+#16 0x57025b0f007f <unknown>
+#17 0x57025b14c3f8 <unknown>
+#18 0x57025b14c5d3 <unknown>
+#19 0x57025b15e553 <unknown>
+#20 0x7cd68149caa4 <unknown>
+#21 0x7cd681529c6c <unknown>
+
+[00:30:50] INFO - Waiting 10.5s before next keyword...
+[00:31:01] INFO - Processing keyword 10/59: 'google ads'
+[00:31:02] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:31:02] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x5ed92b3425ba <unknown>
+#1 0x5ed92adc1566 <unknown>
+#2 0x5ed92adee90c <unknown>
+#3 0x5ed92adf0065 <unknown>
+#4 0x5ed92adeadc8 <unknown>
+#5 0x5ed92ae45f78 <unknown>
+#6 0x5ed92ae45880 <unknown>
+#7 0x5ed92ae474b2 <unknown>
+#8 0x5ed92ae47286 <unknown>
+#9 0x5ed92ae39403 <unknown>
+#10 0x5ed92ae05b02 <unknown>
+#11 0x5ed92ae067c1 <unknown>
+#12 0x5ed92b306388 <unknown>
+#13 0x5ed92b30a1ef <unknown>
+#14 0x5ed92b2ed819 <unknown>
+#15 0x5ed92b30ad95 <unknown>
+#16 0x5ed92b2d307f <unknown>
+#17 0x5ed92b32f3f8 <unknown>
+#18 0x5ed92b32f5d3 <unknown>
+#19 0x5ed92b341553 <unknown>
+#20 0x7d9405a9caa4 <unknown>
+#21 0x7d9405b29c6c <unknown>
+
+[00:31:02] INFO - Waiting 14.6s before next keyword...
+[00:31:17] INFO - Processing keyword 11/59: 'facebook ads'
+[00:31:18] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:31:18] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x61f4491cc5ba <unknown>
+#1 0x61f448c4b566 <unknown>
+#2 0x61f448c7890c <unknown>
+#3 0x61f448c7a065 <unknown>
+#4 0x61f448c74dc8 <unknown>
+#5 0x61f448ccff78 <unknown>
+#6 0x61f448ccf880 <unknown>
+#7 0x61f448cd14b2 <unknown>
+#8 0x61f448cd1286 <unknown>
+#9 0x61f448cc3403 <unknown>
+#10 0x61f448c8fb02 <unknown>
+#11 0x61f448c907c1 <unknown>
+#12 0x61f449190388 <unknown>
+#13 0x61f4491941ef <unknown>
+#14 0x61f449177819 <unknown>
+#15 0x61f449194d95 <unknown>
+#16 0x61f44915d07f <unknown>
+#17 0x61f4491b93f8 <unknown>
+#18 0x61f4491b95d3 <unknown>
+#19 0x61f4491cb553 <unknown>
+#20 0x76141d89caa4 <unknown>
+#21 0x76141d929c6c <unknown>
+
+[00:31:18] INFO - Waiting 9.7s before next keyword...
+[00:31:28] INFO - Processing keyword 12/59: 'marketing automation'
+[00:31:29] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:31:30] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x5f7de45c45ba <unknown>
+#1 0x5f7de4043566 <unknown>
+#2 0x5f7de407090c <unknown>
+#3 0x5f7de4072065 <unknown>
+#4 0x5f7de406cdc8 <unknown>
+#5 0x5f7de40c7f78 <unknown>
+#6 0x5f7de40c7880 <unknown>
+#7 0x5f7de40c94b2 <unknown>
+#8 0x5f7de40c9286 <unknown>
+#9 0x5f7de40bb403 <unknown>
+#10 0x5f7de4087b02 <unknown>
+#11 0x5f7de40887c1 <unknown>
+#12 0x5f7de4588388 <unknown>
+#13 0x5f7de458c1ef <unknown>
+#14 0x5f7de456f819 <unknown>
+#15 0x5f7de458cd95 <unknown>
+#16 0x5f7de455507f <unknown>
+#17 0x5f7de45b13f8 <unknown>
+#18 0x5f7de45b15d3 <unknown>
+#19 0x5f7de45c3553 <unknown>
+#20 0x714ab769caa4 <unknown>
+#21 0x714ab7729c6c <unknown>
+
+[00:31:30] INFO - Waiting 12.8s before next keyword...
+[00:31:43] INFO - Processing keyword 13/59: 'inbound marketing'
+[00:31:43] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:31:44] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x5f31dcd6e5ba <unknown>
+#1 0x5f31dc7ed566 <unknown>
+#2 0x5f31dc81a90c <unknown>
+#3 0x5f31dc81c065 <unknown>
+#4 0x5f31dc816dc8 <unknown>
+#5 0x5f31dc871f78 <unknown>
+#6 0x5f31dc871880 <unknown>
+#7 0x5f31dc8734b2 <unknown>
+#8 0x5f31dc873286 <unknown>
+#9 0x5f31dc865403 <unknown>
+#10 0x5f31dc831b02 <unknown>
+#11 0x5f31dc8327c1 <unknown>
+#12 0x5f31dcd32388 <unknown>
+#13 0x5f31dcd361ef <unknown>
+#14 0x5f31dcd19819 <unknown>
+#15 0x5f31dcd36d95 <unknown>
+#16 0x5f31dccff07f <unknown>
+#17 0x5f31dcd5b3f8 <unknown>
+#18 0x5f31dcd5b5d3 <unknown>
+#19 0x5f31dcd6d553 <unknown>
+#20 0x70fd0f89caa4 <unknown>
+#21 0x70fd0f929c6c <unknown>
+
+[00:31:44] INFO - Waiting 7.0s before next keyword...
+[00:31:51] INFO - Processing keyword 14/59: 'marketing de contenidos'
+[00:31:52] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:31:52] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x6257292a15ba <unknown>
+#1 0x625728d20566 <unknown>
+#2 0x625728d4d90c <unknown>
+#3 0x625728d4f065 <unknown>
+#4 0x625728d49dc8 <unknown>
+#5 0x625728da4f78 <unknown>
+#6 0x625728da4880 <unknown>
+#7 0x625728da64b2 <unknown>
+#8 0x625728da6286 <unknown>
+#9 0x625728d98403 <unknown>
+#10 0x625728d64b02 <unknown>
+#11 0x625728d657c1 <unknown>
+#12 0x625729265388 <unknown>
+#13 0x6257292691ef <unknown>
+#14 0x62572924c819 <unknown>
+#15 0x625729269d95 <unknown>
+#16 0x62572923207f <unknown>
+#17 0x62572928e3f8 <unknown>
+#18 0x62572928e5d3 <unknown>
+#19 0x6257292a0553 <unknown>
+#20 0x7fec3209caa4 <unknown>
+#21 0x7fec32129c6c <unknown>
+
+[00:31:52] INFO - Waiting 10.9s before next keyword...
+[00:32:03] INFO - Processing keyword 15/59: 'posicionamiento web'
+[00:32:09] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:32:10] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x5f7aece295ba <unknown>
+#1 0x5f7aec8a8566 <unknown>
+#2 0x5f7aec8d590c <unknown>
+#3 0x5f7aec8d7065 <unknown>
+#4 0x5f7aec8d1dc8 <unknown>
+#5 0x5f7aec92cf78 <unknown>
+#6 0x5f7aec92c880 <unknown>
+#7 0x5f7aec92e4b2 <unknown>
+#8 0x5f7aec92e286 <unknown>
+#9 0x5f7aec920403 <unknown>
+#10 0x5f7aec8ecb02 <unknown>
+#11 0x5f7aec8ed7c1 <unknown>
+#12 0x5f7aecded388 <unknown>
+#13 0x5f7aecdf11ef <unknown>
+#14 0x5f7aecdd4819 <unknown>
+#15 0x5f7aecdf1d95 <unknown>
+#16 0x5f7aecdba07f <unknown>
+#17 0x5f7aece163f8 <unknown>
+#18 0x5f7aece165d3 <unknown>
+#19 0x5f7aece28553 <unknown>
+#20 0x753105c9caa4 <unknown>
+#21 0x753105d29c6c <unknown>
+
+[00:32:10] INFO - Waiting 11.6s before next keyword...
+[00:32:22] INFO - Processing keyword 16/59: 'consultoria seo'
+[00:32:23] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:32:24] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x603762b785ba <unknown>
+#1 0x6037625f7566 <unknown>
+#2 0x60376262490c <unknown>
+#3 0x603762626065 <unknown>
+#4 0x603762620dc8 <unknown>
+#5 0x60376267bf78 <unknown>
+#6 0x60376267b880 <unknown>
+#7 0x60376267d4b2 <unknown>
+#8 0x60376267d286 <unknown>
+#9 0x60376266f403 <unknown>
+#10 0x60376263bb02 <unknown>
+#11 0x60376263c7c1 <unknown>
+#12 0x603762b3c388 <unknown>
+#13 0x603762b401ef <unknown>
+#14 0x603762b23819 <unknown>
+#15 0x603762b40d95 <unknown>
+#16 0x603762b0907f <unknown>
+#17 0x603762b653f8 <unknown>
+#18 0x603762b655d3 <unknown>
+#19 0x603762b77553 <unknown>
+#20 0x705d6d49caa4 <unknown>
+#21 0x705d6d529c6c <unknown>
+
+[00:32:24] INFO - Waiting 13.8s before next keyword...
+[00:32:38] INFO - Processing keyword 17/59: 'agencia digital'
+[00:32:39] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:32:40] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x5cc24df3a5ba <unknown>
+#1 0x5cc24d9b9566 <unknown>
+#2 0x5cc24d9e690c <unknown>
+#3 0x5cc24d9e8065 <unknown>
+#4 0x5cc24d9e2dc8 <unknown>
+#5 0x5cc24da3df78 <unknown>
+#6 0x5cc24da3d880 <unknown>
+#7 0x5cc24da3f4b2 <unknown>
+#8 0x5cc24da3f286 <unknown>
+#9 0x5cc24da31403 <unknown>
+#10 0x5cc24d9fdb02 <unknown>
+#11 0x5cc24d9fe7c1 <unknown>
+#12 0x5cc24defe388 <unknown>
+#13 0x5cc24df021ef <unknown>
+#14 0x5cc24dee5819 <unknown>
+#15 0x5cc24df02d95 <unknown>
+#16 0x5cc24decb07f <unknown>
+#17 0x5cc24df273f8 <unknown>
+#18 0x5cc24df275d3 <unknown>
+#19 0x5cc24df39553 <unknown>
+#20 0x76249629caa4 <unknown>
+#21 0x762496329c6c <unknown>
+
+[00:32:40] INFO - Waiting 13.1s before next keyword...
+[00:32:53] INFO - Processing keyword 18/59: 'optimizacion web'
+[00:32:54] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:32:54] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x60f4ed2a35ba <unknown>
+#1 0x60f4ecd22566 <unknown>
+#2 0x60f4ecd4f90c <unknown>
+#3 0x60f4ecd51065 <unknown>
+#4 0x60f4ecd4bdc8 <unknown>
+#5 0x60f4ecda6f78 <unknown>
+#6 0x60f4ecda6880 <unknown>
+#7 0x60f4ecda84b2 <unknown>
+#8 0x60f4ecda8286 <unknown>
+#9 0x60f4ecd9a403 <unknown>
+#10 0x60f4ecd66b02 <unknown>
+#11 0x60f4ecd677c1 <unknown>
+#12 0x60f4ed267388 <unknown>
+#13 0x60f4ed26b1ef <unknown>
+#14 0x60f4ed24e819 <unknown>
+#15 0x60f4ed26bd95 <unknown>
+#16 0x60f4ed23407f <unknown>
+#17 0x60f4ed2903f8 <unknown>
+#18 0x60f4ed2905d3 <unknown>
+#19 0x60f4ed2a2553 <unknown>
+#20 0x72b6d209caa4 <unknown>
+#21 0x72b6d2129c6c <unknown>
+
+[00:32:54] INFO - Waiting 5.4s before next keyword...
+[00:33:00] INFO - Processing keyword 19/59: 'estrategia digital'
+[00:33:00] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:33:01] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x58dd03e9c5ba <unknown>
+#1 0x58dd0391b566 <unknown>
+#2 0x58dd0394890c <unknown>
+#3 0x58dd0394a065 <unknown>
+#4 0x58dd03944dc8 <unknown>
+#5 0x58dd0399ff78 <unknown>
+#6 0x58dd0399f880 <unknown>
+#7 0x58dd039a14b2 <unknown>
+#8 0x58dd039a1286 <unknown>
+#9 0x58dd03993403 <unknown>
+#10 0x58dd0395fb02 <unknown>
+#11 0x58dd039607c1 <unknown>
+#12 0x58dd03e60388 <unknown>
+#13 0x58dd03e641ef <unknown>
+#14 0x58dd03e47819 <unknown>
+#15 0x58dd03e64d95 <unknown>
+#16 0x58dd03e2d07f <unknown>
+#17 0x58dd03e893f8 <unknown>
+#18 0x58dd03e895d3 <unknown>
+#19 0x58dd03e9b553 <unknown>
+#20 0x79afa6e9caa4 <unknown>
+#21 0x79afa6f29c6c <unknown>
+
+[00:33:01] INFO - Waiting 6.5s before next keyword...
+[00:33:08] INFO - Processing keyword 20/59: 'brand awareness'
+[00:33:09] INFO - patching driver executable /home/wdk/.local/share/undetected_chromedriver/undetected_chromedriver
+[00:33:09] ERROR - Error setting up driver: Message: invalid argument: cannot parse capability: goog:chromeOptions
+from invalid argument: unrecognized chrome option: excludeSwitches
+Stacktrace:
+#0 0x5dcd7f7595ba <unknown>
+#1 0x5dcd7f1d8566 <unknown>
+#2 0x5dcd7f20590c <unknown>
+#3 0x5dcd7f207065 <unknown>
+#4 0x5dcd7f201dc8 <unknown>
+#5 0x5dcd7f25cf78 <unknown>
+#6 0x5dcd7f25c880 <unknown>
+#7 0x5dcd7f25e4b2 <unknown>
+#8 0x5dcd7f25e286 <unknown>
+#9 0x5dcd7f250403 <unknown>
+#10 0x5dcd7f21cb02 <unknown>
+#11 0x5dcd7f21d7c1 <unknown>
+#12 0x5dcd7f71d388 <unknown>
+#13 0x5dcd7f7211ef <unknown>
+#14 0x5dcd7f704819 <unknown>
+#15 0x5dcd7f721d95 <unknown>
+#16 0x5dcd7f6ea07f <unknown>
+#17 0x5dcd7f7463f8 <unknown>
+#18 0x5dcd7f7465d3 <unknown>
+#19 0x5dcd7f758553 <unknown>
+#20 0x72ae5ce9caa4 <unknown>
+#21 0x72ae5cf29c6c <unknown>
+
+[00:33:09] INFO - Waiting 8.6s before next keyword...
