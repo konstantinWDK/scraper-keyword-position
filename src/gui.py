@@ -124,38 +124,9 @@ class KeywordScraperGUI:
                                        variable=self.language_var, width=100)
         language_combo.pack(side="left")
         
-        # Columna derecha - Delays, API Google y proxies
+        # Columna derecha - Delays
         right_frame = ctk.CTkFrame(config_frame)
         right_frame.pack(side="right", fill="both", expand=True, padx=(5, 0))
-
-        # API Google
-        google_frame = ctk.CTkFrame(right_frame)
-        google_frame.pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(google_frame, text="Google API (Opcional):", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
-
-        # API Key
-        api_key_frame = ctk.CTkFrame(google_frame)
-        api_key_frame.pack(fill="x", pady=2)
-        ctk.CTkLabel(api_key_frame, text="API Key:").pack(side="left")
-        self.api_key_var = ctk.StringVar()
-        api_key_entry = ctk.CTkEntry(api_key_frame, textvariable=self.api_key_var, show="*", width=200)
-        api_key_entry.pack(side="right")
-
-        # Search Engine ID
-        se_id_frame = ctk.CTkFrame(google_frame)
-        se_id_frame.pack(fill="x", pady=2)
-        ctk.CTkLabel(se_id_frame, text="Search Engine ID:").pack(side="left")
-        self.search_engine_id_var = ctk.StringVar()
-        se_id_entry = ctk.CTkEntry(se_id_frame, textvariable=self.search_engine_id_var, width=200)
-        se_id_entry.pack(side="right")
-
-        # Modo de operación
-        mode_frame = ctk.CTkFrame(google_frame)
-        mode_frame.pack(fill="x", pady=5)
-        self.use_api_var = ctk.BooleanVar(value=False)
-        api_checkbox = ctk.CTkCheckBox(mode_frame, text="Usar Google API (sin proxies)",
-                                      variable=self.use_api_var, command=self.toggle_scraping_mode)
-        api_checkbox.pack()
 
         # Delays
         delays_frame = ctk.CTkFrame(right_frame)
@@ -177,25 +148,16 @@ class KeywordScraperGUI:
         self.max_delay_var = ctk.StringVar(value="15")
         max_delay_entry = ctk.CTkEntry(max_delay_frame, textvariable=self.max_delay_var, width=60)
         max_delay_entry.pack(side="right")
-        
-        # Configuración del Scraping
-        scraping_frame = ctk.CTkFrame(right_frame)
-        scraping_frame.pack(fill="both", expand=True, padx=10, pady=5)
-        ctk.CTkLabel(scraping_frame, text="Modo de Scraping:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
 
         # Información sobre Google API
-        info_frame = ctk.CTkFrame(scraping_frame)
-        info_frame.pack(fill="x", pady=5)
-        info_text = """🌐 Modo Google API activado automáticamente
-• Sin límites de IP
-• Requiere configurar API Key y Search Engine ID
-• Configura las credenciales arriba"""
-        ctk.CTkLabel(info_frame, text=info_text).pack(padx=10, pady=10)
-
-        # Botón para validar credenciales
-        validate_button = ctk.CTkButton(scraping_frame, text="✅ Validar Credenciales API",
-                                      command=self.validate_google_api, fg_color="green")
-        validate_button.pack(fill="x", pady=5)
+        info_frame = ctk.CTkFrame(right_frame)
+        info_frame.pack(fill="x", padx=10, pady=10)
+        ctk.CTkLabel(info_frame, text="ℹ️ Información del sistema:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+        info_text = """• Este scraper funciona únicamente con Google API
+• Configura las credenciales en la pestaña "🔐 Google API"
+• Sin necesidad de proxies ni límites de IP""
+"""
+        ctk.CTkLabel(info_frame, text=info_text, wraplength=300, justify="left").pack(pady=(5, 0))
         
         # Botones de acción
         button_frame = ctk.CTkFrame(main_frame)
