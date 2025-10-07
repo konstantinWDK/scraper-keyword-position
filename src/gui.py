@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 """
-Interfaz Gráfica para Keyword Position Scraper
-GUI moderna y profesional usando CustomTkinter
+💎 Interfaz Ultra Moderna para Keyword Position Scraper 2025
+🚀 GUI premium usando CustomTkinter con diseño avanzado
+
+Características mejoradas:
+• 🎨 Diseño uniforme con colores oscuros profesionales
+• 📊 Tablas de resultados con altura máxima y mejor UX
+• 🔍 Funciones avanzadas de manipulación de keywords
+• 🏆 Interface visualización similar a Neil Patel
+• ⚡ Más opciones y controles interactivos
+• 📈 Información relevante siempre visible
 """
 
 import tkinter as tk
@@ -18,17 +26,34 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import seaborn as sns
 from PIL import Image
+import re
+from collections import Counter
 
 # Añadir directorio padre al path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.settings import Config, config
 from stealth_scraper import StealthSerpScraper
-from utils import KeywordManager, ResultsAnalyzer
 
-# Configurar tema de CustomTkinter
-ctk.set_appearance_mode("Dark")  # Modos: "Dark", "Light", "System"
-ctk.set_default_color_theme("blue")  # Temas: "blue", "green", "dark-blue"
+# Configurar tema ultra moderno
+ctk.set_appearance_mode("Dark")
+ctk.set_default_color_theme("dark-blue")
+
+# 🎨 Paleta de colores profesionales oscuros
+COLORS = {
+    'primary': '#1e1e2e',      # Negro azulado profundo
+    'secondary': '#2a2a3c',    # Gris oscuro
+    'accent': '#7c3aed',       # Púrpura moderno
+    'success': '#10b981',      # Verde esmeralda
+    'warning': '#f59e0b',      # Ámbar
+    'error': '#ef4444',        # Rojo coral
+    'info': '#3b82f6',         # Azul cielo
+    'surface': '#313244',      # Gris medio
+    'text_primary': '#ffffff',
+    'text_secondary': '#a1a1aa',
+    'text_muted': '#71717a',
+    'border': '#404040'
+}
 
 class KeywordScraperGUI:
     def __init__(self):
@@ -42,6 +67,8 @@ class KeywordScraperGUI:
         self.is_running = False
         self.current_results = []
         self.keywords_list = []
+        self.processed_keywords = []  # Keywords procesadas que pueden usarse para scraping
+        self.keyword_analysis_data = {}  # Datos de análisis de keywords
 
         # Variables de configuración
         self.api_key_var = ctk.StringVar()
@@ -67,9 +94,14 @@ class KeywordScraperGUI:
         self.config_info_label = None
         self.keywords_count_label = None
         self.keywords_text = None
-        self.suggest_entry = None
+        self.main_keywords_text = None  # Área principal de keywords para scraping
 
-        # Variables de keywords relacionadas
+        # Variables para la suite integrada de keywords
+        self.analysis_results_text = None
+        self.competitiveness_data = []
+        self.variants_data = []
+
+        # Variables de keywords relacionadas (integradas)
         self.related_keyword_entry = None
         self.related_text = None
         self.related_count_label = None
@@ -124,107 +156,644 @@ class KeywordScraperGUI:
         # Crear pestañas
         self.tab_google_api = self.tabview.add("🔐 Google API")
         self.tab_config = self.tabview.add("⚙️ Configuración")
-        self.tab_keywords = self.tabview.add("🔑 Keywords")
-        self.tab_related = self.tabview.add("🔍 Keywords Relacionadas")
+        self.tab_keywords = self.tabview.add("🔑 KEYWORDS PRO SUITE")
         self.tab_scraping = self.tabview.add("🚀 Scraping")
         self.tab_results = self.tabview.add("📊 Resultados")
+        self.tab_reports = self.tabview.add("📋 Informes")
         self.tab_analysis = self.tabview.add("📈 Análisis")
 
         # Configurar cada pestaña
         self.setup_google_api_tab()
         self.setup_config_tab()
         self.setup_keywords_tab()
-        self.setup_related_tab()
         self.setup_scraping_tab()
         self.setup_results_tab()
+        self.setup_reports_tab()
         self.setup_analysis_tab()
 
-    def setup_related_tab(self):
-        """Configura la pestaña de keywords relacionadas"""
-        main_frame = ctk.CTkFrame(self.tab_related)
+    def setup_reports_tab(self):
+        """Configura la nueva pestaña de informes históricos"""
+        main_frame = ctk.CTkFrame(self.tab_reports)
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Título
-        title_label = ctk.CTkLabel(main_frame, text="🔍 Keywords Relacionadas",
-                                  font=ctk.CTkFont(size=20, weight="bold"))
-        title_label.pack(pady=(10, 20))
+        # Header
+        header_frame = ctk.CTkFrame(main_frame, fg_color=COLORS['surface'])
+        header_frame.pack(fill="x", pady=(10, 20))
 
-        # Descripción
-        description_text = """
-        Obtén sugerencias de keywords relacionadas directamente desde Google Suggest.
-        Ingresa una keyword y descubre las búsquedas relacionadas que hacen los usuarios.
-        """
-        ctk.CTkLabel(main_frame, text=description_text, wraplength=500,
-                    justify="left").pack(pady=(0, 20))
+        title_label = ctk.CTkLabel(header_frame, text="📋 GESTIÓN DE INFORMES E HISTORIAL",
+                                  font=ctk.CTkFont(size=24, weight="bold"))
+        title_label.pack(pady=(20, 5))
 
-        # Frame de entrada
-        input_frame = ctk.CTkFrame(main_frame)
-        input_frame.pack(fill="x", padx=10, pady=5)
+        subtitle_label = ctk.CTkLabel(header_frame, text="Accede y administra todos tus informes de scraping generados",
+                                     font=ctk.CTkFont(size=12))
+        subtitle_label.pack(pady=(0, 20))
 
-        ctk.CTkLabel(input_frame, text="🏷️ Keyword principal:",
-                    font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(10,5))
+        # Panel de estadísticas rápidas
+        stats_frame = ctk.CTkFrame(main_frame)
+        stats_frame.pack(fill="x", padx=10, pady=(0, 20))
 
-        # Campo de entrada de keyword
-        input_container = ctk.CTkFrame(input_frame)
-        input_container.pack(fill="x", pady=5)
+        stats_title = ctk.CTkLabel(stats_frame, text="📊 RESUMEN GENERAL",
+                                  font=ctk.CTkFont(size=14, weight="bold"))
+        stats_title.pack(anchor="w", pady=(10, 15))
 
-        self.related_keyword_entry = ctk.CTkEntry(input_container,
-                                                 placeholder_text="Ingresa una keyword principal...")
-        self.related_keyword_entry.pack(side="left", padx=(0, 10), fill="x", expand=True)
+        # Contadores de archivos
+        try:
+            data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
 
-        generate_button = ctk.CTkButton(input_container, text="🚀 Obtener Relacionadas",
-                                       command=self.find_related_keywords,
-                                       fg_color="blue", width=150)
-        generate_button.pack(side="right")
+            csv_count = 0
+            json_count = 0
+            total_size_mb = 0.0
 
-        # Frame de resultados
-        results_frame = ctk.CTkFrame(main_frame)
-        results_frame.pack(fill="both", expand=True, padx=10, pady=5)
+            if os.path.exists(data_dir):
+                for filename in os.listdir(data_dir):
+                    filepath = os.path.join(data_dir, filename)
+                    if os.path.isfile(filepath):
+                        file_stats = os.stat(filepath)
+                        total_size_mb += file_stats.st_size / (1024 * 1024)
 
-        # Título de resultados
-        results_title_frame = ctk.CTkFrame(results_frame)
-        results_title_frame.pack(fill="x", pady=(10, 5))
+                        if filename.endswith('.csv'):
+                            csv_count += 1
+                        elif filename.endswith('.json'):
+                            json_count += 1
 
-        ctk.CTkLabel(results_title_frame, text="📋 Keywords Relacionadas:",
-                    font=ctk.CTkFont(size=14, weight="bold")).pack(side="left")
+            # Mostrar estadísticas
+            stats_grid = ctk.CTkFrame(stats_frame)
+            stats_grid.pack(pady=(0, 15))
 
-        # Contador de sugerencias
-        self.related_count_label = ctk.CTkLabel(results_title_frame, text="(0 sugerencias)")
-        self.related_count_label.pack(side="right")
+            # CSV files
+            csv_frame = ctk.CTkFrame(stats_grid, fg_color=COLORS['info'], height=60)
+            csv_frame.pack(side="left", fill="x", expand=True, padx=(0, 5))
+            csv_frame.pack_propagate(False)
+            ctk.CTkLabel(csv_frame, text="📄 CSV", font=ctk.CTkFont(size=12, weight="bold")).pack(pady=(8, 2))
+            ctk.CTkLabel(csv_frame, text=str(csv_count), font=ctk.CTkFont(size=20, weight="bold")).pack(pady=(0, 5))
 
-        # Área de texto para mostrar resultados
-        self.related_text = ctk.CTkTextbox(results_frame, font=ctk.CTkFont(family="Consolas", size=12),
-                                          wrap="word")
-        self.related_text.pack(fill="both", expand=True, padx=10, pady=5)
+            # JSON files
+            json_frame = ctk.CTkFrame(stats_grid, fg_color=COLORS['success'], height=60)
+            json_frame.pack(side="left", fill="x", expand=True, padx=(0, 5))
+            json_frame.pack_propagate(False)
+            ctk.CTkLabel(json_frame, text="🗂️ JSON", font=ctk.CTkFont(size=12, weight="bold")).pack(pady=(8, 2))
+            ctk.CTkLabel(json_frame, text=str(json_count), font=ctk.CTkFont(size=20, weight="bold")).pack(pady=(0, 5))
+
+            # Total size
+            size_frame = ctk.CTkFrame(stats_grid, fg_color=COLORS['warning'], height=60)
+            size_frame.pack(side="left", fill="x", expand=True)
+            size_frame.pack_propagate(False)
+            ctk.CTkLabel(size_frame, text="💾 ESPACIO", font=ctk.CTkFont(size=12, weight="bold")).pack(pady=(8, 2))
+            ctk.CTkLabel(size_frame, text=f"{total_size_mb:.1f} MB", font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(0, 5))
+
+        except Exception as e:
+            ctk.CTkLabel(stats_frame, text=f"⚠️ Error obteniendo estadísticas: {str(e)[:50]}").pack(pady=10)
+
+        # Lista de informes
+        reports_section = ctk.CTkFrame(main_frame)
+        reports_section.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+        reports_header = ctk.CTkFrame(reports_section)
+        reports_header.pack(fill="x", pady=(10, 5))
+
+        ctk.CTkLabel(reports_header, text="📂 INFORMES DISPONIBLES",
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
+
+        # Botón de actualizar
+        refresh_btn = ctk.CTkButton(reports_header, text="🔄 Actualizar",
+                                   command=lambda: self.refresh_reports_tab(), width=100)
+        refresh_btn.pack(side="right")
+
+        # Scrollable frame para la lista
+        self.reports_scroll = ctk.CTkScrollableFrame(reports_section)
+        self.reports_scroll.pack(fill="both", expand=True, pady=(0, 10))
+
+        # Inicializar la lista
+        self.refresh_reports_tab()
+
+        # Panel de acciones
+        actions_frame = ctk.CTkFrame(main_frame)
+        actions_frame.pack(fill="x", padx=10, pady=(0, 10))
+
+        actions_title = ctk.CTkLabel(actions_frame, text="🛠️ ACCIONES DE GESTIÓN",
+                                    font=ctk.CTkFont(size=14, weight="bold"))
+        actions_title.pack(anchor="w", pady=(10, 15))
+
+        actions_buttons = ctk.CTkFrame(actions_frame)
+        actions_buttons.pack(fill="x", pady=(0, 10))
 
         # Botones de acción
-        action_frame = ctk.CTkFrame(results_frame)
-        action_frame.pack(fill="x", pady=(5, 10))
+        ctk.CTkButton(actions_buttons, text="🗂️ Abrir Carpeta Data",
+                     command=self.open_data_folder, fg_color=COLORS['info']).pack(side="left", padx=(0, 5))
 
-        self.add_to_keywords_button = ctk.CTkButton(action_frame, text="➕ Añadir a Keywords Principales",
-                                                   command=self.add_related_to_keywords,
-                                                   fg_color="green", state="disabled")
-        self.add_to_keywords_button.pack(side="left", padx=(10, 5))
+        ctk.CTkButton(actions_buttons, text="🧽 Limpiar Archivos Antiguos",
+                     command=self.clean_old_reports, fg_color=COLORS['warning']).pack(side="left", padx=(0, 5))
 
-        ctk.CTkButton(action_frame, text="💾 Guardar Lista",
-                     command=self.save_related_keywords).pack(side="left", padx=5)
+        ctk.CTkButton(actions_buttons, text="📊 Generar Reporte Consolidado",
+                     command=self.generate_consolidated_report, fg_color=COLORS['accent']).pack(side="left")
 
-        ctk.CTkButton(action_frame, text="🧹 Limpiar",
-                     command=self.clear_related_keywords).pack(side="right", padx=5)
+    def refresh_reports_tab(self):
+        """Actualiza la lista de informes en la pestaña de reports"""
+        try:
+            # Limpiar contenido anterior
+            for widget in self.reports_scroll.winfo_children():
+                widget.destroy()
+
+            # Obtener archivos
+            data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+
+            if not os.path.exists(data_dir):
+                ctk.CTkLabel(self.reports_scroll, text="📁 La carpeta 'data/' no existe aún").pack(pady=20)
+                return
+
+            # Buscar archivos relevantes
+            files = []
+            for filename in os.listdir(data_dir):
+                if filename.endswith(('.csv', '.json')) and not filename.endswith('_resumen.csv'):
+                    filepath = os.path.join(data_dir, filename)
+                    if os.path.isfile(filepath):
+                        file_stats = os.stat(filepath)
+                        mod_time = time.ctime(file_stats.st_mtime)
+                        file_size = file_stats.st_size
+
+                        # Extraer información del nombre del archivo
+                        keywords_info = "Desconocido"
+                        if "_scraping" in filename:
+                            try:
+                                # Extraer número de keywords del nombre
+                                parts = filename.split('_scraping')[1].split('_')[0]
+                                if parts.isdigit():
+                                    keywords_info = f"{parts} keywords"
+                            except:
+                                pass
+
+                        files.append({
+                            'name': filename,
+                            'path': filepath,
+                            'size': file_size,
+                            'modified': mod_time,
+                            'type': filename.split('.')[-1].upper(),
+                            'keywords': keywords_info
+                        })
+
+            # Ordenar por fecha de modificación (más reciente primero)
+            files.sort(key=lambda x: x['modified'], reverse=True)
+
+            if not files:
+                ctk.CTkLabel(self.reports_scroll, text="📄 No hay informes guardados aún").pack(pady=20)
+                return
+
+            # Crear entradas para cada archivo
+            for i, file_info in enumerate(files[:15]):  # Máximo 15 archivos
+                # Frame del informe
+                report_frame = ctk.CTkFrame(self.reports_scroll, fg_color=COLORS['secondary'])
+                report_frame.pack(fill="x", pady=(0, 8), padx=10)
+
+                # Información principal
+                info_frame = ctk.CTkFrame(report_frame, fg_color="transparent")
+                info_frame.pack(fill="x", padx=15, pady=10)
+
+                # Nombre y tipo
+                name_frame = ctk.CTkFrame(info_frame, fg_color="transparent")
+                name_frame.pack(fill="x", pady=(0, 2))
+
+                file_icon = "📄" if file_info['type'] == 'CSV' else "🗂️"
+                ctk.CTkLabel(name_frame, text=f"{file_icon} {file_info['name']}",
+                            font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
+
+                # Tamaño
+                size_mb = file_info['size'] / (1024 * 1024)
+                ctk.CTkLabel(name_frame, text=f"{size_mb:.2f} MB",
+                            font=ctk.CTkFont(size=10)).pack(side="right")
+
+                # Metadatos
+                meta_frame = ctk.CTkFrame(info_frame, fg_color="transparent")
+                meta_frame.pack(fill="x")
+
+                meta_text = f"📊 {file_info['keywords']} | 📅 {time.strftime('%d/%m/%y %H:%M', time.strptime(file_info['modified']))}"
+                ctk.CTkLabel(meta_frame, text=meta_text,
+                            font=ctk.CTkFont(size=9), text_color=COLORS['text_secondary']).pack(side="left")
+
+                # Botones de acción
+                buttons_frame = ctk.CTkFrame(meta_frame, fg_color="transparent")
+                buttons_frame.pack(side="right")
+
+                # Determinar tipo de acción según el archivo
+                if file_info['type'] == 'CSV':
+                    action_btn = ctk.CTkButton(buttons_frame, text="📊 Cargar en Tabla",
+                                              command=lambda f=file_info: self.load_csv_report(f),
+                                              height=25, width=110, font=ctk.CTkFont(size=9))
+                else:
+                    action_btn = ctk.CTkButton(buttons_frame, text="🔍 Ver Contenido",
+                                              command=lambda f=file_info: self.view_json_report(f),
+                                              height=25, width=110, font=ctk.CTkFont(size=9))
+
+                action_btn.pack(side="left", padx=(0, 3))
+
+                delete_btn = ctk.CTkButton(buttons_frame, text="🗑️ Eliminar",
+                                          command=lambda f=file_info: self.delete_report_file(f),
+                                          height=25, width=70, font=ctk.CTkFont(size=9),
+                                          fg_color=COLORS['error'])
+                delete_btn.pack(side="left")
+
+                # Separador visual
+                if i < len(files) - 1:
+                    separator = ctk.CTkFrame(self.reports_scroll, height=1, fg_color=COLORS['border'])
+                    separator.pack(fill="x", padx=10)
+
+        except Exception as e:
+            error_label = ctk.CTkLabel(self.reports_scroll, text=f"❌ Error cargando informes: {str(e)[:50]}")
+            error_label.pack(pady=20)
+
+    def load_csv_report(self, file_info):
+        """Carga un archivo CSV en la tabla de resultados"""
+        try:
+            df = pd.read_csv(file_info['path'])
+            results = df.to_dict('records')
+
+            # Actualizar resultados actuales
+            self.current_results = results
+
+            # Actualizar tabla
+            self.update_results_table()
+            self.update_stats_blocks()
+
+            # Cambiar a pestaña de resultados
+            self.tabview.set("📊 Resultados")
+
+            # Mostrar mensaje
+            self.results_status_label.configure(text=f"✅ Informe '{file_info['name']}' cargado exitosamente")
+
+            self.log_message(f"📊 Informe CSV cargado: {file_info['name']}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error cargando CSV:\n\n{str(e)}")
+
+    def view_json_report(self, file_info):
+        """Muestra el contenido de un archivo JSON"""
+        try:
+            with open(file_info['path'], 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            # Crear ventana para mostrar el JSON
+            json_window = ctk.CTkToplevel(self.root)
+            json_window.title(f"Contenido JSON - {file_info['name']}")
+            json_window.geometry("700x600")
+
+            # Título
+            ctk.CTkLabel(json_window, text=f"📄 {file_info['name']}",
+                        font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 10))
+
+            # Área de texto con scrollbar
+            text_frame = ctk.CTkFrame(json_window)
+            text_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+
+            text_area = ctk.CTkTextbox(text_frame, font=ctk.CTkFont(family="Consolas", size=10), wrap="none")
+            text_area.pack(fill="both", expand=True, padx=10, pady=10)
+
+            # Formatear JSON para mostrar
+            formatted_json = json.dumps(data, indent=2, ensure_ascii=False)
+            text_area.insert("1.0", formatted_json)
+            text_area.configure(state="disabled")
+
+            # Botón cerrar
+            ctk.CTkButton(json_window, text="✅ Cerrar", command=json_window.destroy).pack(pady=(0, 20))
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error leyendo JSON:\n\n{str(e)}")
+
+    def delete_report_file(self, file_info):
+        """Elimina un archivo de reporte después de confirmación"""
+        try:
+            if not messagebox.askyesno("Confirmar Eliminación",
+                                     f"¿Estás seguro de eliminar el archivo?\n\n{file_info['name']}\n\nEsta acción no se puede deshacer."):
+                return
+
+            os.remove(file_info['path'])
+
+            # Actualizar lista
+            self.refresh_reports_tab()
+
+            messagebox.showinfo("Eliminación Exitosa",
+                              f"Archivo eliminado:\n{file_info['name']}")
+
+            self.log_message(f"🗑️ Archivo eliminado: {file_info['name']}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error eliminando archivo:\n\n{str(e)}")
+
+    def open_data_folder(self):
+        """Abre la carpeta data/ en el explorador de archivos"""
+        try:
+            data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+
+            if not os.path.exists(data_dir):
+                os.makedirs(data_dir)
+
+            # Abrir carpeta según el sistema operativo
+            import subprocess
+            import platform
+
+            if platform.system() == "Windows":
+                subprocess.run(["explorer", data_dir])
+            elif platform.system() == "Darwin":  # macOS
+                subprocess.run(["open", data_dir])
+            else:  # Linux
+                subprocess.run(["xdg-open", data_dir])
+
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo abrir la carpeta:\n\n{str(e)}")
+
+    def clean_old_reports(self):
+        """Limpia archivos antiguos de la carpeta data/"""
+        try:
+            data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+
+            if not os.path.exists(data_dir):
+                messagebox.showinfo("Información", "La carpeta data/ no existe aún.")
+                return
+
+            # Obtener archivos con su fecha de modificación
+            files_to_check = []
+            current_time = time.time()
+
+            for filename in os.listdir(data_dir):
+                filepath = os.path.join(data_dir, filename)
+                if os.path.isfile(filepath):
+                    file_age_days = (current_time - os.stat(filepath).st_mtime) / (24 * 60 * 60)
+                    files_to_check.append((filepath, filename, file_age_days))
+
+            # Filtrar archivos antiguos (más de 30 días)
+            old_files = [f for f in files_to_check if f[2] > 30]
+
+            if not old_files:
+                messagebox.showinfo("Información",
+                                  "No hay archivos antiguos para limpiar.\n\nSe consideran antiguos los archivos con más de 30 días.")
+                return
+
+            # Confirmar limpieza
+            if not messagebox.askyesno("Confirmar Limpieza",
+                                     f"Se encontraron {len(old_files)} archivos antiguos (más de 30 días).\n\n"
+                                     f"¿Deseas eliminarlos?\n\n"
+                                     f"Archivos a eliminar:\n" +
+                                     "\n".join([f"- {f[1]} ({f[2]:.0f} días)" for f in old_files[:10]]) +
+                                     ("\n... y más" if len(old_files) > 10 else "")):
+                return
+
+            # Eliminar archivos antiguos
+            deleted_count = 0
+            for filepath, filename, age in old_files:
+                try:
+                    os.remove(filepath)
+                    deleted_count += 1
+                    self.log_message(f"🗑️ Archivo antiguo eliminado: {filename}")
+                except Exception as e:
+                    self.log_message(f"⚠️ Error eliminando {filename}: {str(e)}")
+
+            # Actualizar interfaz
+            self.refresh_reports_tab()
+
+            messagebox.showinfo("Limpieza Completada",
+                              f"✅ Limpieza completada exitosamente!\n\n"
+                              f"📁 Archivos eliminados: {deleted_count}\n"
+                              f"💾 Espacio liberado aproximado: {(sum(f[0].__sizeof__() for f in old_files) / (1024*1024)):.1f} MB")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error durante la limpieza:\n\n{str(e)}")
+
+    def generate_consolidated_report(self):
+        """Genera un reporte consolidado con estadísticas generales"""
+        try:
+            data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+
+            if not os.path.exists(data_dir):
+                messagebox.showwarning("Advertencia", "No hay carpeta data/ con informes")
+                return
+
+            # Recopilar información de todos los CSV
+            all_results = []
+            csv_files = [f for f in os.listdir(data_dir) if f.endswith('.csv') and not f.endswith('_resumen.csv')]
+
+            if not csv_files:
+                messagebox.showwarning("Advertencia", "No hay archivos CSV para consolidar")
+                return
+
+            consolidated_data = {
+                'total_scraping_sessions': len(csv_files),
+                'total_files_analyzed': 0,
+                'total_results_found': 0,
+                'unique_keywords_total': set(),
+                'unique_domains_total': set(),
+                'avg_position_overall': [],
+                'total_cost_estimated': 0.0,
+                'sessions_by_date': {}
+            }
+
+            for csv_file in csv_files:
+                try:
+                    filepath = os.path.join(data_dir, csv_file)
+                    df = pd.read_csv(filepath)
+
+                    consolidated_data['total_files_analyzed'] += 1
+                    consolidated_data['total_results_found'] += len(df)
+
+                    if 'keyword' in df.columns:
+                        consolidated_data['unique_keywords_total'].update(df['keyword'].dropna().tolist())
+
+                    if 'domain' in df.columns:
+                        consolidated_data['unique_domains_total'].update(df['domain'].dropna().tolist())
+
+                    if 'position' in df.columns:
+                        consolidated_data['avg_position_overall'].extend(df['position'].dropna().tolist())
+
+                    # Intentar extraer fecha del nombre del archivo
+                    try:
+                        date_match = re.search(r'(\d{8})_', csv_file)
+                        if date_match:
+                            date_str = date_match.group(1)
+                            date_formatted = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
+                            if date_formatted not in consolidated_data['sessions_by_date']:
+                                consolidated_data['sessions_by_date'][date_formatted] = 0
+                            consolidated_data['sessions_by_date'][date_formatted] += 1
+                    except:
+                        pass
+
+                    # Estimar costo
+                    if 'position' in df.columns:
+                        positions_count = len(df)
+                        consolidated_data['total_cost_estimated'] += (positions_count * 0.005)
+
+                except Exception as e:
+                    self.log_message(f"⚠️ Error procesando {csv_file}: {str(e)[:50]}")
+                    continue
+
+            # Crear ventana de reporte consolidado
+            report_window = ctk.CTkToplevel(self.root)
+            report_window.title("📊 Reporte Consolidado")
+            report_window.geometry("800x700")
+            report_window.transient(self.root)
+
+            # Header
+            header_frame = ctk.CTkFrame(report_window)
+            header_frame.pack(fill="x", padx=20, pady=(20, 10))
+
+            ctk.CTkLabel(header_frame, text="📊 REPORTE CONSOLIDADO DE SCRAPING",
+                        font=ctk.CTkFont(size=18, weight="bold")).pack()
+
+            # Fecha de generación
+            ctk.CTkLabel(header_frame, text=f"📅 Generado el {time.strftime('%d/%m/%Y %H:%M:%S')}",
+                        font=ctk.CTkFont(size=10)).pack(pady=(5, 0))
+
+            # Contenido
+            content_frame = ctk.CTkScrollableFrame(report_window)
+            content_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+
+            # SECCIÓN 1: Métricas Generales
+            section1_frame = ctk.CTkFrame(content_frame, fg_color="gray15")
+            section1_frame.pack(fill="x", pady=(0, 15))
+
+            ctk.CTkLabel(section1_frame, text="📈 MÉTRICAS GENERALES",
+                        font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 10))
+
+            # Crear métricas
+            metrics_data = [
+                ("Sesiones de Scraping", consolidated_data['total_scraping_sessions']),
+                ("Archivos Analizados", consolidated_data['total_files_analyzed']),
+                ("Resultados Totales", consolidated_data['total_results_found']),
+                ("Keywords Únicas", len(consolidated_data['unique_keywords_total'])),
+                ("Dominios Únicos", len(consolidated_data['unique_domains_total'])),
+                ("Posición Promedio Global", f"{sum(consolidated_data['avg_position_overall']) / len(consolidated_data['avg_position_overall']):.1f}" if consolidated_data['avg_position_overall'] else "N/A"),
+                ("Costo Total Estimado", f"${consolidated_data['total_cost_estimated']:.2f}")
+            ]
+
+            for label, value in metrics_data:
+                metric_frame = ctk.CTkFrame(section1_frame)
+                metric_frame.pack(fill="x", padx=20, pady=2)
+                ctk.CTkLabel(metric_frame, text=label).pack(side="left")
+                ctk.CTkLabel(metric_frame, text=str(value), font=ctk.CTkFont(weight="bold")).pack(side="right")
+
+            # SECCIÓN 2: Actividad por Fecha
+            if consolidated_data['sessions_by_date']:
+                section2_frame = ctk.CTkFrame(content_frame, fg_color="gray15")
+                section2_frame.pack(fill="x", pady=(0, 15))
+
+                ctk.CTkLabel(section2_frame, text="📅 ACTIVIDAD POR FECHA",
+                            font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 10))
+
+                sorted_dates = sorted(consolidated_data['sessions_by_date'].items(), key=lambda x: x[0], reverse=True)
+
+                for date, count in sorted_dates[:10]:  # Top 10 fechas
+                    date_frame = ctk.CTkFrame(section2_frame)
+                    date_frame.pack(fill="x", padx=20, pady=2)
+                    ctk.CTkLabel(date_frame, text=date).pack(side="left")
+                    ctk.CTkLabel(date_frame, text=f"{count} sesiones", font=ctk.CTkFont(weight="bold")).pack(side="right")
+
+            # Botón de exportar
+            export_btn = ctk.CTkButton(report_window, text="💾 Exportar Reporte",
+                                     command=lambda: self.export_consolidated_report(consolidated_data),
+                                     fg_color=COLORS['success'])
+            export_btn.pack(pady=(0, 20))
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error generando reporte consolidado:\n\n{str(e)}")
+
+    def export_consolidated_report(self, consolidated_data):
+        """Exporta el reporte consolidado"""
+        try:
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".txt",
+                filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+                initialfile=f"reporte_consolidado_{timestamp}"
+            )
+
+            if file_path:
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write("📊 REPORTE CONSOLIDADO DE SCRAPING\n")
+                    f.write("=" * 50 + "\n\n")
+                    f.write(f"📅 Generado el: {time.strftime('%d/%m/%Y %H:%M:%S')}\n\n")
+
+                    f.write("📈 MÉTRICAS GENERALES:\n")
+                    f.write("-" * 30 + "\n")
+                    f.write(f"Sesiones de Scraping: {consolidated_data['total_scraping_sessions']}\n")
+                    f.write(f"Archivos Analizados: {consolidated_data['total_files_analyzed']}\n")
+                    f.write(f"Resultados Totales: {consolidated_data['total_results_found']}\n")
+                    f.write(f"Keywords Únicas: {len(consolidated_data['unique_keywords_total'])}\n")
+                    f.write(f"Dominios Únicos: {len(consolidated_data['unique_domains_total'])}\n")
+
+                    avg_pos = consolidated_data['avg_position_overall']
+                    if avg_pos:
+                        f.write(f"Posición Promedio Global: {sum(avg_pos) / len(avg_pos):.1f}\n")
+                    else:
+                        f.write("Posición Promedio Global: N/A\n")
+
+                    f.write(f"Costo Total Estimado: ${consolidated_data['total_cost_estimated']:.2f}\n\n")
+
+                    if consolidated_data['sessions_by_date']:
+                        f.write("📅 ACTIVIDAD POR FECHA:\n")
+                        f.write("-" * 30 + "\n")
+
+                        sorted_dates = sorted(consolidated_data['sessions_by_date'].items(),
+                                            key=lambda x: x[0], reverse=True)
+
+                        for date, count in sorted_dates:
+                            f.write(f"{date}: {count} sesiones\n")
+
+                messagebox.showinfo("Éxito", f"Reporte consolidado exportado:\n\n{file_path}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error exportando reporte:\n\n{str(e)}")
+
+    def get_google_suggestions(self, query, country="US", language="en"):
+        """Obtiene sugerencias de Google Suggest para una query específica"""
+        import requests
+
+        try:
+            # URL de Google Suggest API
+            url = "https://suggestqueries.google.com/complete/search"
+
+            params = {
+                'client': 'firefox',  # o 'chrome', 'firefox', etc.
+                'q': query,
+                'hl': language.lower(),  # idioma
+                'gl': country.upper(),   # país
+                'ds': 'yt'  # o vacío para búsqueda general
+            }
+
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0',
+                'Accept': '*/*',
+                'Accept-Language': f'{language.lower()},{language.lower()};q=0.8,en-US;q=0.5,en;q=0.3',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Cache-Control': 'max-age=0',
+            }
+
+            # Hacer la petición
+            response = requests.get(url, params=params, headers=headers, timeout=10)
+
+            if response.status_code == 200:
+                try:
+                    # La respuesta es JSON: ["query", [sugerencias]]
+                    data = response.json()
+                    if len(data) >= 2 and isinstance(data[1], list):
+                        return data[1]  # Lista de sugerencias
+                except json.JSONDecodeError:
+                    # A veces Google devuelve HTML en lugar de JSON
+                    self.log_message("⚠️ Google Suggest devolvió formato inesperado")
+
+            return []
+
+        except Exception as e:
+            self.log_message(f"⚠️ Error obteniendo sugerencias: {str(e)[:50]}")
+            return []
 
     def find_related_keywords(self):
-        """Busca keywords relacionadas usando Google Suggest API"""
+        """Busca keywords relacionadas usando Google Suggest API y obtiene sus posiciones reales"""
         keyword = self.related_keyword_entry.get().strip()
 
         if not keyword:
             messagebox.showwarning("Advertencia", "Ingresa una keyword principal")
             return
 
-        # Validar credenciales de Google
-        api_key = self.api_key_var.get().strip()
-        search_engine_id = self.search_engine_id_var.get().strip()
-
-        if not api_key or not search_engine_id:
+        # Validar credenciales de Google API
+        if not self.api_key_var.get().strip() or not self.search_engine_id_var.get().strip():
             messagebox.showwarning("Error", "Configura tus credenciales de Google API primero\n\nVe a la pestaña '🔐 Google API'")
             return
 
@@ -233,120 +802,358 @@ class KeywordScraperGUI:
 
         # Mostrar mensaje de carga
         self.related_text.configure(state="normal")
-        self.related_text.insert("1.0", f"🔍 Buscando keywords relacionadas para '{keyword}'...\n\nPor favor espera...")
+        self.related_text.insert("1.0", f"🔍 Buscando keywords relacionadas para '{keyword}'...\n\nPaso 1: Obteniendo sugerencias de Google Suggest...")
         self.related_text.configure(state="disabled")
 
         # Actualizar contador
-        self.related_count_label.configure(text="(buscando...)")
+        self.related_count_label.configure(text="(buscando sugerencias...)")
 
         def search_thread():
             try:
-                self.log_message(f"🔍 Buscando keywords relacionadas para: '{keyword}'")
+                self.log_message("="*70)
+                self.log_message(f"🔍 SESIÓN DE KEYWORDS RELACIONADAS - '{keyword}'")
+                self.log_message("="*70)
 
-                # Realizar varias búsquedas para obtener más sugerencias
-                suggestions = []
-                variations = [
-                    keyword,
-                    f"{keyword} online",
-                    f"{keyword} tutorial",
-                    f"{keyword} guía",
-                    f"{keyword} gratis",
-                    f"{keyword} 2025",
-                    f"{keyword} cómo",
-                    f"{keyword} precio",
+                # Paso 1: Obtener sugerencias de Google Suggest
+                self.log_message("📝 PASO 1: Obteniendo sugerencias de Google Suggest (GRATIS)")
+
+                self.related_text.configure(state="normal")
+                self.related_text.delete("1.0", "end")
+                self.related_text.insert("1.0", f"🎯 Keyword base: '{keyword}'\n📅 Fecha: {time.strftime('%d/%m/%Y %H:%M:%S')}\n\n")
+                self.related_text.insert("end", "📝 Paso 1: Analizando Google Suggest...\n⏳ Buscando patrones de búsqueda...\n")
+                self.related_text.configure(state="disabled")
+
+                all_suggestions = []
+                search_variations = [
+                    keyword,  # Keyword original
+                    f"{keyword} ",  # Con espacio al final
+                    f"{keyword} o",  # Variaciones con conectores
+                    f"{keyword} c",  # Como, cómo
+                    f"{keyword} d",  # De, donde
+                    f"{keyword} p",  # Precio, para
+                    f"{keyword} q",  # Que, quien
                 ]
 
-                # Crear scraper si no existe
-                if not self.scraper:
-                    from config.settings import config
-                    self.scraper = StealthSerpScraper(config)
+                # Obtener sugerencias para cada variación
+                for i, variation in enumerate(search_variations, 1):
+                    self.log_message(f"🔍 Buscando variación {i}/{len(search_variations)}: '{variation}'")
 
-                # Buscar sugerencias para cada variación
-                for variation in variations:
                     try:
-                        suggests = self.scraper.google_suggest_scraper(
+                        suggests = self.get_google_suggestions(
                             variation,
                             country=self.country_var.get(),
                             language=self.language_var.get()
                         )
 
-                        if suggests:
-                            # Filtrar sugerencias que contengan la keyword original
-                            filtered = [s for s in suggests if keyword.lower() in s.lower() or s.lower() in keyword.lower()]
-                            suggestions.extend(filtered)
+                        if suggests and len(suggests) > 0:
+                            # Filtrar sugerencias relevantes
+                            relevant = [s for s in suggests if
+                                      s.lower().startswith(keyword.lower()) and
+                                      s.lower() != keyword.lower() and
+                                      len(s) > len(keyword) + 2]  # Mínimo 3 caracteres adicionales
+
+                            all_suggestions.extend(relevant)
+                            self.log_message(f"   ✅ Encontradas {len(relevant)} sugerencias relevantes")
+                        else:
+                            self.log_message(f"   ⚠️ No se encontraron sugerencias para '{variation}'")
 
                     except Exception as e:
-                        self.log_message(f"⚠️ Error buscando variación '{variation}': {str(e)[:50]}")
+                        self.log_message(f"   ❌ Error en variación '{variation}': {str(e)[:50]}")
                         continue
 
-                # Eliminar duplicados y limitar
-                unique_suggestions = []
-                for suggestion in suggestions:
-                    if suggestion not in unique_suggestions and suggestion.lower() != keyword.lower():
-                        unique_suggestions.append(suggestion)
+                # Eliminar duplicados y limpiar
+                unique_suggestions = list(set(all_suggestions))
+                # Ordenar por relevancia (más cortas primero, luego alfabético)
+                unique_suggestions.sort(key=lambda x: (len(x), x.lower()))
 
-                unique_suggestions = unique_suggestions[:50]  # Limitar a 50 sugerencias
+                # Limitar a 25 sugerencias máximo para análisis eficiente
+                if len(unique_suggestions) > 25:
+                    unique_suggestions = unique_suggestions[:25]
 
-                # Mostrar resultados
-                result_text = f"🎯 Keyword principal: '{keyword}'\n✨ Sugerencias encontradas: {len(unique_suggestions)}\n\n"
+                self.log_message(f"✅ PASO 1 COMPLETADO: {len(unique_suggestions)} sugerencias únicas encontradas")
+                self.log_message("-"*50)
 
+                # Actualizar UI con resultados del paso 1
+                self.related_text.configure(state="normal")
+                self.related_text.insert("end", f"\n✅ Paso 1 completado: {len(unique_suggestions)} sugerencias\n\n")
+                self.related_text.insert("end", "📊 Sugerencias encontradas:\n")
+                for i, sug in enumerate(unique_suggestions[:15], 1):  # Mostrar primeras 15
+                    self.related_text.insert("end", f"{i:2d}. {sug}\n")
+                if len(unique_suggestions) > 15:
+                    self.related_text.insert("end", f"   ... y {len(unique_suggestions)-15} más\n")
+                self.related_text.insert("end", "\n")
+                self.related_text.configure(state="disabled")
+
+                # Paso 2: Análisis detallado de posiciones
+                analyzed_results = []
                 if unique_suggestions:
-                    result_text += "📋 Keywords relacionadas:\n\n"
+                    self.log_message("🚀 PASO 2: Analizando posiciones reales en Google")
+                    self.related_count_label.configure(text=f"(analizando {len(unique_suggestions)} sugerencias...)")
 
-                    # Mostrar en lista ordenada
-                    for i, suggestion in enumerate(unique_suggestions[:20], 1):  # Mostrar solo primeras 20
+                    self.related_text.configure(state="normal")
+                    self.related_text.insert("end", "="*60 + "\n")
+                    self.related_text.insert("end", "🚀 Paso 2: Análisis de posiciones en Google\n")
+                    self.related_text.insert("end", "⏳ Consultando Google API para obtener posiciones reales...\n\n")
+                    self.related_text.configure(state="disabled")
+
+                    # Crear scraper temporal con configuración óptima
+                    from config.settings import config
+                    temp_config = config.copy()
+                    temp_config.update({
+                        'PAGES_TO_SCRAPE': 3,  # 3 páginas para cobertura completa
+                        'DEFAULT_COUNTRY': self.country_var.get(),
+                        'DEFAULT_LANGUAGE': self.language_var.get(),
+                        'MIN_KEYWORD_DELAY': 1,  # Delay mínimo para eficiencia
+                        'MAX_KEYWORD_DELAY': 2
+                    })
+
+                    from stealth_scraper import StealthSerpScraper
+                    temp_scraper = StealthSerpScraper(temp_config)
+
+                    target_domain = self.domain_entry.get().strip() or None
+                    self.log_message(f"🎯 Dominio objetivo: {target_domain or 'Todos'}")
+
+                    # Procesar en lotes de 4 keywords para mejor rendimiento
+                    batch_size = 4
+                    total_processed = 0
+
+                    for batch_idx in range(0, len(unique_suggestions), batch_size):
+                        batch = unique_suggestions[batch_idx:batch_idx + batch_size]
+                        self.log_message(f"📦 Procesando lote {batch_idx//batch_size + 1}: {len(batch)} keywords")
+
+                        try:
+                            # Actualizar UI con progreso
+                            self.related_text.configure(state="normal")
+                            self.related_text.insert("end", f"🔄 Analizando lote {batch_idx//batch_size + 1}: {', '.join(batch[:3])}{'...' if len(batch) > 3 else ''}\n")
+                            self.related_text.configure(state="disabled")
+
+                            batch_results = temp_scraper.batch_position_check(
+                                batch,
+                                target_domain,
+                                3  # 3 páginas
+                            )
+
+                            if batch_results:
+                                analyzed_results.extend(batch_results)
+                                total_processed += len(batch_results)
+                                self.log_message(f"   ✅ Lote completado: {len(batch_results)} posiciones encontradas")
+
+                                # Mostrar algunos resultados en tiempo real
+                                for result in batch_results[:2]:  # Solo primeros 2 por lote
+                                    pos = result['position']
+                                    emoji = "🥇" if pos == 1 else "🏆" if pos <= 3 else "📈" if pos <= 10 else "📊"
+                                    self.related_text.configure(state="normal")
+                                    self.related_text.insert("end", f"   {emoji} POS {pos}: {result['keyword'][:40]}...\n")
+                                    self.related_text.configure(state="disabled")
+                            else:
+                                self.log_message(f"   ⚠️ Lote sin resultados")
+
+                        except Exception as e:
+                            self.log_message(f"   ❌ Error en lote {batch_idx//batch_size + 1}: {str(e)[:80]}")
+                            continue
+
+                    self.log_message(f"✅ PASO 2 COMPLETADO: {total_processed} posiciones analizadas de {len(unique_suggestions)} sugerencias")
+                    self.log_message("-"*50)
+
+                # PASO 3: GUARDAR RESULTADOS AUTOMÁTICAMENTE
+                self.log_message("💾 PASO 3: Guardando resultados en historial")
+
+                try:
+                    # Crear directorio si no existe
+                    if not os.path.exists('data'):
+                        os.makedirs('data')
+
+                    # Timestamp para archivos únicos
+                    timestamp = time.strftime("%Y%m%d_%H%M%S")
+                    base_filename = f"keywords_relacionadas_{keyword.replace(' ', '_')}_{timestamp}"
+
+                    # Preparar datos para guardar
+                    suggestions_data = []
+                    for sug in unique_suggestions:
+                        suggestions_data.append({
+                            'keyword_base': keyword,
+                            'sugerencia': sug,
+                            'fecha': time.strftime("%Y-%m-%d %H:%M:%S"),
+                            'pais': self.country_var.get(),
+                            'idioma': self.language_var.get(),
+                            'encontrada_posicion': any(r['keyword'] == sug for r in analyzed_results)
+                        })
+
+                    # Guardar sugerencias como CSV
+                    suggestions_df = pd.DataFrame(suggestions_data)
+                    csv_path = f"data/{base_filename}_sugerencias.csv"
+                    suggestions_df.to_csv(csv_path, index=False, encoding='utf-8')
+
+                    # Guardar posiciones analizadas si existen
+                    if analyzed_results:
+                        positions_df = pd.DataFrame(analyzed_results)
+                        # Añadir información adicional
+                        positions_df['keyword_base'] = keyword
+                        positions_df['fecha_analisis'] = time.strftime("%Y-%m-%d %H:%M:%S")
+                        positions_df['pais'] = self.country_var.get()
+                        positions_df['idioma'] = self.language_var.get()
+
+                        positions_csv = f"data/{base_filename}_posiciones.csv"
+                        positions_df.to_csv(positions_csv, index=False, encoding='utf-8')
+
+                        # También guardar como JSON para compatibilidad
+                        positions_json = f"data/{base_filename}_posiciones.json"
+                        with open(positions_json, 'w', encoding='utf-8') as f:
+                            json.dump(analyzed_results, f, indent=2, ensure_ascii=False)
+
+                        self.log_message(f"💾 Archivos guardados:")
+                        self.log_message(f"   📄 {csv_path} ({len(suggestions_data)} sugerencias)")
+                        self.log_message(f"   📊 {positions_csv} ({len(analyzed_results)} posiciones)")
+                        self.log_message(f"   🗂️  {positions_json}")
+
+                    else:
+                        self.log_message(f"💾 Archivo guardado: {csv_path} ({len(suggestions_data)} sugerencias)")
+
+                except Exception as e:
+                    self.log_message(f"⚠️ Error guardando archivos: {str(e)[:50]}")
+
+                # PASO 4: MOSTRAR RESULTADOS FINALES
+                result_text = f"🎯 ANÁLISIS COMPLETO DE KEYWORDS RELACIONADAS\n"
+                result_text += f"📅 Fecha: {time.strftime('%d/%m/%Y %H:%M:%S')}\n"
+                result_text += f"🎯 Keyword base: '{keyword}'\n"
+                result_text += f"🌍 País: {self.country_var.get()} | Idioma: {self.language_var.get()}\n\n"
+
+                result_text += "="*70 + "\n"
+                result_text += "📊 RESUMEN EJECUTIVO\n"
+                result_text += "="*70 + "\n"
+                result_text += f"🔍 Sugerencias encontradas: {len(unique_suggestions)}\n"
+                result_text += f"📈 Posiciones analizadas: {len(analyzed_results)}\n"
+                result_text += f"💾 Archivos guardados: ✅ Sí\n"
+
+                if analyzed_results:
+                    # Estadísticas detalladas
+                    df = pd.DataFrame(analyzed_results)
+                    avg_pos = df['position'].mean()
+                    best_pos = df['position'].min()
+                    worst_pos = df['position'].max()
+                    top3_count = len(df[df['position'] <= 3])
+                    top10_count = len(df[df['position'] <= 10])
+                    top20_count = len(df[df['position'] <= 20])
+
+                    result_text += f"📊 Estadísticas de posiciones:\n"
+                    result_text += f"   • Posición promedio: {avg_pos:.1f}\n"
+                    result_text += f"   • Mejor posición: {best_pos}\n"
+                    result_text += f"   • Peor posición: {worst_pos}\n"
+                    result_text += f"   • En Top 3: {top3_count} ({top3_count/len(analyzed_results)*100:.1f}%)\n"
+                    result_text += f"   • En Top 10: {top10_count} ({top10_count/len(analyzed_results)*100:.1f}%)\n"
+                    result_text += f"   • En Top 20: {top20_count} ({top20_count/len(analyzed_results)*100:.1f}%)\n"
+                result_text += "\n"
+
+                # Resultados detallados
+                if analyzed_results:
+                    result_text += "="*70 + "\n"
+                    result_text += "🏆 RESULTADOS COMPLETOS ORDENADOS POR POSICIÓN\n"
+                    result_text += "="*70 + "\n"
+
+                    # Ordenar por posición
+                    analyzed_results.sort(key=lambda x: x['position'])
+
+                    for i, result in enumerate(analyzed_results, 1):
+                        pos = result['position']
+                        kw = result['keyword']
+                        title = result['title'][:65] + "..." if len(result['title']) > 65 else result['title']
+                        domain = result['domain']
+                        page = result['page']
+
+                        # Seleccionar emoji según posición
+                        if pos == 1:
+                            emoji = "🥇"
+                        elif pos <= 3:
+                            emoji = "🏆"
+                        elif pos <= 10:
+                            emoji = "📈"
+                        elif pos <= 20:
+                            emoji = "📊"
+                        else:
+                            emoji = "🔍"
+
+                        result_text += f"{i:2d}. {emoji} POSICIÓN {pos:2d} | {kw}\n"
+                        result_text += f"                       📄 {title}\n"
+                        result_text += f"                       🌐 {domain} | Página {page}\n\n"
+
+                # Sugerencias sin analizar
+                unanalyzed = [s for s in unique_suggestions if not any(r['keyword'] == s for r in analyzed_results)]
+                if unanalyzed:
+                    result_text += "="*70 + "\n"
+                    result_text += "💡 SUGERENCIAS QUE NO APARECEN EN TOP POSICIONES\n"
+                    result_text += "="*70 + "\n"
+
+                    for i, suggestion in enumerate(unanalyzed[:15], 1):
                         result_text += f"{i:2d}. {suggestion}\n"
 
-                    if len(unique_suggestions) > 20:
-                        result_text += f"\n💡 ... y {len(unique_suggestions) - 20} más (scroll para ver todas)\n\nTodas las sugerencias se pueden añadir a keywords principales"
+                    if len(unanalyzed) > 15:
+                        result_text += f"   ... y {len(unanalyzed)-15} más sugerencias sin posición\n"
 
-                    # Resultados adicionales en scroll
-                    for suggestion in unique_suggestions[20:]:
-                        result_text += f"   {suggestion}\n"
+                result_text += "\n" + "="*70 + "\n"
+                result_text += "🎯 ACCIONES RECOMENDADAS:\n"
+                result_text += "• Revisa las posiciones TOP 3 para oportunidades inmediatas\n"
+                result_text += "• Considera las sugerencias sin posición para nichos poco competitivos\n"
+                result_text += "• Añade las keywords más relevantes a tu lista principal\n"
+                result_text += "• Los datos se guardaron automáticamente en la carpeta 'data/'\n"
 
-                else:
-                    result_text += "❌ No se encontraron sugerencias nuevas para esta keyword.\n💡 Prueba con una keyword más popular o generadora."
-
-                # Actualizar interfaz
+                # Actualizar interfaz final
                 self.related_text.configure(state="normal")
                 self.related_text.delete("1.0", "end")
                 self.related_text.insert("1.0", result_text)
                 self.related_text.configure(state="disabled")
 
-                # Actualizar contador y habilitar botón
-                self.related_count_label.configure(text=f"({len(unique_suggestions)} sugerencias)")
+                # Actualizar estadísticas
+                self.related_count_label.configure(text=f"({len(unique_suggestions)} sugerencias | {len(analyzed_results)} posiciones)")
 
+                # Habilitar botón de añadir
                 if unique_suggestions:
                     self.add_to_keywords_button.configure(state="normal")
-                    # Guardar sugerencias para poder añadirlas después
                     self.related_suggestions = unique_suggestions
-                else:
-                    self.add_to_keywords_button.configure(state="disabled")
 
-                self.log_message(f"✅ Encontradas {len(unique_suggestions)} keywords relacionadas")
+                # Log final
+                self.log_message("✅ ANÁLISIS COMPLETADO EXITOSAMENTE")
+                self.log_message(f"📊 Resultado: {len(unique_suggestions)} sugerencias → {len(analyzed_results)} posiciones analadas")
+                self.log_message("="*70)
+
+                # Mostrar mensaje de éxito
+                messagebox.showinfo("✅ Análisis Completado",
+                                  f"¡Análisis de keywords relacionadas completado!\n\n"
+                                  f"📝 Sugerencias encontradas: {len(unique_suggestions)}\n"
+                                  f"📊 Posiciones analizadas: {len(analyzed_results)}\n"
+                                  f"💾 Archivos guardados en carpeta 'data/'\n\n"
+                                  f"Puedes usar estos datos en la pestaña de Análisis.")
 
             except Exception as e:
-                error_msg = f"❌ Error buscando keywords relacionadas:\n\n{str(e)}\n\n💡 Verifica tu conexión a internet y credenciales de Google."
+                error_msg = f"❌ ERROR EN ANÁLISIS DE KEYWORDS RELACIONADAS:\n\n{str(e)}\n\n"
+                error_msg += "💡 Verifica:\n"
+                error_msg += "• Conexión a internet\n"
+                error_msg += "• Credenciales de Google API\n"
+                error_msg += "• Cuota diaria de consultas\n"
+
                 self.related_text.configure(state="normal")
                 self.related_text.delete("1.0", "end")
                 self.related_text.insert("1.0", error_msg)
                 self.related_text.configure(state="disabled")
+
                 self.related_count_label.configure(text="(error)")
                 self.add_to_keywords_button.configure(state="disabled")
-                self.log_message(f"❌ Error en búsqueda de keywords relacionadas: {str(e)[:100]}")
+
+                self.log_message(f"❌ ERROR EN SESIÓN DE KEYWORDS RELACIONADAS: {str(e)[:100]}")
+                self.log_message("="*70)
+
+                messagebox.showerror("Error", f"Error durante el análisis:\n\n{str(e)}")
 
         # Ejecutar en hilo separado
         threading.Thread(target=search_thread, daemon=True).start()
 
     def add_related_to_keywords(self):
-        """Añade las keywords relacionadas a la lista principal"""
+        """Añade las keywords relacionadas a la lista principal usando el sistema unificado"""
         if not hasattr(self, 'related_suggestions') or not self.related_suggestions:
             messagebox.showwarning("Aviso", "No hay sugerencias para añadir")
             return
 
-        # Obtener keywords actuales
-        current_text = self.keywords_text.get("1.0", "end-1c")
-        current_keywords = [k.strip() for k in current_text.split('\n') if k.strip()]
+        # Obtener keywords actuales del sistema unificado
+        current_keywords = self.get_current_keywords()
 
         # Combinar y eliminar duplicados (ignorando mayúsculas/minúsculas)
         all_keywords_set = set(k.lower() for k in current_keywords)
@@ -362,14 +1169,10 @@ class KeywordScraperGUI:
         if new_keywords:
             combined_keywords = current_keywords + new_keywords
 
-            # Actualizar texto
-            self.keywords_text.delete("1.0", "end")
-            self.keywords_text.insert("1.0", "\n".join(combined_keywords))
+            # Usar el sistema unificado para establecer las keywords
+            self.set_current_keywords(combined_keywords)
 
-            # Actualizar contador
-            self.update_keywords_count()
-
-            success_msg = f"✅ Añadidas {len(new_keywords)} keywords nuevas a la lista principal\n\n📊 Lista actual: {len(combined_keywords)} keywords totales"
+            success_msg = f"✅ Añadidas {len(new_keywords)} keywords nuevas a la lista principal\n\n📊 Lista actual: {len(combined_keywords)} keywords totales\n\nLas keywords están listas para usar en Scraping."
             messagebox.showinfo("Éxito", success_msg)
             self.log_message(f"✅ Añadidas {len(new_keywords)} keywords relacionadas a la lista")
 
@@ -529,115 +1332,468 @@ class KeywordScraperGUI:
                      command=self.validate_config).pack(side="left", padx=5)
         
     def setup_keywords_tab(self):
-        """Configura la pestaña de gestión de keywords"""
-        main_frame = ctk.CTkFrame(self.tab_keywords)
-        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # Título
-        title_label = ctk.CTkLabel(main_frame, text="Gestión de Keywords", 
-                                  font=ctk.CTkFont(size=20, weight="bold"))
-        title_label.pack(pady=(10, 20))
-        
-        # Frame principal en dos partes
-        top_frame = ctk.CTkFrame(main_frame)
-        top_frame.pack(fill="x", padx=10, pady=5)
-        
-        bottom_frame = ctk.CTkFrame(main_frame)
-        bottom_frame.pack(fill="both", expand=True, padx=10, pady=5)
-        
-        # Parte superior - Controles
-        controls_frame = ctk.CTkFrame(top_frame)
-        controls_frame.pack(fill="x", pady=5)
-        
-        # Botones de carga
-        load_frame = ctk.CTkFrame(controls_frame)
-        load_frame.pack(side="left", padx=5)
-        ctk.CTkButton(load_frame, text="📁 Cargar desde Archivo", 
-                     command=self.load_keywords_file).pack(side="left", padx=2)
-        ctk.CTkButton(load_frame, text="📝 Editar Manualmente", 
-                     command=self.edit_keywords_manual).pack(side="left", padx=2)
-        
-        # Google Suggest
-        suggest_frame = ctk.CTkFrame(controls_frame)
-        suggest_frame.pack(side="left", padx=5)
-        ctk.CTkLabel(suggest_frame, text="Google Suggest:").pack(side="left", padx=(5, 2))
-        self.suggest_entry = ctk.CTkEntry(suggest_frame, placeholder_text="Keyword base", width=150)
-        self.suggest_entry.pack(side="left", padx=2)
-        ctk.CTkButton(suggest_frame, text="🔍 Generar", 
-                     command=self.generate_suggestions).pack(side="left", padx=2)
-        
-        # Contador de keywords
-        count_frame = ctk.CTkFrame(controls_frame)
-        count_frame.pack(side="right", padx=5)
-        ctk.CTkLabel(count_frame, text="Keywords:").pack(side="left", padx=(5, 2))
-        self.keywords_count_label = ctk.CTkLabel(count_frame, text="0", font=ctk.CTkFont(weight="bold"))
-        self.keywords_count_label.pack(side="left", padx=2)
-        
-        # Parte inferior - Lista de keywords
-        keywords_frame = ctk.CTkFrame(bottom_frame)
-        keywords_frame.pack(fill="both", expand=True, pady=5)
-        
-        # Text area para keywords
-        self.keywords_text = ctk.CTkTextbox(keywords_frame, font=ctk.CTkFont(family="Consolas", size=12))
+        """Configura la SUPER SUITE INTEGRADA de keywords - Todo en una pestaña poderosa"""
+        main_frame = ctk.CTkScrollableFrame(self.tab_keywords)
+        main_frame.pack(fill="both", expand=True)
+
+        # 🔄 FUNCIONALIDAD DE SCROLL CON RUEDA DEL MOUSE
+        def _on_mouse_wheel(event):
+            """Maneja el scroll con la rueda del mouse en scrollable frames"""
+            try:
+                if event.delta > 0:
+                    main_frame._parent_canvas.yview_scroll(-1, "units")
+                else:
+                    main_frame._parent_canvas.yview_scroll(1, "units")
+            except:
+                pass
+
+        # Bind mouse wheel to scrollable frame
+        main_frame.bind('<MouseWheel>', _on_mouse_wheel)
+        main_frame.bind('<Button-4>', lambda e: main_frame._parent_canvas.yview_scroll(-1, "units"))
+        main_frame.bind('<Button-5>', lambda e: main_frame._parent_canvas.yview_scroll(1, "units"))
+
+        # También aplicar a todos los CTkScrollableFrame hijos
+        def bind_scroll_to_children(widget):
+            """Recursivamente bindea scroll a todos los scrollable frames hijos"""
+            for child in widget.winfo_children():
+                if isinstance(child, ctk.CTkScrollableFrame):
+                    child.bind('<MouseWheel>', _on_mouse_wheel)
+                    child.bind('<Button-4>', lambda e: child._parent_canvas.yview_scroll(-1, "units"))
+                    child.bind('<Button-5>', lambda e: child._parent_canvas.yview_scroll(1, "units"))
+                bind_scroll_to_children(child)
+
+        # Aplicar binding después de que todos los widgets estén creados
+        self.root.after(100, lambda: bind_scroll_to_children(main_frame))
+
+        # HEADER ULTRA PREMIUM - Similar a Neil Patel Pro
+        header_frame = ctk.CTkFrame(main_frame, fg_color=COLORS['surface'], height=100)
+        header_frame.pack(fill="x", pady=(0, 20))
+        header_frame.pack_propagate(False)
+
+        header_title = ctk.CTkLabel(header_frame, text="🚀 KEYWORD POWER SUITE PRO 2025",
+                                   font=ctk.CTkFont(size=24, weight="bold"),
+                                   text_color=COLORS['text_primary'])
+        header_title.pack(anchor="w", padx=20, pady=(20, 5))
+
+        header_subtitle = ctk.CTkLabel(header_frame, text="Suite integrada completa: Importar • Procesar • Analizar • Scrapear • Exportar",
+                                      font=ctk.CTkFont(size=12),
+                                      text_color=COLORS['text_secondary'])
+        header_subtitle.pack(anchor="w", padx=20, pady=(0, 20))
+
+        # BLOQUES DE ESTADO GLOBAL - SEMPRE VISIBLES
+        status_grid = ctk.CTkFrame(main_frame, fg_color=COLORS['secondary'])
+        status_grid.pack(fill="x", pady=(0, 20))
+
+        status_row = ctk.CTkFrame(status_grid)
+        status_row.pack(fill="x", padx=20, pady=15)
+
+        # Estado 1: Keywords en editor
+        self.status_editor_block = ctk.CTkFrame(status_row, fg_color=COLORS['info'], width=200, height=70)
+        self.status_editor_block.pack(side="left", padx=(0, 10))
+        self.status_editor_block.pack_propagate(False)
+        ctk.CTkLabel(self.status_editor_block, text="📝 EDITOR", font=ctk.CTkFont(size=9, weight="bold"),
+                    text_color="white").pack(anchor="w", padx=6, pady=(6, 0))
+        self.status_editor_count = ctk.CTkLabel(self.status_editor_block, text="0", font=ctk.CTkFont(size=20, weight="bold"),
+                                              text_color="white")
+        self.status_editor_count.pack(anchor="center", pady=(0, 2))
+        ctk.CTkLabel(self.status_editor_block, text="keywords", font=ctk.CTkFont(size=8),
+                    text_color="lightgray").pack(anchor="center", pady=(0, 6))
+
+        # Estado 2: Keywords procesadas
+        self.status_processed_block = ctk.CTkFrame(status_row, fg_color=COLORS['success'], width=200, height=70)
+        self.status_processed_block.pack(side="left", padx=(0, 10))
+        self.status_processed_block.pack_propagate(False)
+        ctk.CTkLabel(self.status_processed_block, text="⚡ PROCESADAS", font=ctk.CTkFont(size=9, weight="bold"),
+                    text_color="white").pack(anchor="w", padx=6, pady=(6, 0))
+        self.status_processed_count = ctk.CTkLabel(self.status_processed_block, text="0", font=ctk.CTkFont(size=20, weight="bold"),
+                                                 text_color="white")
+        self.status_processed_count.pack(anchor="center", pady=(0, 2))
+        ctk.CTkLabel(self.status_processed_block, text="para scraping", font=ctk.CTkFont(size=8),
+                    text_color="lightgray").pack(anchor="center", pady=(0, 6))
+
+        # Estado 3: Costos calculados
+        self.status_cost_block = ctk.CTkFrame(status_row, fg_color=COLORS['warning'], width=200, height=70)
+        self.status_cost_block.pack(side="left", padx=(0, 10))
+        self.status_cost_block.pack_propagate(False)
+        ctk.CTkLabel(self.status_cost_block, text="💰 COSTO EST.", font=ctk.CTkFont(size=9, weight="bold"),
+                    text_color="white").pack(anchor="w", padx=6, pady=(6, 0))
+        self.status_cost_label = ctk.CTkLabel(self.status_cost_block, text="$0.00", font=ctk.CTkFont(size=18, weight="bold"),
+                                            text_color="white")
+        self.status_cost_label.pack(anchor="center", pady=(0, 2))
+        ctk.CTkLabel(self.status_cost_block, text="estimado", font=ctk.CTkFont(size=8),
+                    text_color="lightgray").pack(anchor="center", pady=(0, 6))
+
+        # Estado 4: Estado de integración
+        self.status_integration_block = ctk.CTkFrame(status_row, fg_color=COLORS['accent'], width=200, height=70)
+        self.status_integration_block.pack(side="left")
+        self.status_integration_block.pack_propagate(False)
+        ctk.CTkLabel(self.status_integration_block, text="🔗 INTEGRACIÓN", font=ctk.CTkFont(size=9, weight="bold"),
+                    text_color="white").pack(anchor="w", padx=6, pady=(6, 0))
+        self.status_integration_label = ctk.CTkLabel(self.status_integration_block, text="LISTO", font=ctk.CTkFont(size=16, weight="bold"),
+                                                   text_color="white")
+        self.status_integration_label.pack(anchor="center", pady=(0, 2))
+        ctk.CTkLabel(self.status_integration_block, text="datos fluirán", font=ctk.CTkFont(size=8),
+                    text_color="lightgray").pack(anchor="center", pady=(0, 6))
+
+        # INICIATIVA PRINCIPAL PARA SCRAPING - EDITOR DE KEYWORDS LISTO PARA SCRAPE
+        main_editor_section = ctk.CTkFrame(main_frame, fg_color=COLORS['secondary'])
+        main_editor_section.pack(fill="x", pady=(0, 20))
+
+        editor_header = ctk.CTkFrame(main_editor_section, fg_color=COLORS['surface'], height=50)
+        editor_header.pack(fill="x", pady=(15, 0))
+        editor_header.pack_propagate(False)
+
+        ctk.CTkLabel(editor_header, text="🎯 KEYWORDS PARA SCRAPING ACTUALES",
+                    font=ctk.CTkFont(size=14, weight="bold"),
+                    text_color=COLORS['text_primary']).pack(side="left", padx=20, pady=10)
+
+        # Botones directos para scraping
+        scraper_actions = ctk.CTkFrame(editor_header, fg_color="transparent")
+        scraper_actions.pack(side="right", padx=20, pady=5)
+
+        ctk.CTkButton(scraper_actions, text="🚀 IR A SCRAPING",
+                     command=self.go_to_scraping_with_current_keywords, fg_color=COLORS['accent'],
+                     height=30, font=ctk.CTkFont(size=11, weight="bold")).pack(side="right")
+
+        ctk.CTkButton(scraper_actions, text="📋 COPIAR A SCRAPING",
+                     command=self.copy_keywords_to_scraping, fg_color=COLORS['info'],
+                     height=30, font=ctk.CTkFont(size=10)).pack(side="right", padx=(0, 5))
+
+        # Editor principal - READY PARA SCRAPING
+        main_editor_frame = ctk.CTkFrame(main_editor_section, fg_color=COLORS['primary'])
+        main_editor_frame.pack(fill="both", padx=15, pady=(10, 15))
+
+        # Este será el editor principal que se conecta con scraping
+        self.main_keywords_text = ctk.CTkTextbox(main_editor_frame,
+                                               font=ctk.CTkFont(family="Consolas", size=12),
+                                               wrap="word")
+        self.main_keywords_text.pack(fill="both", expand=True, padx=10, pady=10)
+        self.main_keywords_text.insert("1.0", "# Keywords listas para scraping\n# Una keyword por línea\n# Estas keywords serán usadas en la pestaña '🚀 Scraping'")
+
+        # Información de integración
+        integration_info = ctk.CTkFrame(main_editor_section, fg_color=COLORS['border'], height=30)
+        integration_info.pack(fill="x", padx=15, pady=(0, 15))
+        integration_info.pack_propagate(False)
+        ctk.CTkLabel(integration_info, text="ℹ️ Estas keywords se usan automáticamente en Scraping • Análisis • Resultados",
+                    font=ctk.CTkFont(size=10), text_color=COLORS['text_secondary']).pack(pady=5)
+
+        # MÉTRICAS PRINCIPALES - SIEMPRE VISIBLES
+        metrics_frame = ctk.CTkFrame(main_frame, fg_color=COLORS['secondary'])
+        metrics_frame.pack(fill="x", pady=(0, 20))
+
+        metrics_grid = ctk.CTkFrame(metrics_frame, fg_color="transparent")
+        metrics_grid.pack(fill="x", padx=20, pady=15)
+
+        # Métrica 1: Total Keywords
+        self.kw_total_block = ctk.CTkFrame(metrics_grid, fg_color=COLORS['accent'], width=180, height=80)
+        self.kw_total_block.pack(side="left", padx=(0, 10))
+        self.kw_total_block.pack_propagate(False)
+        ctk.CTkLabel(self.kw_total_block, text="📊 TOTAL", font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color="white").pack(anchor="w", padx=8, pady=(8, 0))
+        self.kw_total_label = ctk.CTkLabel(self.kw_total_block, text="0", font=ctk.CTkFont(size=24, weight="bold"),
+                                         text_color="white")
+        self.kw_total_label.pack(anchor="center", pady=(0, 5))
+
+        # Métrica 2: Keywords Analizadas
+        self.kw_analyzed_block = ctk.CTkFrame(metrics_grid, fg_color=COLORS['success'], width=180, height=80)
+        self.kw_analyzed_block.pack(side="left", padx=(0, 10))
+        self.kw_analyzed_block.pack_propagate(False)
+        ctk.CTkLabel(self.kw_analyzed_block, text="🔍 ANALIZADAS", font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color="white").pack(anchor="w", padx=8, pady=(8, 0))
+        self.kw_analyzed_label = ctk.CTkLabel(self.kw_analyzed_block, text="0", font=ctk.CTkFont(size=24, weight="bold"),
+                                            text_color="white")
+        self.kw_analyzed_label.pack(anchor="center", pady=(0, 5))
+
+        # Métrica 3: Keywords Únicas
+        self.kw_unique_block = ctk.CTkFrame(metrics_grid, fg_color=COLORS['info'], width=180, height=80)
+        self.kw_unique_block.pack(side="left", padx=(0, 10))
+        self.kw_unique_block.pack_propagate(False)
+        ctk.CTkLabel(self.kw_unique_block, text="💎 ÚNICAS", font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color="white").pack(anchor="w", padx=8, pady=(8, 0))
+        self.kw_unique_label = ctk.CTkLabel(self.kw_unique_block, text="0", font=ctk.CTkFont(size=24, weight="bold"),
+                                          text_color="white")
+        self.kw_unique_label.pack(anchor="center", pady=(0, 5))
+
+        # Métrica 4: Dificultad Promedio
+        self.kw_difficulty_block = ctk.CTkFrame(metrics_grid, fg_color=COLORS['warning'], width=180, height=80)
+        self.kw_difficulty_block.pack(side="left")
+        self.kw_difficulty_block.pack_propagate(False)
+        ctk.CTkLabel(self.kw_difficulty_block, text="🎯 DIFICULTAD", font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color="white").pack(anchor="w", padx=8, pady=(8, 0))
+        self.kw_difficulty_label = ctk.CTkLabel(self.kw_difficulty_block, text="N/A", font=ctk.CTkFont(size=20, weight="bold"),
+                                              text_color="white")
+        self.kw_difficulty_label.pack(anchor="center", pady=(0, 5))
+
+        # HERRAMIENTAS PRINCIPALES
+        tools_frame = ctk.CTkFrame(main_frame, fg_color=COLORS['secondary'])
+        tools_frame.pack(fill="x", pady=(0, 20))
+
+        tools_title = ctk.CTkLabel(tools_frame, text="🛠️ HERRAMIENTAS DE ANÁLISIS DE KEYWORDS",
+                                  font=ctk.CTkFont(size=14, weight="bold"),
+                                  text_color=COLORS['text_primary'])
+        tools_title.pack(anchor="w", padx=20, pady=(15, 10))
+
+        # Grid de herramientas
+        tools_grid = ctk.CTkFrame(tools_frame, fg_color="transparent")
+        tools_grid.pack(fill="x", padx=20, pady=(0, 15))
+
+        # Fila 1 de herramientas
+        tools_row1 = ctk.CTkFrame(tools_grid, fg_color="transparent")
+        tools_row1.pack(fill="x", pady=(0, 10))
+
+        # Herramienta 1: Carga masiva
+        tool1 = ctk.CTkFrame(tools_row1, fg_color=COLORS['surface'], height=80)
+        tool1.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        tool1.pack_propagate(False)
+        ctk.CTkButton(tool1, text="📁 CARGAR ARCHIVO\n(TXT/CSV/JSON)",
+                     command=self.load_keywords_file, height=50,
+                     fg_color=COLORS['accent'], text_color="white").pack(fill="x", padx=10, pady=5)
+        ctk.CTkLabel(tool1, text="Importar keywords desde archivos", font=ctk.CTkFont(size=9),
+                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
+
+        # Herramienta 2: Google Suggest
+        tool2 = ctk.CTkFrame(tools_row1, fg_color=COLORS['surface'], height=80)
+        tool2.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        tool2.pack_propagate(False)
+
+        suggest_frame = ctk.CTkFrame(tool2, fg_color="transparent")
+        suggest_frame.pack(fill="x", padx=10, pady=5)
+
+        self.suggest_entry = ctk.CTkEntry(suggest_frame, placeholder_text="Ingresa keyword base...",
+                                        height=30, width=150)
+        self.suggest_entry.pack(side="left", padx=(0, 8))
+
+        ctk.CTkButton(suggest_frame, text="🎯 GENERAR\nSUGERENCIAS",
+                     command=self.generate_suggestions, height=30,
+                     fg_color=COLORS['success'], text_color="white").pack(side="left")
+
+        ctk.CTkLabel(tool2, text="Expande tu lista con sugerencias de Google", font=ctk.CTkFont(size=9),
+                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
+
+        # Herramienta 3: Limpieza avanzada
+        tool3 = ctk.CTkFrame(tools_row1, fg_color=COLORS['surface'], height=80)
+        tool3.pack(side="left", fill="x", expand=True)
+        tool3.pack_propagate(False)
+        ctk.CTkButton(tool3, text="🧹 LIMPIEZA\nAVANZADA",
+                     command=self.advanced_keyword_cleaning, height=50,
+                     fg_color=COLORS['error'], text_color="white").pack(fill="x", padx=10, pady=5)
+        ctk.CTkLabel(tool3, text="Eliminar duplicados y palabras vacías", font=ctk.CTkFont(size=9),
+                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
+
+        # Fila 2 de herramientas
+        tools_row2 = ctk.CTkFrame(tools_grid, fg_color="transparent")
+        tools_row2.pack(fill="x", pady=(0, 10))
+
+        # Herramienta 4: Análisis de competitividad
+        tool4 = ctk.CTkFrame(tools_row2, fg_color=COLORS['surface'], height=80)
+        tool4.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        tool4.pack_propagate(False)
+        ctk.CTkButton(tool4, text="📈 ANÁLISIS DE\nCOMPETITIVIDAD",
+                     command=self.analyze_keyword_competitiveness, height=50,
+                     fg_color=COLORS['info'], text_color="white").pack(fill="x", padx=10, pady=5)
+        ctk.CTkLabel(tool4, text="Analiza dificultad y oportunidad SEO", font=ctk.CTkFont(size=9),
+                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
+
+        # Herramienta 5: Generador de variantes
+        tool5 = ctk.CTkFrame(tools_row2, fg_color=COLORS['surface'], height=80)
+        tool5.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        tool5.pack_propagate(False)
+        ctk.CTkButton(tool5, text="🔄 GENERAR\nVARIANTES",
+                     command=self.generate_keyword_variants, height=50,
+                     fg_color=COLORS['warning'], text_color="white").pack(fill="x", padx=10, pady=5)
+        ctk.CTkLabel(tool5, text="Crea variaciones long-tail y relacionadas", font=ctk.CTkFont(size=9),
+                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
+
+        # Herramienta 6: Exportación
+        tool6 = ctk.CTkFrame(tools_row2, fg_color=COLORS['surface'], height=80)
+        tool6.pack(side="left", fill="x", expand=True)
+        tool6.pack_propagate(False)
+        ctk.CTkButton(tool6, text="💾 EXPORTAR\nLISTA",
+                     command=self.export_keywords_advanced, height=50,
+                     fg_color=COLORS['accent'], text_color="white").pack(fill="x", padx=10, pady=5)
+        ctk.CTkLabel(tool6, text="Guardar en múltiples formatos", font=ctk.CTkFont(size=9),
+                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
+
+        # EDITOR PRINCIPAL DE KEYWORDS - ALTURA MÁXIMA
+        editor_section = ctk.CTkFrame(main_frame, fg_color=COLORS['secondary'])
+        editor_section.pack(fill="both", expand=True, pady=(0, 10))
+
+        editor_header = ctk.CTkFrame(editor_section, fg_color=COLORS['surface'], height=50)
+        editor_header.pack(fill="x", pady=(10, 0))
+        editor_header.pack_propagate(False)
+
+        ctk.CTkLabel(editor_header, text="📝 EDITOR DE KEYWORDS AVANZADO",
+                    font=ctk.CTkFont(size=14, weight="bold"),
+                    text_color=COLORS['text_primary']).pack(side="left", padx=20, pady=10)
+
+        # Controles del editor - MOVIDOS ARRIBA
+        editor_controls = ctk.CTkFrame(editor_header, fg_color="transparent")
+        editor_controls.pack(side="right", padx=20, pady=10)
+
+        ctk.CTkButton(editor_controls, text="↻ EDITAR MANUALMENTE",
+                     command=self.edit_keywords_manual, width=140,
+                     fg_color=COLORS['info'], height=30).pack(side="left", padx=(0, 5))
+
+        ctk.CTkButton(editor_controls, text="📊 ACTUALIZAR ESTADÍSTICAS",
+                     command=self.update_keywords_stats, width=160,
+                     fg_color=COLORS['success'], height=30).pack(side="left", padx=(0, 5))
+
+        # BOTONES DE CARGA MASIVOS - MOVIDOS ARRIBA DEL EDITOR PARA FLUJO COHERENTE
+        quick_load_frame = ctk.CTkFrame(editor_header, fg_color="transparent")
+        quick_load_frame.pack(side="right", padx=(0, 20), pady=5)
+
+        ctk.CTkButton(quick_load_frame, text="📁 CARGAR TXT",
+                     command=lambda: self.load_keywords_file_from_button("txt"),
+                     fg_color=COLORS['accent'], height=30, width=110).pack(side="left", padx=(0, 3))
+
+        ctk.CTkButton(quick_load_frame, text="📄 CARGAR CSV",
+                     command=lambda: self.load_keywords_file_from_button("csv"),
+                     fg_color=COLORS['success'], height=30, width=110).pack(side="left")
+
+        # Editor principal - ALTURA MÁXIMA para mejor UX
+        editor_frame = ctk.CTkFrame(editor_section, fg_color=COLORS['primary'])
+        editor_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Crear el text widget con altura máxima
+        self.keywords_text = ctk.CTkTextbox(editor_frame,
+                                         font=ctk.CTkFont(family="Consolas", size=12),
+                                         wrap="word")
         self.keywords_text.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # Botones de acción para keywords
-        action_frame = ctk.CTkFrame(bottom_frame)
-        action_frame.pack(fill="x", pady=5)
-        
-        ctk.CTkButton(action_frame, text="🧹 Limpiar Duplicados", 
-                     command=self.deduplicate_keywords).pack(side="left", padx=5)
-        ctk.CTkButton(action_frame, text="🚫 Filtrar Keywords", 
-                     command=self.filter_keywords).pack(side="left", padx=5)
-        ctk.CTkButton(action_frame, text="💾 Guardar Keywords", 
-                     command=self.save_keywords).pack(side="left", padx=5)
+
+        # Barra de estado inferior
+        status_bar = ctk.CTkFrame(editor_section, fg_color=COLORS['surface'], height=40)
+        status_bar.pack(fill="x", pady=(0, 10))
+        status_bar.pack_propagate(False)
+
+        self.keyword_status_label = ctk.CTkLabel(status_bar,
+                                               text="📋 Listo para trabajar con keywords - Una keyword por línea",
+                                               font=ctk.CTkFont(size=11),
+                                               text_color=COLORS['text_secondary'])
+        self.keyword_status_label.pack(side="left", padx=20, pady=10)
+
+        # Actualizar estadísticas iniciales
+        self.update_keywords_stats()
         
     def setup_scraping_tab(self):
-        """Configura la pestaña de scraping"""
+        """Configura la pestaña de scraping con interfaz mejorada"""
         main_frame = ctk.CTkFrame(self.tab_scraping)
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # Título
-        title_label = ctk.CTkLabel(main_frame, text="Scraping en Tiempo Real", 
+
+        # Título principal con información de estado
+        header_frame = ctk.CTkFrame(main_frame)
+        header_frame.pack(fill="x", padx=10, pady=(10, 5))
+
+        # Título y estado
+        title_frame = ctk.CTkFrame(header_frame)
+        title_frame.pack(fill="x", pady=(0, 5))
+
+        title_label = ctk.CTkLabel(title_frame, text="🚀 Scraping en Tiempo Real",
                                   font=ctk.CTkFont(size=20, weight="bold"))
-        title_label.pack(pady=(10, 20))
-        
-        # Frame de controles
+        title_label.pack(side="left")
+
+        # Indicador de estado
+        self.scraping_status_label = ctk.CTkLabel(title_frame, text="⏸️ Listo para comenzar",
+                                                 font=ctk.CTkFont(size=14, weight="bold"), text_color="orange")
+        self.scraping_status_label.pack(side="right")
+
+        # Información de configuración
+        config_info = f"📊 Keywords: {len(self.keywords_list)} | 🎯 Dominio: {self.domain_entry.get() or 'Todos'} | 🌍 País: {self.country_var.get()} | 📄 Páginas: {int(self.pages_var.get())}"
+        self.config_info_label = ctk.CTkLabel(header_frame, text=config_info, font=ctk.CTkFont(size=11))
+        self.config_info_label.pack(anchor="w")
+
+        # Frame de controles principales
         controls_frame = ctk.CTkFrame(main_frame)
         controls_frame.pack(fill="x", padx=10, pady=5)
-        
-        # Información de configuración
-        info_frame = ctk.CTkFrame(controls_frame)
-        info_frame.pack(fill="x", pady=5)
-        
-        config_info = f"Configuración actual: {len(self.keywords_list)} keywords | Dominio: {self.domain_entry.get() or 'Todos'}"
-        self.config_info_label = ctk.CTkLabel(info_frame, text=config_info)
-        self.config_info_label.pack()
-        
-        # Calculadora de costos en tiempo real
-        cost_calculator_frame = ctk.CTkFrame(controls_frame)
-        cost_calculator_frame.pack(fill="x", pady=10)
 
-        ctk.CTkLabel(cost_calculator_frame, text="💰 Calculadora de Costos:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+        # Panel de costos mejorado
+        costs_panel = ctk.CTkFrame(controls_frame)
+        costs_panel.pack(fill="x", pady=(0, 10))
 
-        # Contadores de consultas
-        self.cost_labels_frame = ctk.CTkFrame(cost_calculator_frame)
-        self.cost_labels_frame.pack(fill="x", pady=5)
+        ctk.CTkLabel(costs_panel, text="💰 Calculadora de Costos Google API", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(10,5))
 
-        # Inicializar contadores
+        # Costos en filas separadas para mejor visualización
+        costs_grid = ctk.CTkFrame(costs_panel)
+        costs_grid.pack(fill="x", pady=(0, 10))
+
+        # Inicializar contadores de costos
         self.total_consults = 0
         self.total_cost = 0.0
         self.today_consults = 0
 
-        # Etiquetas de costo
-        self.free_consults_label = ctk.CTkLabel(self.cost_labels_frame, text="Consultas gratis (100/día restantes): 100")
-        self.free_consults_label.pack(side="left", padx=(0, 20))
+        # Contadores visuales
+        self.free_consults_label = ctk.CTkLabel(costs_grid, text="🟢 Consultas GRATIS (100/día): 100 restantes",
+                                               font=ctk.CTkFont(size=12))
+        self.free_consults_label.pack(anchor="w", pady=(0, 5))
 
-        self.paid_consults_label = ctk.CTkLabel(self.cost_labels_frame, text="Consultas pagas: $0.00")
-        self.paid_consults_label.pack(side="left", padx=(0, 20))
+        self.paid_consults_label = ctk.CTkLabel(costs_grid, text="🔴 Consultas PAGAS: $0.00",
+                                               font=ctk.CTkFont(size=12))
+        self.paid_consults_label.pack(anchor="w", pady=(0, 5))
 
-        self.total_cost_label = ctk.CTkLabel(self.cost_labels_frame, text="💸 Costo total: $0.00", font=ctk.CTkFont(weight="bold"))
-        self.total_cost_label.pack(side="right")
+        self.total_cost_label = ctk.CTkLabel(costs_grid, text="💸 Costo total estimado: $0.00",
+                                            font=ctk.CTkFont(size=14, weight="bold"))
+        self.total_cost_label.pack(anchor="w")
+
+        # Información sobre cuotas
+        quota_info = ctk.CTkLabel(costs_panel,
+                                 text="ℹ️ 100 consultas gratis por día | $5 por cada 1000 consultas adicionales",
+                                 font=ctk.CTkFont(size=10), text_color="gray")
+        quota_info.pack(anchor="w", pady=(5, 10))
+
+        # Botones de control mejorados
+        buttons_frame = ctk.CTkFrame(controls_frame)
+        buttons_frame.pack(fill="x", pady=(0, 10))
+
+        # Botones en dos filas
+        control_buttons_top = ctk.CTkFrame(buttons_frame)
+        control_buttons_top.pack(fill="x", pady=(0, 5))
+
+        self.start_button = ctk.CTkButton(control_buttons_top, text="🚀 Iniciar Scraping",
+                                         command=self.start_scraping, fg_color="green", hover_color="dark green",
+                                         height=40, font=ctk.CTkFont(size=12, weight="bold"))
+        self.start_button.pack(side="left", padx=(0, 5), fill="x", expand=True)
+
+        self.stop_button = ctk.CTkButton(control_buttons_top, text="⏹️ Detener",
+                                        command=self.stop_scraping, fg_color="red", hover_color="dark red",
+                                        height=40, font=ctk.CTkFont(size=12, weight="bold"),
+                                        state="disabled")
+        self.stop_button.pack(side="left")
+
+        control_buttons_bottom = ctk.CTkFrame(buttons_frame)
+        control_buttons_bottom.pack(fill="x")
+
+        reset_button = ctk.CTkButton(control_buttons_bottom, text="🔄 Reiniciar Sesión",
+                                    command=self.reset_session, fg_color="purple", hover_color="dark purple",
+                                    height=35, font=ctk.CTkFont(size=11))
+        reset_button.pack(side="left", padx=(0, 5), expand=True)
+
+        test_api_button = ctk.CTkButton(control_buttons_bottom, text="🧪 Probar API",
+                                       command=self.test_google_api, fg_color="orange", hover_color="dark orange",
+                                       height=35, font=ctk.CTkFont(size=11))
+        test_api_button.pack(side="left", padx=(0, 5), expand=True)
+
+        # Barra de progreso mejorada
+        progress_frame = ctk.CTkFrame(main_frame)
+        progress_frame.pack(fill="x", padx=10, pady=(0, 5))
+
+        ctk.CTkLabel(progress_frame, text="📈 Progreso del Scraping:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+
+        self.progress_bar = ctk.CTkProgressBar(progress_frame, height=20)
+        self.progress_bar.pack(fill="x", pady=(5, 0))
+        self.progress_bar.set(0)
+
+        # Información detallada del progreso
+        progress_info_frame = ctk.CTkFrame(progress_frame)
+        progress_info_frame.pack(fill="x", pady=(5, 0))
+
+        self.progress_label = ctk.CTkLabel(progress_info_frame, text="⏸️ Esperando iniciar scraping...",
+                                          font=ctk.CTkFont(size=12))
+        self.progress_label.pack(side="left")
+
+        # Estadísticas en tiempo real
+        self.scraping_stats_label = ctk.CTkLabel(progress_info_frame,
+                                                text="Keywords: 0 | Procesadas: 0 | Restantes: 0",
+                                                font=ctk.CTkFont(size=10), text_color="gray")
+        self.scraping_stats_label.pack(side="right")
 
         # Botones de control
         button_frame = ctk.CTkFrame(controls_frame)
@@ -687,45 +1843,170 @@ class KeywordScraperGUI:
         self.logs_text.configure(state="disabled")
         
     def setup_results_tab(self):
-        """Configura la pestaña de resultados"""
+        """Configura la pestaña de resultados con bloques de estadísticas y mejor UI"""
         main_frame = ctk.CTkFrame(self.tab_results)
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # Título
-        title_label = ctk.CTkLabel(main_frame, text="Resultados del Scraping", 
-                                  font=ctk.CTkFont(size=20, weight="bold"))
-        title_label.pack(pady=(10, 20))
-        
-        # Frame de controles
-        controls_frame = ctk.CTkFrame(main_frame)
-        controls_frame.pack(fill="x", padx=10, pady=5)
-        
-        # Botones de exportación
-        export_frame = ctk.CTkFrame(controls_frame)
-        export_frame.pack(side="left", padx=5)
-        ctk.CTkButton(export_frame, text="📊 Exportar CSV", 
-                     command=lambda: self.export_results("csv")).pack(side="left", padx=2)
-        ctk.CTkButton(export_frame, text="📋 Exportar JSON", 
-                     command=lambda: self.export_results("json")).pack(side="left", padx=2)
-        ctk.CTkButton(export_frame, text="📈 Exportar Excel", 
-                     command=lambda: self.export_results("excel")).pack(side="left", padx=2)
-        
+
+        # Header con título y información general
+        header_frame = ctk.CTkFrame(main_frame)
+        header_frame.pack(fill="x", padx=10, pady=(10, 5))
+
+        title_frame = ctk.CTkFrame(header_frame)
+        title_frame.pack(fill="x", pady=(0, 5))
+
+        title_label = ctk.CTkLabel(title_frame, text="📊 RESULTADOS E INFORMES",
+                                  font=ctk.CTkFont(size=22, weight="bold"))
+        title_label.pack(side="left")
+
+        # Información de sesión actual
+        session_info = ctk.CTkLabel(title_frame, text="Sesión actual: Sin resultados",
+                                   font=ctk.CTkFont(size=12))
+        session_info.pack(side="right")
+        self.session_info_label = session_info
+
+        # BLOQUES DE ESTADÍSTICAS VISUALES
+        stats_blocks_frame = ctk.CTkFrame(main_frame)
+        stats_blocks_frame.pack(fill="x", padx=10, pady=(0, 10))
+
+        # Crear grid de 4 bloques principales
+        stats_grid = ctk.CTkFrame(stats_blocks_frame)
+        stats_grid.pack(fill="x", padx=10, pady=10)
+
+        # Bloque 1: Total de resultados
+        self.total_results_block = self.create_stats_block(stats_grid, "📈 TOTAL RESULTADOS",
+                                                          "0", "Sin datos", "blue")
+        self.total_results_block.pack(side="left", fill="both", expand=True, padx=(0, 5))
+
+        # Bloque 2: Posición promedio
+        self.avg_position_block = self.create_stats_block(stats_grid, "🎯 POSICIÓN PROMEDIO",
+                                                         "0.0", "Sin datos", "green")
+        self.avg_position_block.pack(side="left", fill="both", expand=True, padx=(0, 5))
+
+        # Bloque 3: Mejor posición
+        self.best_position_block = self.create_stats_block(stats_grid, "🥇 MEJOR POSICIÓN",
+                                                          "N/A", "Sin datos", "orange")
+        self.best_position_block.pack(side="left", fill="both", expand=True, padx=(0, 5))
+
+        # Bloque 4: Top 10 %
+        self.top10_percentage_block = self.create_stats_block(stats_grid, "📊 EN TOP 10",
+                                                             "0%", "Sin datos", "purple")
+        self.top10_percentage_block.pack(side="left", fill="both", expand=True)
+
+        # BLOQUES SECUNDARIOS DE MÉTRICAS
+        secondary_stats_frame = ctk.CTkFrame(main_frame)
+        secondary_stats_frame.pack(fill="x", padx=10, pady=(0, 10))
+
+        secondary_grid = ctk.CTkFrame(secondary_stats_frame)
+        secondary_grid.pack(fill="x", padx=10, pady=10)
+
+        # Keywords únicas
+        self.unique_keywords_block = self.create_stats_block(secondary_grid, "🔑 KEYWORDS ÚNICAS",
+                                                            "0", "Sin datos", "cyan")
+        self.unique_keywords_block.pack(side="left", fill="both", expand=True, padx=(0, 5))
+
+        # Dominios únicos
+        self.unique_domains_block = self.create_stats_block(secondary_grid, "🌐 DOMINIOS ÚNICOS",
+                                                           "0", "Sin datos", "pink")
+        self.unique_domains_block.pack(side="left", fill="both", expand=True, padx=(0, 5))
+
+        # Consultas realizadas
+        self.queries_used_block = self.create_stats_block(secondary_grid, "🔍 CONSULTAS USADAS",
+                                                         "0", "Sin datos", "red")
+        self.queries_used_block.pack(side="left", fill="both", expand=True, padx=(0, 5))
+
+        # Costo estimado
+        self.cost_estimate_block = self.create_stats_block(secondary_grid, "💰 COSTO ESTIMADO",
+                                                          "$0.00", "Sin datos", "gold")
+        self.cost_estimate_block.pack(side="left", fill="both", expand=True)
+
+        # LISTADO DE REPORTES HISTÓRICOS
+        reports_section = ctk.CTkFrame(main_frame)
+        reports_section.pack(fill="x", padx=10, pady=(0, 10))
+
+        reports_title_frame = ctk.CTkFrame(reports_section)
+        reports_title_frame.pack(fill="x", padx=10, pady=(10, 5))
+
+        ctk.CTkLabel(reports_title_frame, text="📂 HISTORIAL DE REPORTES",
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
+
+        # Botón para actualizar lista
+        refresh_btn = ctk.CTkButton(reports_title_frame, text="🔄 Actualizar",
+                                   command=self.update_reports_list, width=100)
+        refresh_btn.pack(side="right")
+
+        # Scrollable frame para lista de reportes
+        self.reports_list_frame = ctk.CTkScrollableFrame(reports_section, height=120)
+        self.reports_list_frame.pack(fill="x", padx=10, pady=5)
+
+        # Inicializar lista de reportes
+        self.update_reports_list()
+
+        # CONTROLES PRINCIPALES
+        controls_main_frame = ctk.CTkFrame(main_frame)
+        controls_main_frame.pack(fill="x", padx=10, pady=(0, 5))
+
+        # Panel izquierdo - Controles de datos actuales
+        current_controls = ctk.CTkFrame(controls_main_frame)
+        current_controls.pack(side="left", fill="x", expand=True)
+
+        ctk.CTkLabel(current_controls, text="🎯 DATOS ACTUALES:",
+                    font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        # Botones para datos actuales
+        buttons_frame_current = ctk.CTkFrame(current_controls)
+        buttons_frame_current.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkButton(buttons_frame_current, text="📊 Ver Detalles",
+                     command=self.show_current_stats_detailed).pack(side="left", padx=(0, 5))
+        ctk.CTkButton(buttons_frame_current, text="📈 Ir a Análisis",
+                     command=self.go_to_analysis).pack(side="left", padx=(0, 5))
+        ctk.CTkButton(buttons_frame_current, text="🧹 Limpiar Resultados",
+                     command=self.clear_current_results).pack(side="left")
+
+        # Panel derecho - Exportación
+        export_controls = ctk.CTkFrame(controls_main_frame)
+        export_controls.pack(side="right", fill="y")
+
+        ctk.CTkLabel(export_controls, text="💾 EXPORTAR:",
+                    font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        export_buttons = ctk.CTkFrame(export_controls)
+        export_buttons.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkButton(export_buttons, text="📊 CSV",
+                     command=lambda: self.export_results("csv")).pack(side="left", padx=(0, 2))
+        ctk.CTkButton(export_buttons, text="📋 JSON",
+                     command=lambda: self.export_results("json")).pack(side="left", padx=(0, 2))
+        ctk.CTkButton(export_buttons, text="📈 Excel",
+                     command=lambda: self.export_results("excel")).pack(side="left")
+
+        # TABLA DE RESULTADOS DETALLADA
+        table_section = ctk.CTkFrame(main_frame)
+        table_section.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+        table_header = ctk.CTkFrame(table_section)
+        table_header.pack(fill="x", padx=10, pady=(10, 5))
+
+        ctk.CTkLabel(table_header, text="📋 TABLA DETALLADA DE RESULTADOS",
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
+
         # Filtros
-        filter_frame = ctk.CTkFrame(controls_frame)
-        filter_frame.pack(side="right", padx=5)
-        ctk.CTkLabel(filter_frame, text="Filtrar:").pack(side="left", padx=(5, 2))
-        self.filter_entry = ctk.CTkEntry(filter_frame, placeholder_text="Buscar...", width=150)
+        filter_frame = ctk.CTkFrame(table_header)
+        filter_frame.pack(side="right")
+
+        ctk.CTkLabel(filter_frame, text="🔍 Filtrar:").pack(side="left", padx=(5, 2))
+        self.filter_entry = ctk.CTkEntry(filter_frame, placeholder_text="Buscar keyword...", width=200)
         self.filter_entry.pack(side="left", padx=2)
-        ctk.CTkButton(filter_frame, text="🔍 Aplicar", 
+        ctk.CTkButton(filter_frame, text="🎯 Aplicar",
                      command=self.apply_filter).pack(side="left", padx=2)
-        
-        # Tabla de resultados
-        table_frame = ctk.CTkFrame(main_frame)
+
+        # Tabla con scrollbar
+        table_frame = ctk.CTkFrame(table_section)
         table_frame.pack(fill="both", expand=True, padx=10, pady=5)
-        
+
         # Crear treeview para mostrar resultados con ordenamiento
         columns = ("keyword", "position", "title", "domain", "page")
-        self.results_tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=15)
+        self.results_tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=12)
 
         # Diccionario para controlar el orden de sorting
         self.tree_sort_orders = {}
@@ -738,11 +2019,11 @@ class KeywordScraperGUI:
         self.setup_treeview_sortable("domain", "Dominio")
         self.setup_treeview_sortable("page", "Página")
 
-        self.results_tree.column("keyword", width=200)
-        self.results_tree.column("position", width=80)
-        self.results_tree.column("title", width=300)
-        self.results_tree.column("domain", width=150)
-        self.results_tree.column("page", width=80)
+        self.results_tree.column("keyword", width=180)
+        self.results_tree.column("position", width=70)
+        self.results_tree.column("title", width=280)
+        self.results_tree.column("domain", width=130)
+        self.results_tree.column("page", width=50)
 
         # Scrollbar para la tabla
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.results_tree.yview)
@@ -751,22 +2032,14 @@ class KeywordScraperGUI:
         self.results_tree.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
-        # Botones adicionales para gestión de informes
-        reports_frame = ctk.CTkFrame(main_frame)
-        reports_frame.pack(fill="x", padx=10, pady=(10, 0))
+        # Mensaje de estado inferior
+        status_frame = ctk.CTkFrame(main_frame)
+        status_frame.pack(fill="x", padx=10, pady=(0, 10))
 
-        ctk.CTkLabel(reports_frame, text="🎯 Gestión de Informes:").pack(side="left", padx=(0, 10))
-        ctk.CTkButton(reports_frame, text="📂 Cargar Informe Previo",
-                     command=self.load_previous_report).pack(side="left", padx=(0, 10))
-        ctk.CTkButton(reports_frame, text="📊 Estadísticas Detalladas",
-                     command=self.show_detailed_stats).pack(side="left", padx=(0, 10))
-        
-        # Estadísticas rápidas
-        stats_frame = ctk.CTkFrame(main_frame)
-        stats_frame.pack(fill="x", padx=10, pady=5)
-        
-        self.stats_label = ctk.CTkLabel(stats_frame, text="Total resultados: 0 | Keywords únicas: 0 | Posición promedio: 0.0")
-        self.stats_label.pack()
+        self.results_status_label = ctk.CTkLabel(status_frame,
+                                                text="⏳ Esperando resultados de scraping...",
+                                                font=ctk.CTkFont(size=11))
+        self.results_status_label.pack(pady=5)
         
     def setup_analysis_tab(self):
         """Configura la pestaña de análisis"""
@@ -806,13 +2079,24 @@ class KeywordScraperGUI:
         pages = int(float(value))
         self.pages_label.configure(text=f"{pages} página{'s' if pages > 1 else ''}")
         
-    def log_message(self, message):
-        """Añade mensaje a los logs"""
+    def log_message(self, message, level="info"):
+        """Añade mensaje a los logs con formato mejorado"""
         self.logs_text.configure(state="normal")
+
         timestamp = time.strftime("%H:%M:%S")
-        self.logs_text.insert("end", f"[{timestamp}] {message}\n")
+
+        # Añadir emojis y colores según nivel
+        formatted_message = f"[{timestamp}] {message}"
+
+        # Insertar con colores si es posible
+        self.logs_text.insert("end", formatted_message + "\n")
+
+        # Scroll al final
         self.logs_text.see("end")
         self.logs_text.configure(state="disabled")
+
+        # También mostrar en consola para debugging
+        print(f"[{timestamp}] {message}")
         
     def update_progress(self, current, total, message=""):
         """Actualiza la barra de progreso"""
@@ -1280,23 +2564,120 @@ class KeywordScraperGUI:
     # ========== MÉTODOS DE KEYWORDS ==========
     
     def load_keywords_file(self):
-        """Carga keywords desde archivo"""
+        """Carga keywords desde archivo al editor principal"""
         try:
             file_path = filedialog.askopenfilename(
-                filetypes=[("Text files", "*.txt"), ("CSV files", "*.csv"), ("All files", "*.*")]
+                filetypes=[("Text files", "*.txt"), ("CSV files", "*.csv"), ("JSON files", "*.json"), ("All files", "*.*")]
             )
-            
+
             if file_path:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    keywords = [line.strip() for line in f.readlines() if line.strip()]
-                
-                self.keywords_text.delete("1.0", "end")
-                self.keywords_text.insert("1.0", "\n".join(keywords))
-                self.update_keywords_count()
-                self.log_message(f"✅ Cargadas {len(keywords)} keywords desde {file_path}")
-                
+                keywords = []
+
+                if file_path.endswith('.csv'):
+                    # Cargar desde CSV - buscar columna de keywords
+                    import pandas as pd
+                    try:
+                        df = pd.read_csv(file_path)
+
+                        # Buscar posibles columnas de keywords
+                        possible_columns = ['keyword', 'keywords', 'kw', 'query', 'search_term']
+                        keyword_col = None
+
+                        for col in possible_columns:
+                            if col in df.columns:
+                                keyword_col = col
+                                break
+
+                        if keyword_col:
+                            keywords = df[keyword_col].dropna().astype(str).tolist()
+                        else:
+                            # Tomar primera columna no numérica
+                            for col in df.columns:
+                                if df[col].dtype == 'object':
+                                    keywords = df[col].dropna().astype(str).tolist()
+                                    break
+
+                        if not keywords:
+                            keywords = [str(x) for x in df.iloc[:, 0].dropna().tolist()]
+
+                    except Exception as e:
+                        messagebox.showerror("Error", f"Error leyendo CSV: {e}")
+                        return
+
+                elif file_path.endswith('.json'):
+                    # Cargar desde JSON
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            data = json.load(f)
+
+                        # Buscar array de keywords en diferentes estructuras posibles
+                        if isinstance(data, list):
+                            keywords = [str(k) for k in data if k]
+                        elif isinstance(data, dict):
+                            # Buscar posibles claves
+                            possible_keys = ['keywords', 'data', 'queries', 'items']
+                            for key in possible_keys:
+                                if key in data and isinstance(data[key], list):
+                                    keywords = [str(k) for k in data[key] if k]
+                                    break
+
+                            # Si no encontramos array, intentar con valores
+                            if not keywords:
+                                keywords = [str(v) for v in data.values() if isinstance(v, (str, int, float))][:50]  # Máximo 50
+
+                    except Exception as e:
+                        messagebox.showerror("Error", f"Error leyendo JSON: {e}")
+                        return
+
+                else:
+                    # Cargar desde archivo de texto plano
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+
+                        # Intentar detectar formato (líneas separadas por \n o ,)
+                        if ',' in content and '\n' not in content:
+                            # Comma separated
+                            keywords = [k.strip() for k in content.split(',') if k.strip()]
+                        else:
+                            # Line separated
+                            keywords = [line.strip() for line in content.split('\n') if line.strip() and not line.strip().startswith('#')]
+
+                # Filtrar y limpiar keywords
+                processed_keywords = []
+                ignored_lines = 0
+
+                for kw in keywords:
+                    clean_kw = kw.strip()
+                    if clean_kw and len(clean_kw) >= 2:  # Mínimo 2 caracteres (útiles para SEO)
+                        processed_keywords.append(clean_kw)
+                    else:
+                        ignored_lines += 1
+
+                if processed_keywords:
+                    # Establecer las keywords en el editor principal
+                    self.set_current_keywords(processed_keywords)
+
+                    # Actualizar estadísticas e integración
+                    self.update_integration_status()
+
+                    messagebox.showinfo("Archivo Cargado",
+                                      f"✅ Archivo cargado exitosamente!\n\n"
+                                      f"📁 Archivo: {os.path.basename(file_path)}\n"
+                                      f"📊 Keywords válidas: {len(processed_keywords)}\n"
+                                      f"🚫 Líneas ignoradas: {ignored_lines}\n\n"
+                                      f"Las keywords están listas para usar en Scraping.")
+
+                    self.log_message(f"✅ Cargadas {len(processed_keywords)} keywords válidas desde {file_path}")
+
+                else:
+                    messagebox.showerror("Sin Keywords Válidas",
+                                       f"No se encontraron keywords válidas en el archivo.\n\n"
+                                       f"Se ignoraron {ignored_lines} líneas.\n\n"
+                                       f"Asegúrate de que el archivo contenga keywords de al menos 2 caracteres."
+                                       )
+
         except Exception as e:
-            messagebox.showerror("Error", f"Error cargando keywords: {e}")
+            messagebox.showerror("Error", f"Error cargando archivo:\n\n{str(e)}")
             
     def edit_keywords_manual(self):
         """Abre ventana para edición manual de keywords"""
@@ -1424,19 +2805,36 @@ class KeywordScraperGUI:
     # ========== MÉTODOS DE SCRAPING ==========
     
     def start_scraping(self):
-        """Inicia el proceso de scraping"""
+        """Inicia el proceso de scraping con mejor indicadores visuales"""
         if not self.keywords_list:
             messagebox.showwarning("Advertencia", "No hay keywords para scrapear")
             return
-            
+
+        # Validar que tengamos credenciales configuradas
+        if not self.api_key_var.get().strip() or not self.search_engine_id_var.get().strip():
+            messagebox.showwarning("Error", "Configura tus credenciales de Google API primero\n\nVe a la pestaña '🔐 Google API'")
+            return
+
         # Actualizar configuración
         self.update_config_info()
-        
+
+        # Cambiar estado de interfaz
+        self.scraping_status_label.configure(text="🚀 Iniciando...", text_color="green")
+        self.progress_label.configure(text="🌀 Inicializando scraper...")
+        self.scraping_stats_label.configure(text="Preparando...")
+
         # Cambiar estado de botones
-        self.start_button.configure(state="disabled")
+        self.start_button.configure(state="disabled", text="⏳ Procesando...")
         self.stop_button.configure(state="normal")
         self.is_running = True
-        
+
+        # Limpiar logs anteriores
+        self.logs_text.configure(state="normal")
+        self.logs_text.insert("end", "\n" + "="*80 + "\n")
+        self.logs_text.insert("end", f"🚀 NUEVA SESIÓN DE SCRAPING - {time.strftime('%H:%M:%S %d/%m/%Y')}\n")
+        self.logs_text.insert("end", "="*80 + "\n\n")
+        self.logs_text.configure(state="disabled")
+
         # Iniciar scraping en hilo separado
         threading.Thread(target=self.scraping_thread, daemon=True).start()
         
@@ -1448,17 +2846,28 @@ class KeywordScraperGUI:
                                      "¿Estás seguro de reiniciar la sesión?\n\nSe perderán todos los resultados actuales."):
                 return
 
+            # Change UI state during reset
+            self.scraping_status_label.configure(text="🔄 Reiniciando...", text_color="orange")
+            self.progress_label.configure(text="🧹 Limpiando datos...")
+
+            # Stop any running process
+            if self.is_running:
+                self.is_running = False
+                self.log_message("⏹️ Proceso detenido para reiniciar")
+
             # Limpiar resultados actuales
             self.current_results = []
             self.keywords_list = []
 
             # Limpiar tablas
-            for item in self.results_tree.get_children():
-                self.results_tree.delete(item)
-            self.results_tree.delete(*self.results_tree.get_children())
+            if self.results_tree:
+                for item in self.results_tree.get_children():
+                    self.results_tree.delete(item)
+                self.results_tree.delete(*self.results_tree.get_children())
 
             # Limpiar campos de keywords
-            self.keywords_text.delete("1.0", "end")
+            if self.keywords_text:
+                self.keywords_text.delete("1.0", "end")
             self.keywords_count_label.configure(text="0")
 
             # Limpiar contadores de costos
@@ -1468,9 +2877,12 @@ class KeywordScraperGUI:
             self.update_cost_display()
 
             # Limpiar área de logs
-            self.logs_text.configure(state="normal")
-            self.logs_text.delete("1.0", "end")
-            self.logs_text.configure(state="disabled")
+            if self.logs_text:
+                self.logs_text.configure(state="normal")
+                self.logs_text.delete("1.0", "end")
+                self.logs_text.insert("1.0", f"🔄 SESIÓN REINICIADA - {time.strftime('%H:%M:%S %d/%m/%Y')}\n")
+                self.logs_text.insert("1.0", "="*60 + "\n")
+                self.logs_text.configure(state="disabled")
 
             # Limpiar estadísticas
             if hasattr(self, 'stats_label') and self.stats_label:
@@ -1478,15 +2890,15 @@ class KeywordScraperGUI:
 
             # Limpiar gráficos de análisis
             try:
-                for ax in [self.ax1, self.ax2, self.ax3, self.ax4]:
-                    ax.clear()
-                self.canvas.draw()
+                if hasattr(self, 'fig') and hasattr(self, 'canvas'):
+                    for ax in [self.ax1, self.ax2, self.ax3, self.ax4]:
+                        ax.clear()
+                    self.canvas.draw()
             except:
                 pass
 
             # Reiniciar barra de progreso
             self.progress_bar.set(0)
-            self.progress_label.configure(text="Listo para comenzar")
 
             # Limpiar dominio
             if self.domain_entry:
@@ -1495,13 +2907,16 @@ class KeywordScraperGUI:
             # Actualizar información de configuración
             self.update_config_info()
 
-            # Detener cualquier proceso activo
-            if self.is_running:
-                self.is_running = False
-                self.start_button.configure(state="normal")
-                self.stop_button.configure(state="disabled")
+            # Reset button states
+            self.start_button.configure(state="normal", text="🚀 Iniciar Scraping")
+            self.stop_button.configure(state="disabled")
 
-            self.log_message("🔄 Sesión reiniciada completamente")
+            # Update status labels
+            self.scraping_status_label.configure(text="⏸️ Listo para comenzar", text_color="orange")
+            self.progress_label.configure(text="Listo para comenzar")
+            self.scraping_stats_label.configure(text="Keywords: 0 | Procesadas: 0 | Restantes: 0")
+
+            self.log_message("✅ Sesión reiniciada completamente")
             messagebox.showinfo("Sesión Reiniciada",
                               "¡Sesión reiniciada exitosamente!\n\nResultado y configuración limpiados.")
 
@@ -1517,13 +2932,20 @@ class KeywordScraperGUI:
         self.log_message("⏹️ Scraping detenido por el usuario")
         
     def scraping_thread(self):
-        """Hilo principal de scraping con calculadora de costos en tiempo real"""
+        """Hilo principal de scraping con actualizaciones en tiempo real mejoradas"""
         try:
+            # Actualizar estado inicial
+            self.scraping_status_label.configure(text="⚙️ Configurando...", text_color="blue")
             self.log_message("🚀 Iniciando scraping...")
+            time.sleep(0.5)  # Pequeña pausa para mostrar el estado
 
             # Resetear contadores de sesión actual
             session_consults = 0
             session_cost = 0.0
+
+            # Actualizar estado: creando scraper
+            self.scraping_status_label.configure(text="🔧 Creando scraper...", text_color="orange")
+            self.progress_label.configure(text="Configurando scraper...")
 
             # Crear scraper con configuración actual
             from config.settings import config
@@ -1538,8 +2960,14 @@ class KeywordScraperGUI:
 
             self.scraper = StealthSerpScraper(custom_config)
 
-            # Ejecutar scraping
+            # Actualizar estado: listo para scrapear
+            self.scraping_status_label.configure(text="🚀 Scraping activo", text_color="green")
+            self.log_message(f"📋 Preparado para procesar {len(self.keywords_list)} keywords")
+
+            # Ejecutar scraping (esto toma tiempo)
             target_domain = self.domain_entry.get().strip() or None
+            self.progress_label.configure(text="🕐 Ejecutando búsquedas en Google...")
+
             results = self.scraper.batch_position_check(
                 self.keywords_list,
                 target_domain,
@@ -1547,6 +2975,10 @@ class KeywordScraperGUI:
             )
 
             if results and self.is_running:
+                # Actualizar estado: procesando resultados
+                self.scraping_status_label.configure(text="📊 Procesando resultados...", text_color="blue")
+                self.progress_label.configure(text="📈 Analizando resultados...")
+
                 self.current_results = results
 
                 # Calcular costos de esta sesión
@@ -1569,33 +3001,127 @@ class KeywordScraperGUI:
                 # Actualizar display de costos
                 self.update_cost_display()
 
-                # Actualizar interfaz
-                self.update_results_table()
-                self.update_stats()
+            # Actualizar interfaz con resultados
+            self.update_results_table()
+            self.update_stats()
 
-                self.log_message(f"✅ Scraping completado: {len(results)} resultados")
-                self.log_message(f"💰 Costo de sesión: ${session_cost:.2f} ({session_consults} consultas)")
+            # Actualizar bloques de estadísticas si están disponibles
+            try:
+                self.update_stats_blocks()
+            except:
+                pass  # No hay problema si no existen aún
+
+            # Actualizar estado: completado
+            self.scraping_status_label.configure(text="✅ Completado", text_color="green")
+            self.progress_label.configure(text="✅ Scraping completado exitosamente")
+
+            self.log_message(f"✅ Scraping completado: {len(results)} resultados encontrados")
+            self.log_message(f"💰 Costo de sesión: ${session_cost:.2f} ({session_consults} consultas realizadas)")
+
+            # GENERAR INFORME COMPLETO DESPUÉS DEL SCRAPING
+            self.log_message("📊 Generando informe completo después del scraping...")
+            self.progress_label.configure(text="📊 Generando informe completo...")
+
+            try:
+                # Crear dataframe para análisis más detallado
+                results_df = pd.DataFrame(results)
+                results_df['fecha_scraping'] = time.strftime("%Y-%m-%d %H:%M:%S")
+                results_df['dominio_objetivo'] = target_domain or "Todos"
+                results_df['pais'] = self.country_var.get()
+                results_df['idioma'] = self.language_var.get()
 
                 # Guardar resultados automáticamente
+                self.progress_label.configure(text="💾 Guardando resultados...")
                 timestamp = time.strftime("%Y%m%d_%H%M%S")
-                domain_suffix = f"_{target_domain}" if target_domain else ""
-                filename = f"positions{domain_suffix}_{timestamp}"
-                self.scraper.save_results(results, filename)
-                self.log_message(f"💾 Resultados guardados en data/{filename}.csv")
+                domain_suffix = f"_{target_domain.replace('.', '_')}" if target_domain else "_todos"
+                base_filename = f"scraping{len(self.keywords_list)}_{domain_suffix}_{timestamp}"
 
-            elif not self.is_running:
-                self.log_message("❌ Scraping cancelado")
-            else:
-                self.log_message("❌ No se obtuvieron resultados")
+                # Guardar múltiples formatos
+                csv_filename = f"{base_filename}.csv"
+                self.scraper.save_results(results, csv_filename.replace('.csv', ''))
+
+                # Guardar también como JSON para compatibilidad total
+                json_filename = f"data/{base_filename}.json"
+                with open(json_filename, 'w', encoding='utf-8') as f:
+                    json.dump(results, f, indent=2, ensure_ascii=False)
+
+                # Crear informe resumen en CSV adicional
+                summary_data = {
+                    'fecha_scraping': time.strftime("%Y-%m-%d %H:%M:%S"),
+                    'timestamp': timestamp,
+                    'dominio_objetivo': target_domain or "Todos",
+                    'keywords_procesadas': len(self.keywords_list),
+                    'resultados_encontrados': len(results),
+                    'posicion_promedio': results_df['position'].mean() if len(results) > 0 else 0,
+                    'mejor_posicion': results_df['position'].min() if len(results) > 0 else 0,
+                    'top10_resultados': len(results_df[results_df['position'] <= 10]) if len(results) > 0 else 0,
+                    'dominios_unicos': results_df['domain'].nunique() if len(results) > 0 else 0,
+                    'consultas_realizadas': session_consults,
+                    'costo_estimado': session_cost,
+                    'pais': self.country_var.get(),
+                    'idioma': self.language_var.get(),
+                    'archivo_csv': csv_filename,
+                    'archivo_json': json_filename
+                }
+
+                summary_df = pd.DataFrame([summary_data])
+                summary_filename = f"data/{base_filename}_resumen.csv"
+                summary_df.to_csv(summary_filename, index=False)
+
+                self.log_message("💾 INFORME COMPLETO GENERADO:")
+                self.log_message(f"   📊 {csv_filename} ({len(results)} resultados)")
+                self.log_message(f"   🗂️  {json_filename} ({len(results)} resultados)")
+                self.log_message(f"   📋 {summary_filename} (resumen ejecutivo)")
+
+                # Actualizar lista de reportes si está disponible
+                try:
+                    self.update_reports_list()
+                except:
+                    pass
+
+                # Cambiar a pestaña de resultados y mostrar información
+                self.tabview.set("📊 Resultados")
+
+                # Actualizar información de sesión
+                self.session_info_label.configure(text=f"Scraping completado: {len(results)} resultados")
+
+                # Actualizar estado final
+                self.results_status_label.configure(text=f"✅ Scraping finalizado - Informe guardado en 'data/{csv_filename}'")
+
+                messagebox.showinfo("✅ Scraping Completado",
+                                  f"¡Scraping completado exitosamente!\n\n"
+                                  f"📊 Resultados encontrados: {len(results)}\n"
+                                  f"🔑 Keywords procesadas: {len(self.keywords_list)}\n"
+                                  f"💾 Archivos guardados en carpeta 'data/'\n\n"
+                                  f"• {csv_filename}\n"
+                                  f"• {json_filename}\n"
+                                  f"• {summary_filename}\n\n"
+                                  f"Los resultados están disponibles en la pestaña de Resultados.")
+
+            except Exception as e:
+                self.log_message(f"⚠️ Error generando informe: {str(e)[:80]}")
+                messagebox.showwarning("Aviso", f"El scraping se completó, pero hubo un problema generando el informe:\n\n{str(e)}")
+
+            # Mostrar resumen final
+            self.progress_label.configure(text=f"🏆 ¡Completado! {len(results)} posiciones encontradas")
+            self.scraping_stats_label.configure(text="Procesadas: 100% | Informe: ✓")
 
         except Exception as e:
+            self.scraping_status_label.configure(text="❌ Error", text_color="red")
+            self.progress_label.configure(text="❌ Error durante el scraping")
             self.log_message(f"❌ Error en scraping: {e}")
+
+            # Mostrar mensaje de error
+            import tkinter.messagebox as messagebox
+            messagebox.showerror("Error en Scraping", f"Ocurrió un error durante el scraping:\n\n{str(e)}")
+
         finally:
             # Restaurar estado de botones
-            self.start_button.configure(state="normal")
+            self.start_button.configure(state="normal", text="🚀 Iniciar Scraping")
             self.stop_button.configure(state="disabled")
             self.is_running = False
-            self.update_progress(0, 1, "Completado")
+            self.progress_bar.set(0)
+            self.scraping_stats_label.configure(text="Listo para nuevo scraping")
             
     def update_config_info(self):
         """Actualiza la información de configuración"""
@@ -1768,6 +3294,172 @@ class KeywordScraperGUI:
             self.sort_treeview_column(col_name, self.tree_sort_orders[col_name])
 
         self.results_tree.heading(col_name, text=f"{display_name} ▼", command=sort_column)
+
+    # ========== MÉTODOS PARA INTEGRACIÓN ENTRE PESTAÑAS ==========
+
+    def go_to_scraping_with_current_keywords(self):
+        """Cambia a pestaña de scraping transfiriendo las keywords actuales"""
+        # Obtener keywords del editor principal
+        current_keywords = self.get_current_keywords()
+
+        if not current_keywords:
+            messagebox.showwarning("Sin Keywords", "No hay keywords en el editor principal.\n\nAgrega keywords primero antes de scrapear.")
+            return
+
+        # Cambiar a pestaña de scraping
+        self.tabview.set("🚀 Scraping")
+
+        # Confirmar transferencia
+        transfer_msg = f"✅ Cambiado a Scraping con {len(current_keywords)} keywords transferidas\n\nPuedes iniciar el scraping directamente."
+        messagebox.showinfo("Transferencia Exitosa", transfer_msg)
+
+        self.update_integration_status()
+        self.log_message(f"🔄 Transferidas {len(current_keywords)} keywords a pestaña de scraping")
+
+    def copy_keywords_to_scraping(self):
+        """Copia las keywords actuales del editor al sistema de scraping sin cambiar pestaña"""
+        current_keywords = self.get_current_keywords()
+
+        if not current_keywords:
+            messagebox.showwarning("Sin Keywords", "No hay keywords para copiar.")
+            return
+
+        # Actualizar keywords para scraping
+        self.keywords_list = current_keywords.copy()
+
+        # Mostrar confirmación sin cambiar de pestaña
+        self.update_integration_status()
+
+        # Mostrar mensaje breve
+        copy_msg = f"📋 Copiadas {len(current_keywords)} keywords al sistema de scraping"
+        self.status_integration_label.configure(text="ACTUALIZADO", text_color="white")
+        self.status_integration_block.configure(fg_color=COLORS['success'])
+
+        # Resetear después de 3 segundos
+        def reset_status():
+            time.sleep(3)
+            self.root.after(0, lambda: self.status_integration_label.configure(text="LISTO"))
+            self.root.after(0, lambda: self.status_integration_block.configure(fg_color=COLORS['accent']))
+
+        threading.Thread(target=reset_status, daemon=True).start()
+
+        self.log_message(f"📋 Copiadas {len(current_keywords)} keywords para scraping")
+
+    def get_current_keywords(self):
+        """Obtiene las keywords actuales del editor principal"""
+        text = self.main_keywords_text.get("1.0", "end-1c").strip()
+
+        # Si está vacío o solo tiene comentario, obtener del editor secundario
+        if not text or text.startswith("#") and len(text.split('\n')) <= 2:
+            text = self.keywords_text.get("1.0", "end-1c")
+
+        keywords = [k.strip() for k in text.split('\n') if k.strip() and not k.strip().startswith('#')]
+        return keywords
+
+    def set_current_keywords(self, keywords_list):
+        """Establece keywords en el editor principal"""
+        if keywords_list:
+            filtered_keywords = [k for k in keywords_list if k.strip()]
+            self.main_keywords_text.delete("1.0", "end")
+            self.main_keywords_text.insert("1.0", "\n".join(filtered_keywords))
+
+            # Actualizar estadísticas
+            self.update_keywords_stats()
+            self.update_integration_status()
+
+    def update_integration_status(self):
+        """Actualiza el estado de integración entre pestañas"""
+        main_kw = len(self.get_current_keywords())
+
+        # Actualizar contador principal
+        if hasattr(self, 'status_editor_count'):
+            self.status_editor_count.configure(text=str(main_kw))
+
+        # Actualizar contador de procesadas (por ahora mismo valor)
+        if hasattr(self, 'status_processed_count'):
+            processed = len([k for k in self.processed_keywords if k in self.get_current_keywords()])
+            self.status_processed_count.configure(text=str(processed if processed > 0 else main_kw))
+
+        # Actualizar costo estimado
+        if main_kw > 0:
+            # Estimar costo básico
+            pages = int(self.pages_var.get()) if hasattr(self, 'pages_var') else 1
+            estimated_cost = (main_kw * pages * 0.005)  # Costo aproximado
+            if estimated_cost <= 0.5:  # Gratis si <= $0.50
+                estimated_cost = 0.0
+
+            if hasattr(self, 'status_cost_label'):
+                if estimated_cost > 0:
+                    self.status_cost_label.configure(text=f"${estimated_cost:.2f}")
+                else:
+                    self.status_cost_label.configure(text="$0.00")
+
+    # ========== MÉTODOS PARA FUNCIONES NUEVAS EN KEYWORDS ==========
+
+    def advanced_keyword_cleaning(self):
+        """Limpieza avanzada de keywords con múltiples opciones"""
+        current_keywords = self.get_current_keywords()
+
+        if not current_keywords:
+            messagebox.showwarning("Advertencia", "No hay keywords para limpiar")
+            return
+
+        def clean_keywords():
+            keywords = current_keywords.copy()
+            original_count = len(keywords)
+
+            # Limpiar duplicados (ignorando mayúsculas/minúsculas)
+            seen = set()
+            cleaned = []
+            for kw in keywords:
+                lower_kw = kw.lower()
+                if lower_kw not in seen and lower_kw.strip():
+                    cleaned.append(kw)
+                    seen.add(lower_kw)
+
+            # Eliminar palabras vacías comunes (stop words) en español e inglés
+            stop_words = {
+                'spanish': ['el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'y', 'o', 'pero', 'que', 'como', 'si', 'porque', 'cuando', 'donde', 'quien', 'cual', 'cuales', 'este', 'esta', 'estos', 'estas', 'aquel', 'aquella', 'aquellos', 'aquellas', 'de', 'del', 'al', 'con', 'por', 'para', 'sin', 'sobre', 'tras', 'durante', 'mediante', 'desde', 'hasta', 'a', 'en', 'entre', 'hacia', 'contra', 'desde'],
+                'english': ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'shall', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'this', 'that', 'these', 'those', 'what', 'which', 'who', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very']
+            }
+
+            all_stop_words = stop_words['spanish'] + stop_words['english']
+            filtered = []
+            removed_stop_words = 0
+
+            for kw in cleaned:
+                words = re.findall(r'\b\w+\b', kw.lower())
+                if not all(word in all_stop_words for word in words):
+                    filtered.append(kw)
+                else:
+                    removed_stop_words += 1
+
+            # Filtrar keywords demasiado cortas (menos de 3 caracteres)
+            final_keywords = [kw for kw in filtered if len(kw.strip()) >= 3]
+            too_short_removed = len(filtered) - len(final_keywords)
+
+            # Actualizar interfaz con keywords limpias
+            if final_keywords:
+                self.set_current_keywords(final_keywords)
+                self.processed_keywords.extend(final_keywords)
+                self.update_integration_status()
+
+                removed_total = original_count - len(final_keywords)
+                messagebox.showinfo("Limpieza Completada",
+                                  f"✅ Limpieza avanzada completada!\n\n"
+                                  f"📊 Keywords originales: {original_count}\n"
+                                  f"📋 Keywords finales: {len(final_keywords)}\n"
+                                  f"🗑️ Eliminadas: {removed_total}\n"
+                                  f"   • Duplicadas: {original_count - len(cleaned)}\n"
+                                  f"   • Stop words: {removed_stop_words}\n"
+                                  f"   • Muy cortas: {too_short_removed}\n")
+
+                self.log_message(f"🧹 Limpieza avanzada: {original_count} → {len(final_keywords)} keywords")
+            else:
+                messagebox.showwarning("Sin Keywords", "La limpieza eliminó todas las keywords.\n\nConsidera revisar tus criterios de filtrado.")
+
+        # Ejecutar limpieza
+        clean_keywords()
 
     def sort_treeview_column(self, col_name, reverse=False):
         """Ordena la columna específica del Treeview"""
@@ -1994,6 +3686,991 @@ class KeywordScraperGUI:
         self.free_consults_label.configure(text=f"Consultas gratis (100/día restantes): {free_remaining}{free_cost}")
         self.paid_consults_label.configure(text=f"Consultas pagas: ${paid_cost:.2f}")
         self.total_cost_label.configure(text=f"💸 Costo total: ${self.total_cost:.2f}", font=ctk.CTkFont(weight="bold"))
+
+    # ========== MÉTODOS PARA BLOQUES DE ESTADÍSTICAS ==========
+
+    def create_stats_block(self, parent, title, value, subtitle, color):
+        """Crea un bloque de estadísticas visual con título, valor y subtítulo"""
+        block_frame = ctk.CTkFrame(parent, fg_color=color)
+
+        # Título del bloque
+        title_label = ctk.CTkLabel(block_frame, text=title,
+                                  font=ctk.CTkFont(size=11, weight="bold"),
+                                  text_color="white")
+        title_label.pack(anchor="w", padx=8, pady=(8, 2))
+
+        # Valor principal (grande y destacado)
+        value_label = ctk.CTkLabel(block_frame, text=str(value),
+                                  font=ctk.CTkFont(size=24, weight="bold"),
+                                  text_color="white")
+        value_label.pack(anchor="center", pady=(2, 2))
+
+        # Subtítulo descriptivo
+        subtitle_label = ctk.CTkLabel(block_frame, text=subtitle,
+                                     font=ctk.CTkFont(size=9),
+                                     text_color="lightgray")
+        subtitle_label.pack(anchor="center", padx=8, pady=(2, 8))
+
+        # Retornar el frame completo para poder actualizarlo después
+        block_frame.value_label = value_label
+        block_frame.subtitle_label = subtitle_label
+
+        return block_frame
+
+    def update_reports_list(self):
+        """Actualiza la lista de reportes históricos disponibles"""
+        try:
+            # Limpiar lista anterior
+            for widget in self.reports_list_frame.winfo_children():
+                widget.destroy()
+
+            # Listar archivos en data/
+            data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+
+            if not os.path.exists(data_dir):
+                ctk.CTkLabel(self.reports_list_frame, text="📁 No hay carpeta 'data/'").pack(pady=10)
+                return
+
+            # Buscar archivos relevantes (.csv y .json)
+            files = []
+            for filename in os.listdir(data_dir):
+                if filename.endswith(('.csv', '.json')):
+                    filepath = os.path.join(data_dir, filename)
+                    if os.path.isfile(filepath):
+                        # Obtener información del archivo
+                        file_stats = os.stat(filepath)
+                        mod_time = time.ctime(file_stats.st_mtime)
+                        file_size = file_stats.st_size
+
+                        files.append({
+                            'name': filename,
+                            'path': filepath,
+                            'size': file_size,
+                            'modified': mod_time,
+                            'type': filename.split('.')[-1].upper()
+                        })
+
+            # Ordenar por fecha de modificación (más reciente primero)
+            files.sort(key=lambda x: x['modified'], reverse=True)
+
+            if not files:
+                ctk.CTkLabel(self.reports_list_frame, text="📄 No hay reportes guardados").pack(pady=10)
+                return
+
+            # Crear un frame por archivo
+            for file_info in files[:10]:  # Mostrar máximo 10 archivos
+                file_frame = ctk.CTkFrame(self.reports_list_frame)
+                file_frame.pack(fill="x", pady=2, padx=5)
+
+                # Información del archivo (en horizontal)
+                info_frame = ctk.CTkFrame(file_frame)
+                info_frame.pack(fill="x", padx=8, pady=5)
+
+                # Nombre del archivo y tipo
+                name_col = ctk.CTkFrame(info_frame)
+                name_col.pack(side="left", fill="y")
+
+                ctk.CTkLabel(name_col, text=f"📄 {file_info['name']}",
+                            font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w")
+
+                type_label = ctk.CTkLabel(name_col, text=f"{file_info['type']} • {file_info['size']} bytes",
+                                         font=ctk.CTkFont(size=9), text_color="gray")
+                type_label.pack(anchor="w")
+
+                # Fecha y botones
+                actions_col = ctk.CTkFrame(info_frame)
+                actions_col.pack(side="right", fill="y")
+
+                # Fecha de modificación
+                date_str = time.strftime("%d/%m %H:%M", time.strptime(file_info['modified']))
+                date_label = ctk.CTkLabel(actions_col, text=date_str,
+                                         font=ctk.CTkFont(size=9), text_color="gray")
+                date_label.pack(anchor="e", pady=(0, 2))
+
+                # Botón de acción
+                action_btn = ctk.CTkButton(actions_col, text="▶️ Cargar",
+                                          command=lambda f=file_info: self.load_historical_report(f),
+                                          height=25, width=80,
+                                          font=ctk.CTkFont(size=10))
+                action_btn.pack(anchor="e")
+
+        except Exception as e:
+            self.log_message(f"⚠️ Error actualizando lista de reportes: {str(e)[:50]}")
+
+    def load_historical_report(self, file_info):
+        """Carga un reporte histórico basado en la información del archivo"""
+        try:
+            filepath = file_info['path']
+            filename = file_info['name']
+
+            self.log_message(f"📂 Cargando reporte histórico: {filename}")
+
+            # Cargar según el tipo de archivo
+            if filename.endswith('.csv'):
+                df = pd.read_csv(filepath)
+            elif filename.endswith('.json'):
+                df = pd.read_json(filepath)
+            else:
+                messagebox.showerror("Error", "Tipo de archivo no soportado")
+                return
+
+            # Convertir a formato compatible con la aplicación
+            results = df.to_dict('records')
+
+            # Actualizar resultados actuales
+            self.current_results = results
+
+            # Actualizar tabla de resultados
+            self.update_results_table()
+
+            # Actualizar bloques de estadísticas
+            self.update_stats_blocks()
+
+            # Actualizar pestaña de análisis
+            self.update_charts()
+
+            # Actualizar información de sesión
+            if hasattr(self, 'session_info_label'):
+                self.session_info_label.configure(text=f"Informe cargado: {filename}")
+
+            # Actualizar estado
+            if hasattr(self, 'results_status_label'):
+                self.results_status_label.configure(text=f"✅ Reporte '{filename}' cargado exitosamente")
+
+            self.log_message(f"✅ Reporte histórico cargado: {len(results)} resultados")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error cargando el reporte:\n\n{str(e)}")
+            self.log_message(f"❌ Error cargando reporte: {str(e)[:80]}")
+
+    def update_stats_blocks(self):
+        """Actualiza todos los bloques de estadísticas con los datos actuales"""
+        if not self.current_results:
+            # Valores por defecto cuando no hay datos
+            self.total_results_block.value_label.configure(text="0")
+            self.total_results_block.subtitle_label.configure(text="Sin resultados")
+
+            self.avg_position_block.value_label.configure(text="0.0")
+            self.avg_position_block.subtitle_label.configure(text="Sin datos")
+
+            self.best_position_block.value_label.configure(text="N/A")
+            self.best_position_block.subtitle_label.configure(text="Sin datos")
+
+            self.top10_percentage_block.value_label.configure(text="0%")
+            self.top10_percentage_block.subtitle_label.configure(text="Sin datos")
+
+            self.unique_keywords_block.value_label.configure(text="0")
+            self.unique_keywords_block.subtitle_label.configure(text="Sin datos")
+
+            self.unique_domains_block.value_label.configure(text="0")
+            self.unique_domains_block.subtitle_label.configure(text="Sin datos")
+
+            self.queries_used_block.value_label.configure(text="0")
+            self.queries_used_block.subtitle_label.configure(text="Sin datos")
+
+            self.cost_estimate_block.value_label.configure(text="$0.00")
+            self.cost_estimate_block.subtitle_label.configure(text="Sin datos")
+
+            return
+
+        try:
+            df = pd.DataFrame(self.current_results)
+
+            # Calcular métricas
+            total_results = len(df)
+            unique_keywords = df['keyword'].nunique() if 'keyword' in df.columns else 0
+            avg_position = df['position'].mean() if 'position' in df.columns else 0
+            best_position = df['position'].min() if 'position' in df.columns else 0
+            unique_domains = df['domain'].nunique() if 'domain' in df.columns else 0
+
+            # Calcular porcentaje en top 10
+            top10_count = len(df[df['position'] <= 10]) if 'position' in df.columns else 0
+            top10_percentage = (top10_count / total_results * 100) if total_results > 0 else 0
+
+            # Estimar consultas usadas (basado en posiciones encontradas)
+            queries_used = len(df) * 2  # Aproximación conservadora
+
+            # Estimar costo
+            cost_estimate = 0.0
+            if queries_used > 100:
+                paid_queries = queries_used - 100
+                cost_estimate = (paid_queries / 1000) * 5.0
+
+            # Actualizar cada bloque
+            self.total_results_block.value_label.configure(text=str(total_results))
+            self.total_results_block.subtitle_label.configure(text=f"{total_results} posiciones encontradas")
+
+            self.avg_position_block.value_label.configure(text=f"{avg_position:.1f}")
+            self.avg_position_block.subtitle_label.configure(text=f"Promedio de posiciones")
+
+            self.best_position_block.value_label.configure(text=str(best_position))
+            self.best_position_block.subtitle_label.configure(text=f"Mejor posición alcanzada")
+
+            self.top10_percentage_block.value_label.configure(text=f"{top10_percentage:.1f}%")
+            self.top10_percentage_block.subtitle_label.configure(text=f"En Top 10 resultados")
+
+            self.unique_keywords_block.value_label.configure(text=str(unique_keywords))
+            self.unique_keywords_block.subtitle_label.configure(text=f"Diferentes keywords")
+
+            self.unique_domains_block.value_label.configure(text=str(unique_domains))
+            self.unique_domains_block.subtitle_label.configure(text=f"Dominios únicos encontrados")
+
+            self.queries_used_block.value_label.configure(text=str(queries_used))
+            self.queries_used_block.subtitle_label.configure(text=f"Consultas API estimadas")
+
+            self.cost_estimate_block.value_label.configure(text=f"${cost_estimate:.2f}")
+            self.cost_estimate_block.subtitle_label.configure(text=f"Costo aproximado")
+
+        except Exception as e:
+            self.log_message(f"⚠️ Error actualizando bloques de estadísticas: {str(e)[:80]}")
+
+    def show_current_stats_detailed(self):
+        """Muestra estadísticas detalladas de los resultados actuales en ventana emergente"""
+        if not self.current_results:
+            messagebox.showwarning("Advertencia", "No hay resultados para mostrar estadísticas")
+            return
+
+        try:
+            # Crear ventana detallada
+            stats_window = ctk.CTkToplevel(self.root)
+            stats_window.title("📊 Estadísticas Detalladas - Resultados Actuales")
+            stats_window.geometry("700x600")
+            stats_window.transient(self.root)
+
+            # Título principal
+            title_frame = ctk.CTkFrame(stats_window)
+            title_frame.pack(fill="x", padx=20, pady=(20, 10))
+
+            ctk.CTkLabel(title_frame, text="📈 ANÁLISIS DETALLADO DE RESULTADOS",
+                        font=ctk.CTkFont(size=18, weight="bold")).pack()
+
+            session_info = f"📅 Resultados actuales | {len(self.current_results)} posiciones encontradas"
+            ctk.CTkLabel(title_frame, text=session_info,
+                        font=ctk.CTkFont(size=12)).pack(pady=(5, 0))
+
+            # Contenido scrollable
+            content_frame = ctk.CTkScrollableFrame(stats_window)
+            content_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+
+            df = pd.DataFrame(self.current_results)
+
+            # SECCIÓN 1: Métricas Generales
+            general_frame = ctk.CTkFrame(content_frame, fg_color="gray15")
+            general_frame.pack(fill="x", pady=(0, 15), padx=10)
+
+            ctk.CTkLabel(general_frame, text="📊 MÉTRICAS GENERALES",
+                        font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 10))
+
+            # Calcular métricas principales
+            total_results = len(df)
+            unique_keywords = df['keyword'].nunique() if 'keyword' in df.columns else 0
+            unique_domains = df['domain'].nunique() if 'domain' in df.columns else 0
+            avg_position = df['position'].mean() if 'position' in df.columns else 0
+
+            # Crear grid de métricas
+            metrics_frame = ctk.CTkFrame(general_frame)
+            metrics_frame.pack(fill="x", padx=20, pady=(0, 15))
+
+            # Fila 1
+            row1 = ctk.CTkFrame(metrics_frame)
+            row1.pack(fill="x", pady=(0, 10))
+
+            self.create_metric_card(row1, "📈 Total Resultados", str(total_results),
+                                   f"{total_results} posiciones encontradas", "blue")
+            self.create_metric_card(row1, "🔑 Keywords Únicas", str(unique_keywords),
+                                   f"{unique_keywords} términos diferentes", "green")
+
+            # Fila 2
+            row2 = ctk.CTkFrame(metrics_frame)
+            row2.pack(fill="x", pady=(0, 10))
+
+            self.create_metric_card(row2, "🌐 Dominios Únicos", str(unique_domains),
+                                   f"{unique_domains} websites encontrados", "orange")
+            self.create_metric_card(row2, "🎯 Posición Promedio", f"{avg_position:.1f}",
+                                   f"Posición media general", "purple")
+
+            # SECCIÓN 2: Distribución por Posiciones
+            if 'position' in df.columns:
+                positions_frame = ctk.CTkFrame(content_frame, fg_color="gray15")
+                positions_frame.pack(fill="x", pady=(0, 15), padx=10)
+
+                ctk.CTkLabel(positions_frame, text="🎯 DISTRIBUCIÓN POR POSICIONES",
+                            font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 10))
+
+                # Calcular rangos
+                top1 = len(df[df['position'] == 1])
+                top3 = len(df[df['position'] <= 3])
+                top5 = len(df[df['position'] <= 5])
+                top10 = len(df[df['position'] <= 10])
+                top20 = len(df[df['position'] <= 20])
+                beyond20 = len(df[df['position'] > 20])
+
+                ranges = [
+                    ("🥇 Posición 1", top1),
+                    ("🏆 Top 3", top3),
+                    ("⭐ Top 5", top5),
+                    ("📈 Top 10", top10),
+                    ("📊 Top 20", top20),
+                    ("🔍 Más allá de 20", beyond20)
+                ]
+
+                for range_name, count in ranges:
+                    percentage = (count / total_results * 100) if total_results > 0 else 0
+                    range_frame = ctk.CTkFrame(positions_frame)
+                    range_frame.pack(fill="x", padx=20, pady=2)
+
+                    ctk.CTkLabel(range_frame, text=f"{range_name}:",
+                                font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
+                    ctk.CTkLabel(range_frame,
+                                text=f"{count} resultados ({percentage:.1f}%)").pack(side="right")
+
+            # SECCIÓN 3: Top Dominios
+            if 'domain' in df.columns and unique_domains > 0:
+                domains_frame = ctk.CTkFrame(content_frame, fg_color="gray15")
+                domains_frame.pack(fill="x", pady=(0, 15), padx=10)
+
+                ctk.CTkLabel(domains_frame, text="🏆 TOP DOMINIOS",
+                            font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 10))
+
+                top_domains = df['domain'].value_counts().head(10)
+
+                for i, (domain, count) in enumerate(top_domains.items(), 1):
+                    percentage = (count / total_results * 100) if total_results > 0 else 0
+                    domain_frame = ctk.CTkFrame(domains_frame)
+                    domain_frame.pack(fill="x", padx=20, pady=2)
+
+                    rank_emoji = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, "🏅")
+                    ctk.CTkLabel(domain_frame,
+                                text=f"{rank_emoji} {domain}").pack(side="left")
+                    ctk.CTkLabel(domain_frame,
+                                text=f"{count} resultados ({percentage:.1f}%)").pack(side="right")
+
+            # SECCIÓN 4: Recomendaciones
+            recommendations_frame = ctk.CTkFrame(content_frame, fg_color="gray15")
+            recommendations_frame.pack(fill="x", pady=(0, 15), padx=10)
+
+            ctk.CTkLabel(recommendations_frame, text="🎯 RECOMENDACIONES",
+                        font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 10))
+
+            recommendations = []
+
+            if top10 / total_results > 0.5:
+                recommendations.append("• ¡Excelente! Más del 50% de tus keywords están en Top 10")
+            elif top10 / total_results > 0.3:
+                recommendations.append("• Buen resultado: Más del 30% en Top 10")
+            else:
+                recommendations.append("• Considera optimizar: Menos del 30% en Top 10")
+
+            if unique_domains < 5:
+                recommendations.append("• Diversidad limitada: Solo unos pocos dominios dominan")
+            elif unique_domains > 20:
+                recommendations.append("• Buena diversificación: Muchos dominios diferentes")
+
+            if avg_position < 10:
+                recommendations.append("• Muy buen posicionamiento promedio")
+            elif avg_position < 20:
+                recommendations.append("• Posicionamiento decente, hay oportunidades")
+            else:
+                recommendations.append("• Posicionamiento requiere mejora significativa")
+
+            for rec in recommendations:
+                ctk.CTkLabel(recommendations_frame, text=rec,
+                            justify="left").pack(anchor="w", padx=20, pady=2)
+
+            # Botón de cerrar
+            close_btn = ctk.CTkButton(stats_window, text="✅ Cerrar",
+                                     command=stats_window.destroy)
+            close_btn.pack(pady=(0, 20))
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error generando estadísticas detalladas:\n\n{str(e)}")
+
+    def create_metric_card(self, parent, title, value, subtitle, color):
+        """Crea una tarjeta de métrica para el análisis detallado"""
+        card_frame = ctk.CTkFrame(parent, fg_color=color, height=80)
+
+        # Título
+        ctk.CTkLabel(card_frame, text=title,
+                    font=ctk.CTkFont(size=12, weight="bold"),
+                    text_color="white").pack(pady=(10, 5))
+
+        # Valor grande
+        ctk.CTkLabel(card_frame, text=str(value),
+                    font=ctk.CTkFont(size=20, weight="bold"),
+                    text_color="white").pack()
+
+        # Subtítulo
+        ctk.CTkLabel(card_frame, text=subtitle,
+                    font=ctk.CTkFont(size=9),
+                    text_color="lightgray").pack(pady=(5, 10))
+
+        card_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
+        return card_frame
+
+    def go_to_analysis(self):
+        """Cambia a la pestaña de análisis y actualiza gráficos"""
+        try:
+            # Cambiar a la pestaña de análisis
+            self.tabview.set("📈 Análisis")
+
+            # Actualizar gráficos si hay datos
+            if self.current_results:
+                self.update_charts()
+                self.log_message("📊 Cambiado a pestaña de análisis con gráficos actualizados")
+            else:
+                self.log_message("📊 Cambiado a pestaña de análisis (sin datos para graficar)")
+
+        except Exception as e:
+            self.log_message(f"⚠️ Error cambiando a análisis: {str(e)[:50]}")
+
+    def advanced_keyword_cleaning(self):
+        """Limpieza avanzada de keywords con múltiples opciones"""
+        if not self.keywords_text.get("1.0", "end-1c").strip():
+            messagebox.showwarning("Advertencia", "No hay keywords para limpiar")
+            return
+
+        def clean_keywords():
+            text = self.keywords_text.get("1.0", "end-1c")
+            keywords = [k.strip() for k in text.split('\n') if k.strip()]
+
+            if not keywords:
+                return
+
+            original_count = len(keywords)
+
+            # Limpiar duplicados (ignorando mayúsculas/minúsculas)
+            seen = set()
+            cleaned = []
+            for kw in keywords:
+                lower_kw = kw.lower()
+                if lower_kw not in seen and lower_kw.strip():
+                    cleaned.append(kw)
+                    seen.add(lower_kw)
+
+            # Eliminar palabras vacías comunes (stop words) en español e inglés
+            stop_words = {
+                'spanish': ['el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'y', 'o', 'pero', 'que', 'como', 'si', 'porque', 'cuando', 'donde', 'quien', 'cual', 'cuales', 'este', 'esta', 'estos', 'estas', 'aquel', 'aquella', 'aquellos', 'aquellas', 'de', 'del', 'al', 'con', 'por', 'para', 'sin', 'sobre', 'tras', 'durante', 'mediante', 'desde', 'hasta', 'a', 'en', 'entre', 'hacia', 'contra', 'desde'],
+                'english': ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'shall', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'this', 'that', 'these', 'those', 'what', 'which', 'who', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very']
+            }
+
+            all_stop_words = stop_words['spanish'] + stop_words['english']
+            filtered = []
+            removed_stop_words = 0
+
+            for kw in cleaned:
+                words = re.findall(r'\b\w+\b', kw.lower())
+                if not all(word in all_stop_words for word in words):
+                    filtered.append(kw)
+                else:
+                    removed_stop_words += 1
+
+            # Filtrar keywords demasiado cortas (menos de 3 caracteres)
+            final_keywords = [kw for kw in filtered if len(kw.strip()) >= 3]
+            too_short_removed = len(filtered) - len(final_keywords)
+
+            # Actualizar interfaz
+            if final_keywords:
+                self.keywords_text.delete("1.0", "end")
+                self.keywords_text.insert("1.0", "\n".join(final_keywords))
+
+                # Actualizar estadísticas
+                self.update_keywords_stats()
+
+                removed_total = original_count - len(final_keywords)
+                messagebox.showinfo("Limpieza Completada",
+                                  f"✅ Limpieza avanzada completada!\n\n"
+                                  f"📊 Keywords originales: {original_count}\n"
+                                  f"📋 Keywords finales: {len(final_keywords)}\n"
+                                  f"🗑️ Eliminadas: {removed_total}\n"
+                                  f"   • Duplicadas: {original_count - len(cleaned)}\n"
+                                  f"   • Stop words: {removed_stop_words}\n"
+                                  f"   • Muy cortas: {too_short_removed}\n")
+
+                self.log_message(f"🧹 Limpieza avanzada: {original_count} → {len(final_keywords)} keywords")
+            else:
+                messagebox.showwarning("Sin Keywords", "La limpieza eliminó todas las keywords.\n\nConsidera revisar tus criterios de filtrado.")
+
+        # Ejecutar limpieza
+        clean_keywords()
+
+    def analyze_keyword_competitiveness(self):
+        """Análisis de competitividad y dificultad SEO de keywords"""
+        if not self.keywords_text.get("1.0", "end-1c").strip():
+            messagebox.showwarning("Advertencia", "No hay keywords para analizar")
+            return
+
+        # Validar credenciales de Google API
+        if not self.api_key_var.get().strip() or not self.search_engine_id_var.get().strip():
+            messagebox.showwarning("Error", "Configura tus credenciales de Google API primero\n\nVe a la pestaña '🔐 Google API'")
+            return
+
+        text = self.keywords_text.get("1.0", "end-1c")
+        keywords = [k.strip() for k in text.split('\n') if k.strip()]
+
+        if len(keywords) > 20:
+            if not messagebox.askyesno("Demasiadas Keywords",
+                                     f"Tienes {len(keywords)} keywords. El análisis de competitividad puede consumir muchos créditos de API (Google).\n\n"
+                                     f"Se cobrarán aproximadamente ${((len(keywords) * 10) - 100) / 1000 * 5:.2f} por esta operación.\n\n"
+                                     f"¿Quieres continuar de todas formas?"):
+                return
+
+        self.log_message("📈 Iniciando análisis de competitividad...")
+
+        def analyze_competitiveness():
+            try:
+                results = []
+                total_cost = 0
+
+                # Proceso por lotes para evitar límites
+                batch_size = 5
+                for i in range(0, len(keywords), batch_size):
+                    batch = keywords[i:i + batch_size]
+                    self.log_message(f"📊 Analizando lote {i//batch_size + 1}: {len(batch)} keywords")
+
+                    for keyword in batch:
+                        try:
+                            # Estimar competitividad basada en volumen de búsqueda aproximado
+                            # (En una implementación real, usarías APIs como Keyword Planner o similares)
+                            search_volume = self.estimate_search_volume(keyword)
+                            competition_score = self.calculate_competition_score(keyword)
+
+                            # Calcular dificultad SEO (0-100)
+                            difficulty = min(100, (competition_score * 20) + (len(keyword.split()) * 10))
+
+                            results.append({
+                                'keyword': keyword,
+                                'estimated_volume': search_volume,
+                                'competition': competition_score,
+                                'difficulty': difficulty,
+                                'opportunity_score': max(0, 100 - difficulty)  # Mayor oportunidad = menor dificultad
+                            })
+
+                            # Estimar costo (aproximado)
+                            total_cost += 0.01  # Costo estimado por consulta
+
+                        except Exception as e:
+                            self.log_message(f"⚠️ Error analizando '{keyword}': {e}")
+                            results.append({
+                                'keyword': keyword,
+                                'estimated_volume': 0,
+                                'competition': 5.0,
+                                'difficulty': 50.0,
+                                'opportunity_score': 50.0
+                            })
+
+                    # Pequeña pausa entre lotes
+                    time.sleep(0.5)
+
+                # Crear ventana de resultados
+                analysis_window = ctk.CTkToplevel(self.root)
+                analysis_window.title("📈 Análisis de Competitividad")
+                analysis_window.geometry("900x700")
+                analysis_window.transient(self.root)
+
+                title_frame = ctk.CTkFrame(analysis_window)
+                title_frame.pack(fill="x", padx=20, pady=(20, 10))
+
+                ctk.CTkLabel(title_frame, text="🔍 ANÁLISIS DE COMPETITIVIDAD DE KEYWORDS",
+                            font=ctk.CTkFont(size=18, weight="bold")).pack()
+
+                info_frame = ctk.CTkFrame(analysis_window)
+                info_frame.pack(fill="x", padx=20, pady=(0, 20))
+
+                summary = f"📊 {len(results)} keywords analizadas | 💰 Costo estimado: ${total_cost:.2f}"
+                ctk.CTkLabel(info_frame, text=summary, font=ctk.CTkFont(size=12)).pack(pady=10)
+
+                # Tabla de resultados
+                table_frame = ctk.CTkScrollableFrame(analysis_window)
+                table_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+
+                # Headers
+                headers_frame = ctk.CTkFrame(table_frame)
+                headers_frame.pack(fill="x", pady=(0, 5))
+
+                ctk.CTkLabel(headers_frame, text="📝 KEYWORD", width=200, font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
+                ctk.CTkLabel(headers_frame, text="🔍 VOL.", width=80, font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
+                ctk.CTkLabel(headers_frame, text="⚔️ COMP.", width=80, font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
+                ctk.CTkLabel(headers_frame, text="🎯 DIF.", width=80, font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
+                ctk.CTkLabel(headers_frame, text="💎 OPP.", width=80, font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
+
+                # Filas de datos
+                for result in results:
+                    row_frame = ctk.CTkFrame(table_frame, fg_color=COLORS['surface'])
+                    row_frame.pack(fill="x", pady=1)
+
+                    # Colorear según oportunidad
+                    opp_score = result['opportunity_score']
+                    if opp_score >= 70:
+                        color = COLORS['success']
+                    elif opp_score >= 50:
+                        color = COLORS['warning']
+                    else:
+                        color = COLORS['error']
+
+                    row_frame.configure(fg_color=color)
+
+                    # Datos
+                    ctk.CTkLabel(row_frame, text=result['keyword'][:30], width=200, text_color="white").pack(side="left", padx=5)
+                    ctk.CTkLabel(row_frame, text=f"{result['estimated_volume']:,}", width=80, text_color="white").pack(side="left", padx=5)
+                    ctk.CTkLabel(row_frame, text=f"{result['competition']:.1f}", width=80, text_color="white").pack(side="left", padx=5)
+                    ctk.CTkLabel(row_frame, text=f"{result['difficulty']:.0f}%", width=80, text_color="white").pack(side="left", padx=5)
+                    ctk.CTkLabel(row_frame, text=f"{opp_score:.0f}%", width=80, text_color="white").pack(side="left", padx=5)
+
+                # Botones de acción
+                buttons_frame = ctk.CTkFrame(analysis_window)
+                buttons_frame.pack(fill="x", padx=20, pady=(0, 20))
+
+                ctk.CTkButton(buttons_frame, text="💾 Exportar Análisis",
+                             command=lambda: self.export_competitiveness_analysis(results),
+                             fg_color=COLORS['info']).pack(side="left", padx=(0, 10))
+
+                ctk.CTkButton(buttons_frame, text="✅ Cerrar",
+                             command=analysis_window.destroy).pack(side="right")
+
+                self.log_message(f"✅ Análisis de competitividad completado: ${total_cost:.2f} estimado")
+
+            except Exception as e:
+                messagebox.showerror("Error", f"Error en análisis de competitividad:\n\n{str(e)}")
+
+        # Ejecutar análisis
+        threading.Thread(target=analyze_competitiveness, daemon=True).start()
+
+    def generate_keyword_variants(self):
+        """Genera variantes long-tail y relacionadas de las keywords actuales"""
+        if not self.keywords_text.get("1.0", "end-1c").strip():
+            messagebox.showwarning("Advertencia", "No hay keywords para generar variantes")
+            return
+
+        text = self.keywords_text.get("1.0", "end-1c")
+        keywords = [k.strip() for k in text.split('\n') if k.strip()]
+
+        if not keywords:
+            return
+
+        self.log_message("🔄 Generando variantes de keywords...")
+
+        def generate_variants():
+            variants = []
+            original_count = len(keywords)
+
+            # Variantes predefinidas para expandir
+            prefixes = ["como", "qué es", "mejor", "precio de", "comprar", "donde", "cuanto cuesta", "tutorial", "guía", "tips"]
+            suffixes = ["cercano", "cerca de mi", "en línea", "online", "barato", "económico", "profesional", "2025", "actual"]
+
+            for keyword in keywords:
+                variants.append(keyword)  # Mantener original
+
+                # Generar variantes long-tail
+                for prefix in prefixes[:3]:  # Limitar para no generar demasiado
+                    variants.append(f"{prefix} {keyword}")
+
+                for suffix in suffixes[:2]:  # Limitar para no generar demasiado
+                    variants.append(f"{keyword} {suffix}")
+
+                # Variantes con preguntas
+                if len(keyword.split()) <= 2:
+                    variants.append(f"{keyword} opiniones")
+                    variants.append(f"{keyword} reseñas")
+
+            # Eliminar duplicados y limpiar
+            unique_variants = list(set(variants))
+            final_variants = [v for v in unique_variants if len(v.strip()) >= 4]  # Mínimo 4 caracteres
+
+            # Actualizar interfaz
+            self.keywords_text.delete("1.0", "end")
+            self.keywords_text.insert("1.0", "\n".join(final_variants))
+
+            # Actualizar estadísticas
+            self.update_keywords_stats()
+
+            added = len(final_variants) - original_count
+            messagebox.showinfo("Variantes Generadas",
+                              f"✅ Variantes de keywords generadas!\n\n"
+                              f"🎯 Keywords originales: {original_count}\n"
+                              f"🚀 Keywords totales: {len(final_variants)}\n"
+                              f"➕ Variantes añadidas: {added}\n")
+
+            self.log_message(f"🔄 Variantes generadas: {original_count} → {len(final_variants)} keywords")
+
+        # Ejecutar generación
+        threading.Thread(target=generate_variants, daemon=True).start()
+
+    def export_keywords_advanced(self):
+        """Exportación avanzada de keywords con múltiples formatos"""
+        if not self.keywords_text.get("1.0", "end-1c").strip():
+            messagebox.showwarning("Advertencia", "No hay keywords para exportar")
+            return
+
+        text = self.keywords_text.get("1.0", "end-1c")
+        keywords = [k.strip() for k in text.split('\n') if k.strip()]
+
+        if not keywords:
+            return
+
+        # Ventana de opciones de exportación
+        export_window = ctk.CTkToplevel(self.root)
+        export_window.title("💾 Exportación Avanzada de Keywords")
+        export_window.geometry("500x600")
+        export_window.transient(self.root)
+        export_window.grab_set()
+
+        ctk.CTkLabel(export_window, text="📋 CONFIGURACIÓN DE EXPORTACIÓN",
+                    font=ctk.CTkFont(size=18, weight="bold")).pack(pady=(20, 10))
+
+        # Opciones de formato
+        format_frame = ctk.CTkFrame(export_window)
+        format_frame.pack(fill="x", padx=20, pady=10)
+
+        ctk.CTkLabel(format_frame, text="🎨 Formato:",
+                    font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        format_options = ["TXT (Lineas)", "CSV (Con estadísticas)", "JSON (Estructurado)", "XML (SEO Friendly)"]
+        format_var = ctk.StringVar(value=format_options[0])
+        format_combo = ctk.CTkComboBox(format_frame, values=format_options, variable=format_var)
+        format_combo.pack(fill="x", pady=(0, 10))
+
+        # Opciones adicionales
+        options_frame = ctk.CTkFrame(export_window)
+        options_frame.pack(fill="x", padx=20, pady=10)
+
+        ctk.CTkLabel(options_frame, text="⚙️ Opciones:",
+                    font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        uppercase_var = ctk.BooleanVar(value=False)
+        ctk.CTkCheckBox(options_frame, text="Convertir a mayúsculas", variable=uppercase_var).pack(anchor="w")
+
+        lowercase_var = ctk.BooleanVar(value=False)
+        ctk.CTkCheckBox(options_frame, text="Convertir a minúsculas", variable=lowercase_var).pack(anchor="w")
+
+        sort_var = ctk.BooleanVar(value=True)
+        ctk.CTkCheckBox(options_frame, text="Ordenar alfabéticamente", variable=sort_var).pack(anchor="w")
+
+        add_metadata_var = ctk.BooleanVar(value=True)
+        ctk.CTkCheckBox(options_frame, text="Incluir metadatos del proyecto", variable=add_metadata_var).pack(anchor="w")
+
+        def perform_export():
+            try:
+                selected_format = format_var.get()
+
+                # Procesar keywords según opciones
+                processed_keywords = keywords.copy()
+
+                if uppercase_var.get():
+                    processed_keywords = [kw.upper() for kw in processed_keywords]
+                elif lowercase_var.get():
+                    processed_keywords = [kw.lower() for kw in processed_keywords]
+
+                if sort_var.get():
+                    processed_keywords.sort(key=str.lower)
+
+                # Generar contenido según formato
+                timestamp = time.strftime("%Y%m%d_%H%M%S")
+                metadata = f"# Keywords Exportadas - Keyword Position Scraper\n# Fecha: {time.strftime('%d/%m/%Y %H:%M:%S')}\n# Total: {len(processed_keywords)} keywords\n\n" if add_metadata_var.get() else ""
+
+                if selected_format == "TXT (Lineas)":
+                    content = metadata + "\n".join(processed_keywords)
+                    extension = ".txt"
+                    filename = f"keywords_export_{timestamp}"
+
+                elif selected_format == "CSV (Con estadísticas)":
+                    import csv
+                    import io
+                    content = metadata
+                    content += "Keyword,Longitud,Dificultad Estimada\n"
+                    for kw in processed_keywords:
+                        length = len(kw)
+                        difficulty = "Alta" if length < 3 else "Media" if length < 6 else "Baja"
+                        content += f'"{kw}",{length},"{difficulty}"\n'
+                    extension = ".csv"
+                    filename = f"keywords_analisis_{timestamp}"
+
+                elif selected_format == "JSON (Estructurado)":
+                    data = {
+                        "export_info": {
+                            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                            "total_keywords": len(processed_keywords),
+                            "format_version": "1.0"
+                        },
+                        "keywords": processed_keywords,
+                        "stats": {
+                            "avg_length": sum(len(kw) for kw in processed_keywords) / len(processed_keywords) if processed_keywords else 0,
+                            "unique_keywords": len(set(kw.lower() for kw in processed_keywords))
+                        }
+                    }
+                    import json
+                    content = json.dumps(data, indent=2, ensure_ascii=False)
+                    extension = ".json"
+                    filename = f"keywords_estructurado_{timestamp}"
+
+                elif selected_format == "XML (SEO Friendly)":
+                    content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+                    content += '<keyword_export>\n'
+                    content += f'  <metadata>\n'
+                    content += f'    <export_date>{time.strftime("%Y-%m-%d %H:%M:%S")}</export_date>\n'
+                    content += f'    <total_keywords>{len(processed_keywords)}</total_keywords>\n'
+                    content += f'  </metadata>\n'
+                    content += f'  <keywords>\n'
+                    for i, kw in enumerate(processed_keywords, 1):
+                        content += f'    <keyword id="{i}">\n'
+                        content += f'      <text><![CDATA[{kw}]]></text>\n'
+                        content += f'      <length>{len(kw)}</length>\n'
+                        content += f'    </keyword>\n'
+                    content += f'  </keywords>\n'
+                    content += f'</keyword_export>'
+                    extension = ".xml"
+                    filename = f"keywords_seo_{timestamp}"
+
+                # Guardar archivo
+                file_path = filedialog.asksaveasfilename(
+                    defaultextension=extension,
+                    filetypes=[(f"Archivos {extension.upper()}", f"*{extension}"), ("Todos los archivos", "*.*")],
+                    initialfile=filename
+                )
+
+                if file_path:
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
+
+                    messagebox.showinfo("Éxito", f"Keywords exportadas exitosamente!\n\n📁 Archivo: {file_path}\n📊 Keywords: {len(processed_keywords)}\n🎨 Formato: {selected_format}")
+
+                    export_window.destroy()
+                    self.log_message(f"💾 Keywords exportadas: {file_path} ({selected_format})")
+
+            except Exception as e:
+                messagebox.showerror("Error", f"Error durante la exportación:\n\n{str(e)}")
+
+        # Botones
+        buttons_frame = ctk.CTkFrame(export_window)
+        buttons_frame.pack(fill="x", padx=20, pady=20)
+
+        ctk.CTkButton(buttons_frame, text="💾 EXPORTAR",
+                     command=perform_export, fg_color=COLORS['success'],
+                     height=40).pack(side="left", padx=(0, 10))
+
+        ctk.CTkButton(buttons_frame, text="❌ CANCELAR",
+                     command=export_window.destroy, height=40).pack(side="right")
+
+    def estimate_search_volume(self, keyword):
+        """Estima volumen de búsqueda basado en complejidad de keyword (simplificada)"""
+        # Esta es una estimación muy básica. En la realidad usarías APIs especializadas
+        words = len(keyword.split())
+        if words == 1:
+            base_volume = 1000
+        elif words == 2:
+            base_volume = 400
+        elif words == 3:
+            base_volume = 150
+        else:
+            base_volume = 50
+
+        # Ajustar por longitud
+        length_factor = max(0.5, min(2.0, len(keyword) / 20))
+        return int(base_volume * length_factor)
+
+    def calculate_competition_score(self, keyword):
+        """Calcula puntaje de competencia basado en características de la keyword (simplificada)"""
+        # Esta es una estimación muy básica
+        score = 3.0  # Base media
+
+        # Más competitiva si es keyword corta y común
+        if len(keyword.split()) == 1:
+            score += 2.0
+
+        # Más competitiva si contiene palabras de dinero o business
+        money_words = ['precio', 'comprar', 'venta', 'negocio', 'dinero', 'cost', 'buy', 'price', '$']
+        if any(word in keyword.lower() for word in money_words):
+            score += 1.5
+
+        # Menos competitiva si es muy específica/long-tail
+        if len(keyword) > 30:
+            score -= 1.0
+
+        return max(1.0, min(10.0, score))  # Limitar entre 1 y 10
+
+    def export_competitiveness_analysis(self, results):
+        """Exporta el análisis de competitividad"""
+        try:
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                initialfile=f"analisis_competitividad_{timestamp}"
+            )
+
+            if file_path:
+                with open(file_path, 'w', encoding='utf-8', newline='') as f:
+                    import csv
+                    writer = csv.DictWriter(f, fieldnames=['keyword', 'estimated_volume', 'competition', 'difficulty', 'opportunity_score'])
+                    writer.writeheader()
+                    writer.writerows(results)
+
+                messagebox.showinfo("Éxito", f"Análisis exportado a: {file_path}")
+                self.log_message(f"📊 Análisis de competitividad exportado: {file_path}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error exportando análisis: {str(e)}")
+
+    def update_keywords_stats(self):
+        """Actualiza las estadísticas de keywords en tiempo real"""
+        try:
+            text = self.keywords_text.get("1.0", "end-1c")
+            keywords = [k.strip() for k in text.split('\n') if k.strip()]
+
+            total = len(keywords)
+            unique = len(set(kw.lower() for kw in keywords))
+
+            # Estimar dificultad promedio (muy simplificado)
+            if keywords:
+                avg_difficulty = sum(min(100, len(kw.split()) * 15 + (len(kw) // 5)) for kw in keywords) / len(keywords)
+            else:
+                avg_difficulty = 0
+
+            # Actualizar bloques
+            self.kw_total_label.configure(text=str(total))
+            self.kw_analyzed_label.configure(text=str(total))  # Por ahora mismo que total
+            self.kw_unique_label.configure(text=str(unique))
+            self.kw_difficulty_label.configure(text=f"{avg_difficulty:.0f}%" if avg_difficulty > 0 else "N/A")
+
+            # Actualizar estado
+            if total > 0:
+                self.keyword_status_label.configure(text=f"✅ Listo: {total} keywords - {unique} únicas - Dificultad promedio: {avg_difficulty:.0f}%")
+            else:
+                self.keyword_status_label.configure(text="📋 Listo para trabajar con keywords - Una keyword por línea")
+
+        except Exception as e:
+            self.keyword_status_label.configure(text="⚠️ Error actualizando estadísticas")
+
+    def clear_current_results(self):
+        """Limpia todos los resultados actuales"""
+        try:
+            # Confirmar acción
+            if not messagebox.askyesno("Confirmar Limpieza",
+                                     "¿Estás seguro de limpiar todos los resultados actuales?\n\nSe perderán los datos de la sesión actual."):
+                return
+
+            # Limpiar datos
+            self.current_results = []
+            self.keywords_list = []
+
+            # Limpiar tabla
+            for item in self.results_tree.get_children():
+                self.results_tree.delete(item)
+
+            # Limpiar bloques de estadísticas
+            self.update_stats_blocks()
+
+            # Actualizar información de sesión
+            self.session_info_label.configure(text="Sesión actual: Sin resultados")
+
+            # Actualizar estado
+            self.results_status_label.configure(text="🧹 Resultados limpiados - Sesión reiniciada")
+
+            self.log_message("🧹 Resultados actuales limpiados completamente")
+
+            messagebox.showinfo("Limpieza Completa", "¡Resultados actuales limpiados!\n\nPuedes empezar una nueva sesión.")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error limpiando resultados:\n\n{str(e)}")
 
     def update_charts(self):
         """Actualiza los gráficos con los datos actuales"""
