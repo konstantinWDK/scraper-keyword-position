@@ -1773,3 +1773,89 @@ Stacktrace:
 #21 0x72ae5cf29c6c <unknown>
 
 [00:33:09] INFO - Waiting 8.6s before next keyword...
+[02:33:37] INFO - 🚀 Iniciando verificación de posiciones para 10 keywords
+[02:33:37] INFO - 🔄 Procesando keyword 1/10: 'directorio de museos estatales'
+[02:33:37] INFO - 🔍 Consultando Google API para keyword: 'directorio de museos estatales'
+[02:33:42] INFO - ✅ Encontrados 10 resultados para 'directorio de museos estatales'
+[02:33:42] INFO - ⏳ Esperando 13.6s antes del siguiente keyword...
+[02:33:56] INFO - 🔄 Procesando keyword 2/10: 'directorio de museos españa'
+[02:33:56] INFO - 🔍 Consultando Google API para keyword: 'directorio de museos españa'
+[02:34:01] INFO - ✅ Encontrados 10 resultados para 'directorio de museos españa'
+[02:34:01] INFO - ⏳ Esperando 8.1s antes del siguiente keyword...
+[02:34:09] INFO - 🔄 Procesando keyword 3/10: 'directorio de museos'
+[02:34:09] INFO - 🔍 Consultando Google API para keyword: 'directorio de museos'
+[02:34:59] INFO - 🚀 Iniciando verificación de posiciones para 10 keywords
+[02:34:59] INFO - 🔄 Procesando keyword 1/10: 'galerias de arte valencia'
+[02:34:59] INFO - 🔍 Consultando Google API para keyword: 'galerias de arte valencia'
+[02:35:04] INFO - ✅ Encontrados 10 resultados para 'galerias de arte valencia'
+[02:35:04] INFO - ⏳ Esperando 12.3s antes del siguiente keyword...
+[02:35:17] INFO - 🔄 Procesando keyword 2/10: 'galerias de arte cdmx'
+[02:35:17] INFO - 🔍 Consultando Google API para keyword: 'galerias de arte cdmx'
+[02:35:22] INFO - ✅ Encontrados 10 resultados para 'galerias de arte cdmx'
+[02:35:22] INFO - ⏳ Esperando 7.2s antes del siguiente keyword...
+[02:35:29] INFO - 🔄 Procesando keyword 3/10: 'galerias de arte en buenos aires'
+[02:35:29] INFO - 🔍 Consultando Google API para keyword: 'galerias de arte en buenos aires'
+[02:35:34] INFO - ✅ Encontrados 10 resultados para 'galerias de arte en buenos aires'
+[02:35:34] INFO - ⏳ Esperando 5.6s antes del siguiente keyword...
+[02:35:40] INFO - 🔄 Procesando keyword 4/10: 'galerias de arte madrid'
+[02:35:40] INFO - 🔍 Consultando Google API para keyword: 'galerias de arte madrid'
+[02:35:45] INFO - ✅ Encontrados 10 resultados para 'galerias de arte madrid'
+[02:35:45] INFO - ⏳ Esperando 6.6s antes del siguiente keyword...
+[02:35:52] INFO - 🔄 Procesando keyword 5/10: 'galerias de arte barcelona'
+[02:35:52] INFO - 🔍 Consultando Google API para keyword: 'galerias de arte barcelona'
+[02:35:57] INFO - ✅ Encontrados 10 resultados para 'galerias de arte barcelona'
+[02:35:57] INFO - ⏳ Esperando 10.6s antes del siguiente keyword...
+[02:36:08] INFO - 🔄 Procesando keyword 6/10: 'galerias de arte en puerto rico'
+[02:36:08] INFO - 🔍 Consultando Google API para keyword: 'galerias de arte en puerto rico'
+[02:36:13] INFO - ✅ Encontrados 10 resultados para 'galerias de arte en puerto rico'
+[02:36:13] INFO - ⏳ Esperando 9.1s antes del siguiente keyword...
+[02:36:22] INFO - 🔄 Procesando keyword 7/10: 'galerias de arte cerca de mi'
+[02:36:22] INFO - 🔍 Consultando Google API para keyword: 'galerias de arte cerca de mi'
+[02:36:27] INFO - ✅ Encontrados 10 resultados para 'galerias de arte cerca de mi'
+[02:36:27] INFO - ⏳ Esperando 14.9s antes del siguiente keyword...
+[02:36:42] INFO - 🔄 Procesando keyword 8/10: 'galerias de arte bogota'
+[02:36:42] INFO - 🔍 Consultando Google API para keyword: 'galerias de arte bogota'
+[02:36:48] INFO - ✅ Encontrados 10 resultados para 'galerias de arte bogota'
+[02:36:48] INFO - ⏳ Esperando 10.3s antes del siguiente keyword...
+[02:36:58] INFO - 🔄 Procesando keyword 9/10: 'galerias de arte carabanchel'
+[02:36:58] INFO - 🔍 Consultando Google API para keyword: 'galerias de arte carabanchel'
+[02:37:03] INFO - ✅ Encontrados 10 resultados para 'galerias de arte carabanchel'
+[02:37:03] INFO - ⏳ Esperando 8.6s antes del siguiente keyword...
+[02:37:12] INFO - 🔄 Procesando keyword 10/10: 'galerias de arte'
+[02:37:12] INFO - 🔍 Consultando Google API para keyword: 'galerias de arte'
+[02:37:17] INFO - ✅ Encontrados 10 resultados para 'galerias de arte'
+[02:37:17] INFO - ✅ Proceso completado - Total posiciones encontradas: 100
+[02:37:17] INFO - Results saved to /home/wdk/Documentos/WEBMASTERK/Mis plugins/scraper-keyword-position/data/positions_20251008_023717.csv and /home/wdk/Documentos/WEBMASTERK/Mis plugins/scraper-keyword-position/data/positions_20251008_023717.json
+[02:37:17] INFO - Total keywords processed: 10
+[02:37:17] INFO - Total positions found: 100
+[02:41:19] INFO - 🔍 Consultando Google API para keyword: 'directorio de arteli corona'
+[02:41:35] INFO - ✅ Encontrados 30 resultados para 'directorio de arteli corona'
+[02:41:35] INFO - 🔍 Consultando Google API para keyword: 'directorio de artesanos mexicanos'
+[02:41:51] INFO - ✅ Encontrados 30 resultados para 'directorio de artesanos mexicanos'
+[02:41:51] INFO - 🔍 Consultando Google API para keyword: 'directorio de artesanos'
+[02:42:07] INFO - ✅ Encontrados 30 resultados para 'directorio de artesanos'
+[02:42:07] INFO - 🔍 Consultando Google API para keyword: 'directorio de arteli miramar'
+[02:42:22] INFO - ✅ Encontrados 30 resultados para 'directorio de arteli miramar'
+[02:42:22] INFO - 🔍 Consultando Google API para keyword: 'directorio de artesanos oaxaqueños'
+[02:42:38] INFO - ✅ Encontrados 30 resultados para 'directorio de artesanos oaxaqueños'
+[02:42:38] INFO - 🔍 Consultando Google API para keyword: 'directorio de arte'
+[02:42:54] INFO - ✅ Encontrados 30 resultados para 'directorio de arte'
+[02:42:54] INFO - 🔍 Consultando Google API para keyword: 'directorio de artes graficas'
+[02:43:10] INFO - ✅ Encontrados 30 resultados para 'directorio de artes graficas'
+[02:43:10] INFO - 🔍 Consultando Google API para keyword: 'directorio de artesanos mincetur'
+[02:43:25] INFO - ✅ Encontrados 30 resultados para 'directorio de artesanos mincetur'
+[02:43:25] INFO - 🔍 Consultando Google API para keyword: 'directorio de artea centro comercial'
+[02:43:41] INFO - ✅ Encontrados 30 resultados para 'directorio de artea centro comercial'
+[02:43:41] INFO - 🔍 Consultando Google API para keyword: 'directorio de artesanos peru'
+[02:43:57] INFO - ✅ Encontrados 30 resultados para 'directorio de artesanos peru'
+[02:50:23] INFO - 🔍 Consultando Google API para keyword: 'arte en españa'
+[02:50:33] INFO - ✅ Encontrados 30 resultados para 'arte en españa'
+[02:50:33] INFO - 🔍 Consultando Google API para keyword: 'arte en españa resumen'
+[02:50:43] INFO - ✅ Encontrados 30 resultados para 'arte en españa resumen'
+[02:50:43] INFO - 🔍 Consultando Google API para keyword: 'arte en españa ideas practicas politicas'
+[02:50:53] INFO - ✅ Encontrados 30 resultados para 'arte en españa ideas practicas politicas'
+[02:50:53] INFO - 🔍 Consultando Google API para keyword: 'arte en españa siglo xix'
+[02:51:03] INFO - ✅ Encontrados 30 resultados para 'arte en españa siglo xix'
+[02:51:03] INFO - 🔍 Consultando Google API para keyword: 'arte en españa edad media'
+[02:51:12] INFO - ✅ Encontrados 30 resultados para 'arte en españa edad media'
+[02:51:12] INFO - 🔍 Consultando Google API para keyword: 'el arte en la edad media en españa'

@@ -1,0 +1,190 @@
+# ============================================================================ #
+#                            .GITIGNORE SECURE                                #
+# ============================================================================ #
+# Archivo .gitignore para proyecto Keyword Position Scraper
+# ⚠️  IMPORTANTE: Este archivo protege información sensible y datos privados
+
+# ============================================================================ #
+# 🛑 ARCHIVOS SENSIBLES - NUNCA SUBIR AL REPOSITORIO                          #
+# ============================================================================ #
+
+# 🔐 Credenciales de Google API - CRÍTICO PARA SEGURIDAD
+config/.env
+config/.env.local
+config/.env.production
+config/.env.development
+
+# ============================================================================ #
+# 📊 DATOS GENERADOS - NO NECESARIOS EN EL REPOSITORIO                        #
+# ============================================================================ #
+
+# Resultados de scraping (CSV, JSON, Excel)
+data/
+data/*.csv
+data/*.json
+data/*.xlsx
+data/*.xls
+
+# Archivos de logs
+logs/
+logs/*.log
+logs/scraper.log
+
+# ============================================================================ #
+# 💻 PYTHON - ARCHIVOS COMPILADOS Y TEMPORALES                               #
+# ============================================================================ #
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ============================================================================ #
+# 🔧 ENTORNOS DE DESARROLLO                                                   #
+# ============================================================================ #
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+.pdm-python
+.pdm-build/
+
+# PEP 582
+__pypackages__/
+
+# ============================================================================ #
+# 💾 ARCHIVOS TEMPORALES Y SISTEMA                                           #
+# ============================================================================ #
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archivos temporales
+*~
+*.swp
+*.swo
+*~
+
+# ============================================================================ #
+# 🔌 ARCHIVOS DE ENTORNO Y CONFIGURACIÓN LOCAL                              #
+# ============================================================================ #
+
+# Archivos de entorno
+.env
+.env.backup
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Configuraciones locales
+.vscode/
+.idea/
+.vscode/settings.json
+*/.vscode/
+*.code-workspace
+
+# Configuración de Jupyter Notebook
+.ipynb_checkpoints
+
+# Archivos de datos personales
+*.key
+*.pem
+*.p12
+*.pfx
+
+# ============================================================================ #
+# 📦 DEPENDENCIAS LOCALES                                                    #
+# ============================================================================ #
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# ============================================================================ #
+# 📈 ARCHIVOS DE ANÁLISIS Y LOGS                                              #
+# ============================================================================ #
+
+# Más archivos de logs
+*.log
+*.log.*
+logs.txt
+debug.log
+error.log
+access.log
+
+# Archivos de análisis
+*.xlsx
+*.xls
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================================================================ #
+# 🌐 ARCHIVOS DE DESARROLLO WEB LOCAL                                         #
+# ============================================================================ #
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ============================================================================ #
+# 💡 RECOMENDACIONES                                                         #
+# ============================================================================ #
+
+# ✅ ASEGÚRATE DE QUE config/.env NO ESTÉ EN EL REPOSITORIO:
+#    El archivo config/.env contiene tus credenciales de Google API
+#    Usa config/.env.example como plantilla para que otros desarrolladores
+#    sepan qué variables de entorno necesitan configurar.
+
+# ✅ ARCHIVOS QUE SÍ DEBEN SUBIRSE:
+#    - README.md con instrucciones de instalación
+#    - requirements.txt para dependencias
+#    - config/.env.example (plantilla sin datos reales)
+#    - Código fuente en src/
+#    - Archivos de configuración generales
+
+# ============================================================================ #

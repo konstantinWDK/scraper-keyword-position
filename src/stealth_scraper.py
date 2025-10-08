@@ -180,7 +180,11 @@ class StealthSerpScraper:
 
         self.logger.info(f"✅ Proceso completado - Total posiciones encontradas: {len(all_results)}")
         return all_results
-    
+
+    def single_keyword_position_check(self, keyword, target_domain=None, pages=1):
+        """Analiza una sola keyword y devuelve todos los resultados encontrados"""
+        return self.serp_scraper_api(keyword, target_domain, pages)
+
     def save_results(self, results, filename=None):
         """Guarda resultados en CSV y JSON"""
         if not results:

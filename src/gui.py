@@ -69,7 +69,13 @@ class KeywordScraperGUI:
         self.keywords_text = None
         self.suggest_entry = None
 
-        # Variables de keywords relacionadas eliminadas (ya existe en Keywords)
+        # Variables de mi ranking
+        self.my_domain_entry = None
+        self.my_keywords_base_text = None
+        self.my_ranking_results_tree = None
+        self.my_ranking_button = None
+        self.my_ranking_status = None
+        self.suggestion_count_var = None
 
         # Crear directorios necesarios
         for directory in ['data', 'logs', 'config']:
@@ -120,6 +126,7 @@ class KeywordScraperGUI:
         self.tab_google_api = self.tabview.add("🔐 Google API")
         self.tab_config = self.tabview.add("⚙️ Configuración")
         self.tab_keywords = self.tabview.add("🔑 Keywords")
+        self.tab_my_rankings = self.tabview.add("🏆 Mi Ranking")
         self.tab_scraping = self.tabview.add("🚀 Scraping")
         self.tab_results = self.tabview.add("📊 Resultados")
         self.tab_analysis = self.tabview.add("📈 Análisis")
@@ -128,6 +135,7 @@ class KeywordScraperGUI:
         self.setup_google_api_tab()
         self.setup_config_tab()
         self.setup_keywords_tab()
+        self.setup_my_rankings_tab()
         self.setup_scraping_tab()
         self.setup_results_tab()
         self.setup_analysis_tab()
@@ -1704,6 +1712,252 @@ class KeywordScraperGUI:
     def update_charts(self):
         """Actualiza los gráficos con los datos actuales"""
         self.generate_analysis()
+
+
+
+    def setup_my_rankings_tab(self):
+        """Configura la pestaña de análisis 'Mi Ranking' - Keywords donde posiciona mi dominio"""
+        main_frame = ctk.CTkFrame(self.tab_my_rankings)
+        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Título
+        title_label = ctk.CTkLabel(main_frame, text="� Mi Ranking - Keywords de mi dominio",
+                                  font=ctk.CTkFont(size=20, weight="bold"))
+        title_label.pack(pady=(10, 20))
+
+        # Frame de entrada
+        input_frame = ctk.CTkFrame(main_frame)
+        input_frame.pack(fill="x", padx=10, pady=5)
+
+        ctk.CTkLabel(input_frame, text="Mi dominio:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+        self.my_domain_entry = ctk.CTkEntry(input_frame, placeholder_text="midominio.com")
+        self.my_domain_entry.pack(fill="x", pady=(5, 10))
+
+        # Frame para keywords base
+        keywords_frame = ctk.CTkFrame(main_frame)
+        keywords_frame.pack(fill="x", padx=10, pady=5)
+
+        ctk.CTkLabel(keywords_frame, text="Keywords base (una por línea):",
+                    font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+
+        self.my_keywords_base_text = ctk.CTkTextbox(keywords_frame,
+                                                  height=120,
+                                                  font=ctk.CTkFont(family="Consolas", size=11))
+        self.my_keywords_base_text.pack(fill="x", pady=(5, 10))
+
+        # Frame de configuración de sugerencias
+        config_frame = ctk.CTkFrame(main_frame)
+        config_frame.pack(fill="x", padx=10, pady=5)
+
+        ctk.CTkLabel(config_frame, text="Número de sugerencias por keyword base:",
+                    font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+
+        self.suggestion_count_var = ctk.StringVar(value="5")
+        suggestion_count_entry = ctk.CTkEntry(config_frame,
+                                            textvariable=self.suggestion_count_var,
+                                            width=80)
+        suggestion_count_entry.pack(anchor="w", pady=(5, 0))
+
+        # Información
+        info_text = """ℹ️ Introduce tu dominio y algunas keywords base. El scraper generará sugerencias
+con Google Suggest para cada keyword base y buscará dónde posiciona tu dominio en todas esas keywords."""
+        ctk.CTkLabel(main_frame, text=info_text, justify="left", wraplength=600).pack(pady=(5, 15))
+
+        # Botón de análisis
+        self.my_ranking_button = ctk.CTkButton(main_frame,
+                                             text="� Analizar Mi Ranking",
+                                             command=self.analyze_my_rankings,
+                                             fg_color="#FF6B35",
+                                             height=40)
+        self.my_ranking_button.pack(pady=(0, 15))
+
+        # Estado
+        self.my_ranking_status = ctk.CTkLabel(main_frame, text="Listo para analizar")
+        self.my_ranking_status.pack(pady=(0, 15))
+
+        # Tabla de resultados
+        table_frame = ctk.CTkFrame(main_frame)
+        table_frame.pack(fill="both", expand=True, padx=10, pady=(5, 10))
+
+        # Crear treeview para mis rankings
+        columns = ("keyword", "position", "title", "url", "suggested_from")
+        self.my_ranking_results_tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=12)
+
+        # Configurar columnas
+        self.my_ranking_results_tree.heading("keyword", text="Keyword")
+        self.my_ranking_results_tree.heading("position", text="Posición")
+        self.my_ranking_results_tree.heading("title", text="Título")
+        self.my_ranking_results_tree.heading("url", text="URL")
+        self.my_ranking_results_tree.heading("suggested_from", text="Basado en")
+
+        self.my_ranking_results_tree.column("keyword", width=150)
+        self.my_ranking_results_tree.column("position", width=80, anchor="center")
+        self.my_ranking_results_tree.column("title", width=200)
+        self.my_ranking_results_tree.column("url", width=250)
+        self.my_ranking_results_tree.column("suggested_from", width=120)
+
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.my_ranking_results_tree.yview)
+        self.my_ranking_results_tree.configure(yscrollcommand=scrollbar.set)
+
+        self.my_ranking_results_tree.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+    def analyze_my_rankings(self):
+        """Analiza todas las keywords donde mi dominio posiciona"""
+        domain = self.my_domain_entry.get().strip()
+        if not domain:
+            messagebox.showwarning("Error", "Debes introducir tu dominio")
+            return
+
+        # Limpiar http:// y www. si los hay
+        domain = domain.replace("http://", "").replace("https://", "").replace("www.", "").split("/")[0]
+
+        base_keywords_text = self.my_keywords_base_text.get("1.0", "end-1c")
+        base_keywords = [k.strip() for k in base_keywords_text.split('\n') if k.strip()]
+
+        if not base_keywords:
+            messagebox.showwarning("Error", "Debes introducir al menos una keyword base")
+            return
+
+        try:
+            suggestion_count = int(self.suggestion_count_var.get())
+            if suggestion_count < 1 or suggestion_count > 20:
+                messagebox.showwarning("Error", "El número de sugerencias debe estar entre 1-20")
+                return
+        except ValueError:
+            messagebox.showwarning("Error", "Número de sugerencias inválido")
+            return
+
+        # Cambiar estado del botón
+        self.my_ranking_button.configure(state="disabled", text="🔄 Analizando...")
+        self.my_ranking_status.configure(text=f"Analizando ranking de: {domain}")
+
+        # Ejecutar en hilo separado
+        def analysis_thread():
+            try:
+                results = []
+                all_keywords_to_check = set()
+
+                # Crear scraper
+                from config.settings import config
+                scraper_config = config.copy()
+                scraper_config.update({
+                    'MIN_KEYWORD_DELAY': 3,
+                    'MAX_KEYWORD_DELAY': 7,
+                    'PAGES_TO_SCRAPE': 3,  # Buscar en primeras 3 páginas
+                    'DEFAULT_COUNTRY': "US",
+                    'DEFAULT_LANGUAGE': "en"
+                })
+
+                scraper = StealthSerpScraper(scraper_config)
+
+                total_base_keywords = len(base_keywords)
+                current_base = 0
+
+                self.my_ranking_status.configure(text="Generando variaciones de keywords...")
+
+                # Generar sugerencias para cada keyword base
+                for base_keyword in base_keywords:
+                    current_base += 1
+                    self.my_ranking_status.configure(text=f"Generando sugerencias para '{base_keyword}' ({current_base}/{total_base_keywords})")
+
+                    try:
+                        # Obtener sugerencias usando Google Suggest
+                        suggestions = scraper.google_suggest_scraper(base_keyword)
+                        suggestions = suggestions[:suggestion_count] if suggestions else []
+
+                        # Añadir la keyword base también
+                        all_keywords = [base_keyword] + suggestions
+
+                        # Buscar en cada keyword gerada
+                        for keyword in all_keywords:
+                            if keyword.strip() and keyword not in all_keywords_to_check:
+                                all_keywords_to_check.add(keyword)
+
+                                try:
+                                    # Hacer búsqueda para esta keyword
+                                    search_results = scraper.single_keyword_position_check(keyword, None, 3)
+
+                                    # Filtrar resultados que pertenecen a mi dominio
+                                    my_domain_results = [
+                                        result for result in search_results
+                                        if result['domain'] == domain
+                                    ]
+
+                                    # Añadir todos los resultados encontrados
+                                    for result in my_domain_results:
+                                        results.append({
+                                            'keyword': keyword,
+                                            'position': result['position'],
+                                            'title': result['title'],
+                                            'url': result['url'],
+                                            'domain': result['domain'],
+                                            'suggested_from': base_keyword if keyword != base_keyword else 'KEYWORD BASE'
+                                        })
+
+                                except Exception as e:
+                                    self.log_message(f"⚠️ Error analizando '{keyword}': {e}")
+                                    continue
+
+                    except Exception as e:
+                        self.log_message(f"❌ Error generando sugerencias para '{base_keyword}': {e}")
+                        continue
+
+                # Actualizar tabla
+                self.root.after(0, lambda: self.update_my_rankings_results(results))
+
+                # Mostrar estadísticas
+                total_keywords_analyzed = len(all_keywords_to_check)
+                keywords_found = len(set(r['keyword'] for r in results))
+                avg_position = sum(r['position'] for r in results) / len(results) if results else 0
+
+                if results:
+                    messagebox.showinfo("Análisis Completado",
+                                      f"✅ Análisis completado!\n\n"
+                                      f"🔍 Dominio: {domain}\n"
+                                      f"📊 Keywords analizadas: {total_keywords_analyzed}\n"
+                                      f"🎯 Keywords donde posicionas: {keywords_found}\n"
+                                      f"📈 Posición promedio: {avg_position:.1f}\n"
+                                      f"📋 Apariciones encontradas: {len(results)}\n\n"
+                                      f"💡 Basado en {total_base_keywords} keywords base")
+                else:
+                    messagebox.showinfo("Sin Resultados",
+                                      f"❌ No se encontraron posiciones para {domain}\n"
+                                      f"en ninguna de las {total_keywords_analyzed} keywords analizadas.\n\n"
+                                      f"💡 Intenta usar keywords base más genéricas.")
+
+            except Exception as e:
+                messagebox.showerror("Error", f"Error en análisis: {e}")
+                self.log_message(f"❌ Error en análisis de ranking: {e}")
+            finally:
+                # Restaurar estado del botón
+                self.root.after(0, lambda: self.restore_my_rankings_button())
+
+        threading.Thread(target=analysis_thread, daemon=True).start()
+
+    def update_my_rankings_results(self, results):
+        """Actualiza la tabla de resultados de mi ranking"""
+        # Limpiar tabla
+        for item in self.my_ranking_results_tree.get_children():
+            self.my_ranking_results_tree.delete(item)
+
+        # Ordenar por posición (mejor a peor)
+        results_sorted = sorted(results, key=lambda x: x['position'])
+
+        for result in results_sorted:
+            self.my_ranking_results_tree.insert("", "end", values=(
+                result['keyword'],
+                result['position'],
+                result['title'][:50] + "..." if len(result['title']) > 50 else result['title'],
+                result['url'][:80] + "..." if len(result['url']) > 80 else result['url'],
+                result['suggested_from']
+            ))
+
+    def restore_my_rankings_button(self):
+        """Restaura el estado del botón de análisis de mi ranking"""
+        self.my_ranking_button.configure(state="normal", text="� Analizar Mi Ranking")
+        self.my_ranking_status.configure(text="Análisis completado")
 
     def run(self):
         """Ejecuta la aplicación"""
