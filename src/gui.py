@@ -1124,15 +1124,24 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         self.keywords_count_label = ctk.CTkLabel(main_frame, text="0 keywords")
         self.keywords_count_label.pack(pady=5)
 
-        # Botones de acción
+        # Botones de acción en fila
         buttons_frame = ctk.CTkFrame(main_frame)
         buttons_frame.pack(fill="x", padx=10, pady=5)
 
-        ctk.CTkButton(buttons_frame, text="📁 Cargar Archivo", command=self.load_keywords_file).pack(side="left", padx=5)
-        ctk.CTkButton(buttons_frame, text="🔍 Último Scan SC", command=self.show_last_sc_scan_selector, fg_color=COLORS['accent']).pack(side="left", padx=5)
-        ctk.CTkButton(buttons_frame, text="☑️ Selector", command=self.show_keyword_selector, fg_color=COLORS['warning']).pack(side="left", padx=5)
-        ctk.CTkButton(buttons_frame, text="🧹 Limpiar Duplicados", command=self.deduplicate_keywords).pack(side="left", padx=5)
-        ctk.CTkButton(buttons_frame, text="💾 Guardar", command=self.save_keywords).pack(side="left", padx=5)
+        # Primera fila de botones
+        row1_frame = ctk.CTkFrame(buttons_frame, fg_color="transparent")
+        row1_frame.pack(fill="x", pady=2)
+        
+        ctk.CTkButton(row1_frame, text="📁 Cargar Archivo", command=self.load_keywords_file, width=120).pack(side="left", padx=2)
+        ctk.CTkButton(row1_frame, text="🔍 Último Scan SC", command=self.show_last_sc_scan_selector, fg_color=COLORS['accent'], width=120).pack(side="left", padx=2)
+        ctk.CTkButton(row1_frame, text="☑️ Selector", command=self.show_keyword_selector, fg_color=COLORS['warning'], width=100).pack(side="left", padx=2)
+        
+        # Segunda fila de botones
+        row2_frame = ctk.CTkFrame(buttons_frame, fg_color="transparent")
+        row2_frame.pack(fill="x", pady=2)
+        
+        ctk.CTkButton(row2_frame, text="🧹 Limpiar Duplicados", command=self.deduplicate_keywords, width=140).pack(side="left", padx=2)
+        ctk.CTkButton(row2_frame, text="💾 Guardar", command=self.save_keywords, width=100).pack(side="left", padx=2)
 
         # Área de keywords relacionadas
         related_frame = ctk.CTkFrame(main_frame)
