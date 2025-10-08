@@ -570,20 +570,28 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
             url_text.pack(fill="x", pady=5)
             url_text.configure(state="disabled")
 
-            # Campo para código de autorización
+            # Campo para código de autorización - Layout horizontal
             code_frame = ctk.CTkFrame(main_frame)
+            code_frame.pack(fill="x", pady=10)
 
             instructions_label = ctk.CTkLabel(
                 code_frame,
-                text="📋 Google mostrará el código directamente en el navegador\n"
-                     "👉 Copia el código completo y pégalo aquí\n",
+                text="📋 Copia el código completo de la URL (incluye el prefijo '4/')\n"
+                     "Ejemplo: 4/0AVGzR1CtRfcRq9ThHAL7vF-QT8eh-izR5I9YTxb3y-QmprV2B7HStVjlBHclvralQZN0RA",
                 font=ctk.CTkFont(size=11, weight="bold"),
                 justify="left"
             )
-            instructions_label.pack(anchor="w", pady=(5, 10))
+            instructions_label.pack(anchor="w", pady=(5, 10), padx=10)
 
-            code_entry = ctk.CTkEntry(code_frame, width=400, placeholder_text="Pega el código de Google aquí...")
-            code_entry.pack(fill="x", pady=5)
+            # Frame horizontal para entrada y botón
+            input_button_frame = ctk.CTkFrame(code_frame, fg_color="transparent")
+            input_button_frame.pack(fill="x", pady=5, padx=10)
+
+            code_entry = ctk.CTkEntry(
+                input_button_frame,
+                placeholder_text="Ej: 4/0AVGzR1CtRfcRq9..."
+            )
+            code_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
             def complete_auth():
                 code = code_entry.get().strip()
@@ -608,8 +616,13 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
                     messagebox.showerror("Error", error_msg)
                     self.log_message("❌ Error completando autenticación - revisa logs/scraper.log")
 
-            ctk.CTkButton(code_frame, text="✅ Completar Autenticación",
-                         command=complete_auth, fg_color=COLORS['success']).pack(pady=10)
+            ctk.CTkButton(
+                input_button_frame,
+                text="✅ Completar Autenticación",
+                command=complete_auth,
+                fg_color=COLORS['success'],
+                width=200
+            ).pack(side="left")
 
         except Exception as e:
             messagebox.showerror("Error", f"Error en autenticación:\n{str(e)}")
