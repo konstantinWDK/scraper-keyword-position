@@ -1,42 +1,79 @@
-<<<<<<< HEAD
-=======
 # ============================================================================ #
-#                            .GITIGNORE SECURE                                #
+#                     KEYWORD POSITION SCRAPER - .GITIGNORE                   #
 # ============================================================================ #
-# Archivo .gitignore para proyecto Keyword Position Scraper
-# ⚠️  IMPORTANTE: Este archivo protege información sensible y datos privados
+# Archivo .gitignore optimizado para proteger información sensible
+# ⚠️  IMPORTANTE: Este archivo protege credenciales API y datos privados
 
 # ============================================================================ #
-# 🛑 ARCHIVOS SENSIBLES - NUNCA SUBIR AL REPOSITORIO                          #
+# 🛑 ARCHIVOS CRÍTICOS DE SEGURIDAD - NUNCA SUBIR                            #
 # ============================================================================ #
 
 # 🔐 Credenciales de Google API - CRÍTICO PARA SEGURIDAD
 config/.env
-config/.env.local
-config/.env.production
-config/.env.development
+config/.env.*
+.env
+.env.*
+*.env
+
+# 🔑 Archivos de configuración con credenciales
+config/credentials.json
+config/api_keys.json
+config/secrets.json
+*.key
+*.pem
+*.p12
+
+# 🔒 Archivos de autenticación OAuth
+token.json
+credentials.json
+client_secret*.json
 
 # ============================================================================ #
-# 📊 DATOS GENERADOS - NO NECESARIOS EN EL REPOSITORIO                        #
+# 📊 DATOS GENERADOS - PROTEGER INFORMACIÓN DE CLIENTES                       #
 # ============================================================================ #
 
-# Resultados de scraping (CSV, JSON, Excel)
+# Resultados de scraping (pueden contener datos sensibles)
 data/
-data/*.csv
-data/*.json
-data/*.xlsx
-data/*.xls
+data/**/*
+*.csv
+*.json
+*.xlsx
+*.xls
+*.sqlite
+*.db
 
-# Archivos de logs
+# Reportes HTML generados (pueden contener información privada)
+data/html_reports/
+data/sessions/
+data/exports/
+
+# Archivos de keywords (pueden contener estrategias privadas)
+keywords_*.txt
+keywords_*.csv
+*keywords*
+
+# ============================================================================ #
+# 📝 LOGS Y ARCHIVOS TEMPORALES                                               #
+# ============================================================================ #
+
+# Logs del sistema (pueden contener información sensible)
 logs/
-logs/*.log
-logs/scraper.log
+logs/**/*
+*.log
+scraper.log
+debug.log
+error.log
+
+# Archivos temporales
+temp/
+tmp/
+*.tmp
+*.temp
+*.cache
 
 # ============================================================================ #
-# 💻 PYTHON - ARCHIVOS COMPILADOS Y TEMPORALES                               #
+# 💻 PYTHON - ARCHIVOS COMPILADOS Y ENTORNOS                                  #
 # ============================================================================ #
-
->>>>>>> testing
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -59,21 +96,19 @@ parts/
 sdist/
 var/
 wheels/
-<<<<<<< HEAD
 share/python-wheels/
-=======
->>>>>>> testing
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
 
-<<<<<<< HEAD
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+# PyInstaller - Archivos de compilación
 *.manifest
-*.spec
+windows/dist/
+linux/dist/
+windows/build/
+linux/build/
+*.spec.bak
 
 # Installer logs
 pip-log.txt
@@ -98,18 +133,183 @@ cover/
 *.mo
 *.pot
 
-# Django stuff:
-*.log
+# Django stuff (si se usa en el futuro)
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
-# Flask stuff:
+# Flask stuff (si se usa en el futuro)
 instance/
 .webassets-cache
 
-# Scrapy stuff:
+# Scrapy stuff
 .scrapy
+
+# ============================================================================ #
+# 🔧 ENTORNOS VIRTUALES Y DEPENDENCIAS                                        #
+# ============================================================================ #
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.env/
+
+# Conda environments
+.conda/
+conda-meta/
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# ============================================================================ #
+# 🖥️ ARCHIVOS DEL SISTEMA OPERATIVO                                           #
+# ============================================================================ #
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================================================================ #
+# 🛠️ HERRAMIENTAS DE DESARROLLO                                               #
+# ============================================================================ #
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# ============================================================================ #
+# 🚀 ARCHIVOS ESPECÍFICOS DEL PROYECTO                                        #
+# ============================================================================ #
+
+# Archivos de backup
+*.bak
+*.backup
+*.old
+
+# Archivos de configuración local del usuario
+user_config.json
+local_settings.json
+
+# Screenshots y capturas (pueden contener información sensible)
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# Archivos de prueba
+test_results/
+test_data/
+sample_data/
+
+# Documentación generada automáticamente
+docs/_build/
+docs/build/
+
+# ============================================================================ #
+# 📦 ARCHIVOS DE DISTRIBUCIÓN                                                 #
+# ============================================================================ #
+
+# Archivos comprimidos de distribución
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Ejecutables compilados
+*.exe
+*.app
+*.deb
+*.rpm
+
+# ============================================================================ #
+# 🔍 NOTAS IMPORTANTES                                                         #
+# ============================================================================ #
+# 
+# Este .gitignore está diseñado para:
+# 1. Proteger credenciales API de Google
+# 2. Evitar subir datos sensibles de clientes
+# 3. Mantener el repositorio limpio de archivos temporales
+# 4. Proteger configuraciones locales del usuario
+# 
+# ⚠️  SIEMPRE verifica que no estés subiendo información sensible
+# ⚠️  Revisa los archivos antes de hacer commit
+# ⚠️  Usa 'git status' para verificar qué archivos se van a subir
 
 # Sphinx documentation
 docs/_build/

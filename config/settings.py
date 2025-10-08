@@ -78,5 +78,23 @@ class Config:
         print(f"   Guardar CSV: {cls.SAVE_CSV}")
         print(f"   Guardar JSON: {cls.SAVE_JSON}")
 
+# Colores para la interfaz
+COLORS = {
+    'primary': '#1f538d',
+    'secondary': '#14375e',
+    'accent': '#7c3aed',       # Púrpura moderno
+    'success': '#28a745',
+    'danger': '#dc3545',
+    'error': '#ef4444',        # Rojo coral
+    'warning': '#ffc107',
+    'info': '#17a2b8',
+    'light': '#f8f9fa',
+    'dark': '#343a40',
+    'background': '#ffffff',
+    'text': '#212529',
+    'text_secondary': '#6c757d',
+    'border': '#dee2e6'
+}
+
 # Crear instancia de configuración
 config = Config.to_dict()

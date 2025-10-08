@@ -1864,3 +1864,11 @@ Stacktrace:
 [03:22:57] INFO - ✅ Encontradas 2 keywords relacionadas
 [03:23:15] INFO - ✅ Encontradas 25 keywords relacionadas
 [03:23:30] INFO - ✅ Encontradas 25 keywords relacionadas
+[08:57:23] INFO - Session report saved with ID: 82956491
+[08:57:23] INFO - Results saved to C:\Users\KONSTANTINKOSHKAREV\Desktop\Proyectos\Python\scraper-keyword-position\data\keyword_positions_20251008_085723.csv and C:\Users\KONSTANTINKOSHKAREV\Desktop\Proyectos\Python\scraper-keyword-position\data\keyword_positions_20251008_085723.json
+[08:57:23] INFO - Total keywords processed: 9
+[08:57:23] INFO - Total positions found: 90
+[10:44:31] INFO - Session report saved with ID: 70768d97
+[10:44:31] INFO - Results saved to C:\Users\KONSTANTINKOSHKAREV\Desktop\Proyectos\Python\scraper-keyword-position\data\keyword_positions_20251008_104431.csv and C:\Users\KONSTANTINKOSHKAREV\Desktop\Proyectos\Python\scraper-keyword-position\data\keyword_positions_20251008_104431.json
+[10:44:31] INFO - Total keywords processed: 6
+[10:44:31] INFO - Total positions found: 60

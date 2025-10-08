@@ -7,6 +7,7 @@ from urllib.parse import quote_plus, urlparse
 import pandas as pd
 from tqdm import tqdm
 import os
+from reports import ReportManager
 
 class StealthSerpScraper:
     def __init__(self, config):
@@ -35,6 +36,9 @@ class StealthSerpScraper:
             ]
         )
         self.logger = logging.getLogger(__name__)
+        
+        # Initialize report manager
+        self.report_manager = ReportManager()
 
     def get_google_api_headers(self):
         """Headers para llamadas a Google API"""
@@ -157,13 +161,18 @@ class StealthSerpScraper:
         self.logger.info(f"✅ Encontrados {len(results)} resultados para '{keyword}'")
         return results
 
-    def batch_position_check(self, keywords, target_domain, pages=1):
+    def batch_position_check(self, keywords, target_domain, pages=1, stop_callback=None):
         """Verifica posiciones para múltiples keywords usando SOLAMENTE Google API"""
         all_results = []
 
         self.logger.info(f"🚀 Iniciando verificación de posiciones para {len(keywords)} keywords")
 
         for i, keyword in enumerate(tqdm(keywords, desc="Verificando posiciones")):
+            # Verificar si se debe detener el proceso
+            if stop_callback and stop_callback():
+                self.logger.info("⏹️ Proceso detenido por el usuario")
+                break
+                
             self.logger.info(f"🔄 Procesando keyword {i+1}/{len(keywords)}: '{keyword}'")
 
             results = self.serp_scraper_api(keyword, target_domain, pages)
@@ -171,14 +180,27 @@ class StealthSerpScraper:
 
             # Delay entre keywords (configurado por usuario)
             if i < len(keywords) - 1:
+                # Verificar nuevamente antes del delay
+                if stop_callback and stop_callback():
+                    self.logger.info("⏹️ Proceso detenido por el usuario durante el delay")
+                    break
+                    
                 delay = random.uniform(
                     self.config.get('MIN_KEYWORD_DELAY', 5),
                     self.config.get('MAX_KEYWORD_DELAY', 15)
                 )
                 self.logger.info(f"⏳ Esperando {delay:.1f}s antes del siguiente keyword...")
-                time.sleep(delay)
+                
+                # Dividir el delay en pequeños intervalos para verificar stop más frecuentemente
+                delay_intervals = int(delay * 10)  # 10 verificaciones por segundo
+                for _ in range(delay_intervals):
+                    if stop_callback and stop_callback():
+                        self.logger.info("⏹️ Proceso detenido por el usuario durante el delay")
+                        return all_results
+                    time.sleep(0.1)
 
-        self.logger.info(f"✅ Proceso completado - Total posiciones encontradas: {len(all_results)}")
+        if not (stop_callback and stop_callback()):
+            self.logger.info(f"✅ Proceso completado - Total posiciones encontradas: {len(all_results)}")
         return all_results
 
     def google_suggest_scraper(self, base_keyword, country="US", language="en", max_suggestions=25):
@@ -423,7 +445,7 @@ class StealthSerpScraper:
         return self.serp_scraper_api(keyword, target_domain, pages)
 
     def save_results(self, results, filename=None):
-        """Guarda resultados en CSV y JSON"""
+        """Guarda resultados en CSV y JSON y crea reporte de sesión"""
         if not results:
             self.logger.warning("No results to save")
             return
@@ -449,12 +471,29 @@ class StealthSerpScraper:
         with open(json_file_path, 'w', encoding='utf-8') as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
 
+        # Crear reporte de sesión automáticamente
+        session_info = {
+            'timestamp': timestamp,
+            'filename': filename,
+            'total_keywords': len(set([r['keyword'] for r in results])),
+            'total_results': len(results),
+            'config': self.config
+        }
+        
+        try:
+            session_id = self.report_manager.save_scraping_session(results, session_info)
+            self.logger.info(f"Session report saved with ID: {session_id}")
+        except Exception as e:
+            self.logger.warning(f"Failed to save session report: {str(e)}")
+
         self.logger.info(f"Results saved to {data_file_path} and {json_file_path}")
 
         # Estadísticas
         total_keywords = len(set([r['keyword'] for r in results]))
         self.logger.info(f"Total keywords processed: {total_keywords}")
         self.logger.info(f"Total positions found: {len(results)}")
+        
+        return session_id if 'session_id' in locals() else None
 
     def google_suggest_scraper(self, keyword, country="US", language="en"):
         """Obtiene sugerencias de Google Suggest para una keyword"""
