@@ -814,7 +814,7 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
 
         self.tab_projects = self.tabview.add("🏢 Proyectos")
         self.tab_config = self.tabview.add("⚙️ Configuración")
-        self.tab_keywords = self.tabview.add("🔑 Keywords")
+        self.tab_keywords = self.tabview.add("🎯 Keywords Suggest")
         self.tab_my_rankings = self.tabview.add("🏆 Mi Ranking")
         self.tab_scraping = self.tabview.add("🚀 Scraping")
         self.tab_results = self.tabview.add("📊 Resultados")
@@ -1117,7 +1117,7 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         self.check_search_console_auth()
 
     def setup_keywords_tab(self):
-        """Configura la pestaña de keywords"""
+        """Configura la pestaña de keywords suggest - solo para keywords relacionadas"""
         main_frame = ctk.CTkFrame(self.tab_keywords)
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -1125,70 +1125,47 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         title_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         title_frame.pack(fill="x", pady=(0, 10))
         
-        ctk.CTkLabel(title_frame, text="🔑 Gestión de Keywords", 
+        ctk.CTkLabel(title_frame, text="🎯 Keywords Suggest", 
                     font=ctk.CTkFont(size=20, weight="bold")).pack(pady=(0, 5))
         
         # Descripción de la pestaña
-        description_text = "Esta pestaña te permite gestionar las keywords que quieres analizar. Puedes cargarlas desde archivos, obtenerlas de Search Console o buscar sugerencias relacionadas."
+        description_text = "Esta pestaña está optimizada exclusivamente para la gestión de keywords relacionadas y sugerencias. El campo principal de keywords para scraping se encuentra ahora en la pestaña '🚀 Scraping'."
         ctk.CTkLabel(title_frame, text=description_text, 
                     font=ctk.CTkFont(size=12), 
                     text_color=COLORS['text_secondary'],
                     wraplength=800).pack(pady=(0, 10))
 
-        # Área de edición de keywords
-        keywords_frame = ctk.CTkFrame(main_frame)
-        keywords_frame.pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(keywords_frame, text="Keywords (una por línea):", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
-        self.main_keywords_text = ctk.CTkTextbox(keywords_frame, height=200, font=ctk.CTkFont(family="Consolas", size=11))
-        self.main_keywords_text.pack(fill="x", pady=(5, 0))
-
-        # Contador de keywords
-        self.keywords_count_label = ctk.CTkLabel(main_frame, text="0 keywords")
-        self.keywords_count_label.pack(pady=5)
-
-        # Botones de acción en fila
-        buttons_frame = ctk.CTkFrame(main_frame)
-        buttons_frame.pack(fill="x", padx=10, pady=5)
-
-        # Primera fila de botones
-        row1_frame = ctk.CTkFrame(buttons_frame, fg_color="transparent")
-        row1_frame.pack(fill="x", pady=2)
-        
-        ctk.CTkButton(row1_frame, text="📁 Cargar Archivo", command=self.load_keywords_file, width=120).pack(side="left", padx=2)
-        ctk.CTkButton(row1_frame, text="🔍 Último Scan SC", command=self.show_last_sc_scan_selector, fg_color=COLORS['accent'], width=120).pack(side="left", padx=2)
-        ctk.CTkButton(row1_frame, text="☑️ Selector", command=self.show_keyword_selector, fg_color=COLORS['warning'], width=100).pack(side="left", padx=2)
-        
-        # Segunda fila de botones
-        row2_frame = ctk.CTkFrame(buttons_frame, fg_color="transparent")
-        row2_frame.pack(fill="x", pady=2)
-        
-        ctk.CTkButton(row2_frame, text="🧹 Limpiar Duplicados", command=self.deduplicate_keywords, width=140).pack(side="left", padx=2)
-        ctk.CTkButton(row2_frame, text="💾 Guardar", command=self.save_keywords, width=100).pack(side="left", padx=2)
-
-        # Área de keywords relacionadas
+        # Área completa para keywords relacionadas
         related_frame = ctk.CTkFrame(main_frame)
-        related_frame.pack(fill="both", expand=True, padx=10, pady=(10, 0))
+        related_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
-        ctk.CTkLabel(related_frame, text="🎯 Keywords Relacionadas", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 5))
+        ctk.CTkLabel(related_frame, text="🎯 Keywords Relacionadas", 
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 5))
 
         # Campo de entrada para keyword base
         input_frame = ctk.CTkFrame(related_frame)
-        input_frame.pack(fill="x", pady=(0, 5))
+        input_frame.pack(fill="x", padx=10, pady=(0, 5))
+        
         self.related_keyword_entry = ctk.CTkEntry(input_frame, placeholder_text="Ingresa keyword principal...")
         self.related_keyword_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
-        ctk.CTkButton(input_frame, text="🔍 Buscar", command=self.find_related_keywords).pack(side="right")
+        
+        ctk.CTkButton(input_frame, text="🔍 Buscar", command=self.find_related_keywords, width=80).pack(side="right")
 
-        # Área de resultados de keywords relacionadas
-        self.related_text = ctk.CTkTextbox(related_frame, height=150, wrap="word")
-        self.related_text.pack(fill="both", expand=True, pady=(5, 0))
+        # Área de resultados de keywords relacionadas (más grande)
+        self.related_text = ctk.CTkTextbox(related_frame, height=300, wrap="word")
+        self.related_text.pack(fill="both", expand=True, padx=10, pady=(5, 0))
         self.related_text.configure(state="disabled")
 
         # Contador y botón de añadir
         actions_frame = ctk.CTkFrame(related_frame)
-        actions_frame.pack(fill="x", pady=(5, 10))
+        actions_frame.pack(fill="x", padx=10, pady=(5, 10))
+        
         self.related_count_label = ctk.CTkLabel(actions_frame, text="(0 sugerencias)")
         self.related_count_label.pack(side="left")
-        self.add_to_keywords_button = ctk.CTkButton(actions_frame, text="➕ Añadir a Lista", state="disabled", command=self.add_related_to_keywords)
+        
+        self.add_to_keywords_button = ctk.CTkButton(actions_frame, text="➕ Añadir a Scraping", 
+                                                  state="disabled", command=self.add_related_to_keywords,
+                                                  width=150)
         self.add_to_keywords_button.pack(side="right")
 
     def setup_my_rankings_tab(self):
@@ -1333,6 +1310,41 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         max_delay_entry.pack(side="left")
         self.max_delay_var = ctk.StringVar(value="15")
         max_delay_entry.configure(textvariable=self.max_delay_var)
+
+        # Línea separadora
+        ctk.CTkLabel(main_frame, text="-"*60).pack(pady=10)
+
+        # === ÁREA DE KEYWORDS PARA SCRAPING ===
+        keywords_section = ctk.CTkFrame(main_frame)
+        keywords_section.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(keywords_section, text="📝 Keywords para Scraping", 
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", padx=15, pady=(15, 5))
+
+        # Área de edición de keywords
+        keywords_frame = ctk.CTkFrame(keywords_section)
+        keywords_frame.pack(fill="x", padx=15, pady=(0, 10))
+
+        ctk.CTkLabel(keywords_frame, text="Keywords (una por línea):", 
+                    font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+        
+        # Textbox para keywords
+        self.main_keywords_text = ctk.CTkTextbox(keywords_frame, height=120, font=ctk.CTkFont(family="Consolas", size=11))
+        self.main_keywords_text.pack(fill="x", pady=(5, 5))
+
+        # Contador de keywords
+        self.keywords_count_label = ctk.CTkLabel(keywords_frame, text="0 keywords", font=ctk.CTkFont(size=10))
+        self.keywords_count_label.pack(pady=(0, 5))
+
+        # Botones de acción para keywords
+        keywords_buttons_frame = ctk.CTkFrame(keywords_frame)
+        keywords_buttons_frame.pack(fill="x", pady=(0, 5))
+
+        ctk.CTkButton(keywords_buttons_frame, text="📁 Cargar Archivo", command=self.load_keywords_file, width=120).pack(side="left", padx=2)
+        ctk.CTkButton(keywords_buttons_frame, text="🔍 Último Scan SC", command=self.show_last_sc_scan_selector, fg_color=COLORS['accent'], width=120).pack(side="left", padx=2)
+        ctk.CTkButton(keywords_buttons_frame, text="☑️ Selector", command=self.show_keyword_selector, fg_color=COLORS['warning'], width=100).pack(side="left", padx=2)
+        ctk.CTkButton(keywords_buttons_frame, text="🧹 Limpiar Duplicados", command=self.deduplicate_keywords, width=140).pack(side="left", padx=2)
+        ctk.CTkButton(keywords_buttons_frame, text="💾 Guardar", command=self.save_keywords, width=100).pack(side="left", padx=2)
 
         # Línea separadora
         ctk.CTkLabel(main_frame, text="-"*60).pack(pady=10)
