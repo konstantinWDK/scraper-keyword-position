@@ -959,34 +959,49 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         ctk.CTkLabel(create_frame, text="➕ Crear Nuevo Proyecto", 
                     font=ctk.CTkFont(size=18, weight="bold")).pack(pady=(15, 10))
 
-        # Formulario de creación
+        # Formulario de creación en 2 columnas
         form_frame = ctk.CTkFrame(create_frame)
         form_frame.pack(fill="x", padx=15, pady=(0, 15))
 
-        # Nombre del proyecto
-        ctk.CTkLabel(form_frame, text="Nombre del Proyecto:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(10, 5))
-        self.project_name_entry = ctk.CTkEntry(form_frame, placeholder_text="Ej: Mi Sitio Web Principal")
-        self.project_name_entry.pack(fill="x", padx=10, pady=(0, 10))
+        # Configurar grid para 2 columnas
+        form_frame.grid_columnconfigure(0, weight=1)
+        form_frame.grid_columnconfigure(1, weight=1)
 
-        # Dominio
-        ctk.CTkLabel(form_frame, text="Dominio:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(0, 5))
-        self.project_domain_entry = ctk.CTkEntry(form_frame, placeholder_text="Ej: misitio.com")
-        self.project_domain_entry.pack(fill="x", padx=10, pady=(0, 10))
+        # Columna izquierda
+        left_column = ctk.CTkFrame(form_frame, fg_color="transparent")
+        left_column.grid(row=0, column=0, padx=(0, 10), pady=5, sticky="nsew")
 
-        # Descripción
-        ctk.CTkLabel(form_frame, text="Descripción (opcional):", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(0, 5))
-        self.project_description_entry = ctk.CTkEntry(form_frame, placeholder_text="Descripción del proyecto...")
-        self.project_description_entry.pack(fill="x", padx=10, pady=(0, 10))
+        # Columna derecha
+        right_column = ctk.CTkFrame(form_frame, fg_color="transparent")
+        right_column.grid(row=0, column=1, padx=(10, 0), pady=5, sticky="nsew")
 
-        # Propiedad de Search Console
-        ctk.CTkLabel(form_frame, text="URL de Search Console (opcional):", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(0, 5))
-        self.project_sc_property_entry = ctk.CTkEntry(form_frame, placeholder_text="https://misitio.com/")
-        self.project_sc_property_entry.pack(fill="x", padx=10, pady=(0, 15))
+        # Nombre del proyecto (columna izquierda)
+        ctk.CTkLabel(left_column, text="Nombre del Proyecto:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 5))
+        self.project_name_entry = ctk.CTkEntry(left_column, placeholder_text="Ej: Mi Sitio Web Principal")
+        self.project_name_entry.pack(fill="x", pady=(0, 10))
 
-        # Botón crear
-        ctk.CTkButton(form_frame, text="🚀 Crear Proyecto", 
+        # Dominio (columna izquierda)
+        ctk.CTkLabel(left_column, text="Dominio:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 5))
+        self.project_domain_entry = ctk.CTkEntry(left_column, placeholder_text="Ej: misitio.com")
+        self.project_domain_entry.pack(fill="x", pady=(0, 10))
+
+        # Descripción (columna derecha)
+        ctk.CTkLabel(right_column, text="Descripción (opcional):", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 5))
+        self.project_description_entry = ctk.CTkEntry(right_column, placeholder_text="Descripción del proyecto...")
+        self.project_description_entry.pack(fill="x", pady=(0, 10))
+
+        # Propiedad de Search Console (columna derecha)
+        ctk.CTkLabel(right_column, text="URL de Search Console (opcional):", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 5))
+        self.project_sc_property_entry = ctk.CTkEntry(right_column, placeholder_text="https://misitio.com/")
+        self.project_sc_property_entry.pack(fill="x", pady=(0, 10))
+
+        # Botón crear (centrado abajo)
+        button_frame = ctk.CTkFrame(form_frame, fg_color="transparent")
+        button_frame.grid(row=1, column=0, columnspan=2, pady=(10, 0), sticky="ew")
+
+        ctk.CTkButton(button_frame, text="🚀 Crear Proyecto", 
                      command=self.create_new_project, 
-                     fg_color=COLORS['accent'], width=200).pack(pady=(0, 15))
+                     fg_color=COLORS['accent'], width=200).pack(pady=(0, 5))
 
         # Lista de proyectos existentes
         projects_list_frame = ctk.CTkFrame(main_frame)
