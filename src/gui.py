@@ -1099,6 +1099,7 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         buttons_frame.pack(fill="x", padx=10, pady=5)
 
         ctk.CTkButton(buttons_frame, text="📁 Cargar Archivo", command=self.load_keywords_file).pack(side="left", padx=5)
+        ctk.CTkButton(buttons_frame, text="📊 Importar desde CSV Generado", command=self.import_from_generated_csv, fg_color=COLORS['info']).pack(side="left", padx=5)
         ctk.CTkButton(buttons_frame, text="🧹 Limpiar Duplicados", command=self.deduplicate_keywords).pack(side="left", padx=5)
         ctk.CTkButton(buttons_frame, text="💾 Guardar", command=self.save_keywords).pack(side="left", padx=5)
 
@@ -1999,7 +2000,7 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
                         import pandas as pd
                         df = pd.read_csv(file_path)
 
-                        possible_columns = ['keyword', 'keywords', 'kw', 'query', 'search_term']
+                        possible_columns = ['sugerencia', 'keyword', 'keywords', 'kw', 'query', 'search_term']
                         keyword_col = None
 
                         for col in possible_columns:
@@ -2078,6 +2079,146 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
 
         except Exception as e:
             messagebox.showerror("Error", f"Error cargando archivo:\n\n{str(e)}")
+
+    def import_from_generated_csv(self):
+        """Muestra selector de CSVs generados en el directorio data/"""
+        try:
+            data_dir = Path("data")
+            if not data_dir.exists():
+                messagebox.showwarning("Directorio no encontrado", "El directorio 'data/' no existe aún.\n\nGenera keywords relacionadas primero.")
+                return
+
+            # Buscar archivos CSV en data/
+            csv_files = list(data_dir.glob("*.csv"))
+
+            if not csv_files:
+                messagebox.showinfo("Sin archivos", "No hay archivos CSV en el directorio 'data/'.\n\nGenera keywords relacionadas primero.")
+                return
+
+            # Crear ventana de selección
+            select_window = ctk.CTkToplevel(self.root)
+            select_window.title("📊 Seleccionar CSV Generado")
+            select_window.geometry("700x500")
+            select_window.transient(self.root)
+            select_window.grab_set()
+
+            # Frame principal
+            main_frame = ctk.CTkFrame(select_window)
+            main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+            ctk.CTkLabel(
+                main_frame,
+                text="📊 Archivos CSV Generados",
+                font=ctk.CTkFont(size=18, weight="bold")
+            ).pack(pady=(0, 15))
+
+            # Lista de archivos
+            files_frame = ctk.CTkScrollableFrame(main_frame, height=300)
+            files_frame.pack(fill="both", expand=True, pady=(0, 15))
+
+            selected_file = tk.StringVar(value="")
+
+            # Ordenar por fecha (más recientes primero)
+            csv_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+
+            for csv_file in csv_files:
+                file_info = f"{csv_file.name}"
+
+                # Leer primera línea para ver tipo
+                try:
+                    df = pd.read_csv(csv_file, nrows=1)
+                    if 'sugerencia' in df.columns:
+                        file_type = "🎯 Sugerencias"
+                    elif 'posicion' in df.columns or 'position' in df.columns:
+                        file_type = "📊 Posiciones"
+                    else:
+                        file_type = "📄 Keywords"
+                except:
+                    file_type = "📄 CSV"
+
+                # Obtener fecha de modificación
+                mod_time = datetime.fromtimestamp(csv_file.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
+
+                radio_frame = ctk.CTkFrame(files_frame, fg_color="transparent")
+                radio_frame.pack(fill="x", pady=3)
+
+                radio = ctk.CTkRadioButton(
+                    radio_frame,
+                    text=f"{file_type} | {csv_file.name}\n    📅 {mod_time}",
+                    variable=selected_file,
+                    value=str(csv_file),
+                    font=ctk.CTkFont(size=12)
+                )
+                radio.pack(anchor="w", padx=5)
+
+            # Botones
+            buttons_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            buttons_frame.pack(fill="x", pady=(10, 0))
+
+            def load_selected():
+                if not selected_file.get():
+                    messagebox.showwarning("Selección requerida", "Por favor selecciona un archivo CSV")
+                    return
+
+                file_path = selected_file.get()
+                try:
+                    df = pd.read_csv(file_path)
+
+                    # Detectar columna de keywords
+                    possible_columns = ['sugerencia', 'keyword', 'keywords', 'kw', 'query']
+                    keyword_col = None
+
+                    for col in possible_columns:
+                        if col in df.columns:
+                            keyword_col = col
+                            break
+
+                    if keyword_col:
+                        keywords = df[keyword_col].dropna().astype(str).unique().tolist()
+                    else:
+                        keywords = df.iloc[:, 0].dropna().astype(str).unique().tolist()
+
+                    # Filtrar keywords válidas
+                    valid_keywords = [k.strip() for k in keywords if k.strip() and len(k.strip()) >= 2]
+
+                    if valid_keywords:
+                        self.set_current_keywords(valid_keywords)
+                        self.update_keywords_count()
+
+                        messagebox.showinfo(
+                            "Importación Exitosa",
+                            f"✅ Keywords importadas correctamente!\n\n"
+                            f"📁 Archivo: {Path(file_path).name}\n"
+                            f"📊 Keywords únicas: {len(valid_keywords)}\n"
+                            f"🔍 Columna usada: {keyword_col or 'Primera columna'}"
+                        )
+
+                        select_window.destroy()
+                        self.log_message(f"✅ Importadas {len(valid_keywords)} keywords desde {Path(file_path).name}")
+                    else:
+                        messagebox.showerror("Sin datos", "No se encontraron keywords válidas en el archivo")
+
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error importando CSV:\n\n{str(e)}")
+
+            ctk.CTkButton(
+                buttons_frame,
+                text="✅ Importar Keywords",
+                command=load_selected,
+                fg_color=COLORS['success'],
+                width=200
+            ).pack(side="left", padx=5)
+
+            ctk.CTkButton(
+                buttons_frame,
+                text="❌ Cancelar",
+                command=select_window.destroy,
+                fg_color=COLORS['error'],
+                width=150
+            ).pack(side="left", padx=5)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error abriendo selector:\n\n{str(e)}")
 
     def set_current_keywords(self, keywords_list):
         """Establece keywords en el editor principal"""
