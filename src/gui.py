@@ -772,7 +772,6 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         self.tabview.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.tab_projects = self.tabview.add("🏢 Proyectos")
-        self.tab_google_api = self.tabview.add("🔐 Google API")
         self.tab_config = self.tabview.add("⚙️ Configuración")
         self.tab_keywords = self.tabview.add("🔑 Keywords")
         self.tab_my_rankings = self.tabview.add("🏆 Mi Ranking")
@@ -784,7 +783,6 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
 
         # Configurar cada pestaña
         self.setup_projects_tab()
-        self.setup_google_api_tab()
         self.setup_config_tab()
         self.setup_keywords_tab()
         self.setup_my_rankings_tab()
@@ -992,19 +990,28 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         self.refresh_projects_list()
         self.refresh_projects_dropdown()
 
-    def setup_google_api_tab(self):
-        """Configura la pestaña dedicada de Google API con instrucciones"""
-        main_frame = ctk.CTkScrollableFrame(self.tab_google_api)
+#######
+
+    def setup_config_tab(self):
+        """Configura la pestaña de configuración centralizada"""
+        main_frame = ctk.CTkScrollableFrame(self.tab_config)
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Título principal
-        title_label = ctk.CTkLabel(main_frame, text="🔐 Configuración Google Custom Search API",
+        title_label = ctk.CTkLabel(main_frame, text="⚙️ Configuración Centralizada",
                                   font=ctk.CTkFont(size=24, weight="bold"))
         title_label.pack(pady=(0, 20))
 
-        # Campos de configuración
-        config_frame = ctk.CTkFrame(main_frame)
-        config_frame.pack(fill="x", pady=(0, 20))
+        # === SECCIÓN GOOGLE CUSTOM SEARCH API ===
+        api_frame = ctk.CTkFrame(main_frame)
+        api_frame.pack(fill="x", pady=(0, 20))
+
+        ctk.CTkLabel(api_frame, text="🔐 Google Custom Search API",
+                    font=ctk.CTkFont(size=18, weight="bold")).pack(anchor="w", padx=15, pady=(15, 10))
+
+        # Campos de configuración de API
+        config_frame = ctk.CTkFrame(api_frame)
+        config_frame.pack(fill="x", padx=15, pady=(0, 15))
 
         ctk.CTkLabel(config_frame, text="🔑 Google API Key:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
         self.api_key_var = ctk.StringVar()
@@ -1016,25 +1023,26 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         se_id_entry = ctk.CTkEntry(config_frame, textvariable=self.search_engine_id_var, width=400)
         se_id_entry.pack(fill="x", pady=(5, 10))
 
-        ctk.CTkButton(config_frame, text="💾 Guardar Configuración", command=self.save_google_config).pack(pady=10)
+        ctk.CTkButton(config_frame, text="💾 Guardar Configuración API",
+                     command=self.save_google_config, fg_color=COLORS['success']).pack(pady=10)
 
-    def setup_config_tab(self):
-        """Configura la pestaña de configuración"""
-        main_frame = ctk.CTkFrame(self.tab_config)
-        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        # === SECCIÓN SCRAPER ===
+        scraper_frame = ctk.CTkFrame(main_frame)
+        scraper_frame.pack(fill="x", pady=(0, 20))
 
-        ctk.CTkLabel(main_frame, text="⚙️ Configuración del Scraper", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
+        ctk.CTkLabel(scraper_frame, text="🚀 Configuración del Scraper",
+                    font=ctk.CTkFont(size=18, weight="bold")).pack(anchor="w", padx=15, pady=(15, 10))
 
         # Dominio objetivo
-        domain_frame = ctk.CTkFrame(main_frame)
-        domain_frame.pack(fill="x", padx=10, pady=5)
+        domain_frame = ctk.CTkFrame(scraper_frame)
+        domain_frame.pack(fill="x", padx=15, pady=5)
         ctk.CTkLabel(domain_frame, text="Dominio objetivo:").pack(anchor="w")
         self.domain_entry = ctk.CTkEntry(domain_frame, placeholder_text="ejemplo.com")
         self.domain_entry.pack(fill="x", pady=(5, 0))
 
         # Páginas a scrapear
-        pages_frame = ctk.CTkFrame(main_frame)
-        pages_frame.pack(fill="x", padx=10, pady=5)
+        pages_frame = ctk.CTkFrame(scraper_frame)
+        pages_frame.pack(fill="x", padx=15, pady=5)
         ctk.CTkLabel(pages_frame, text="Páginas a scrapear:").pack(anchor="w")
         self.pages_var = ctk.DoubleVar(value=1.0)
         pages_slider = ctk.CTkSlider(pages_frame, from_=1, to=10, number_of_steps=9, variable=self.pages_var, command=self.update_pages_label)
@@ -1043,8 +1051,8 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         self.pages_label.pack()
 
         # País e idioma
-        geo_frame = ctk.CTkFrame(main_frame)
-        geo_frame.pack(fill="x", padx=10, pady=5)
+        geo_frame = ctk.CTkFrame(scraper_frame)
+        geo_frame.pack(fill="x", padx=15, pady=5)
         ctk.CTkLabel(geo_frame, text="País:").pack(side="left", padx=(0, 10))
         self.country_var = ctk.StringVar(value="US")
         country_combo = ctk.CTkComboBox(geo_frame, values=["US", "ES", "FR", "DE", "IT", "UK", "BR", "MX"], variable=self.country_var, width=100)
@@ -1055,8 +1063,8 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         language_combo.pack(side="left")
 
         # Delays
-        delays_frame = ctk.CTkFrame(main_frame)
-        delays_frame.pack(fill="x", padx=10, pady=5)
+        delays_frame = ctk.CTkFrame(scraper_frame)
+        delays_frame.pack(fill="x", padx=15, pady=10)
         ctk.CTkLabel(delays_frame, text="Delays (segundos):", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
         min_delay_frame = ctk.CTkFrame(delays_frame)
         min_delay_frame.pack(fill="x", pady=5)
@@ -1072,18 +1080,18 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         max_delay_entry = ctk.CTkEntry(max_delay_frame, textvariable=self.max_delay_var, width=60)
         max_delay_entry.pack(side="right")
 
-        # Search Console OAuth
+        # === SECCIÓN GOOGLE SEARCH CONSOLE ===
         sc_frame = ctk.CTkFrame(main_frame)
-        sc_frame.pack(fill="x", padx=10, pady=10)
-        ctk.CTkLabel(sc_frame, text="🔗 Google Search Console", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(10, 5))
+        sc_frame.pack(fill="x", pady=(0, 20))
+        ctk.CTkLabel(sc_frame, text="🔗 Google Search Console", font=ctk.CTkFont(size=18, weight="bold")).pack(anchor="w", padx=15, pady=(15, 5))
 
         # Estado de autenticación
-        self.sc_auth_status = ctk.CTkLabel(sc_frame, text="⚪ No autenticado", font=ctk.CTkFont(size=12))
-        self.sc_auth_status.pack(anchor="w", padx=10, pady=5)
+        self.sc_auth_status = ctk.CTkLabel(sc_frame, text="⚪ No autenticado", font=ctk.CTkFont(size=14))
+        self.sc_auth_status.pack(anchor="w", padx=15, pady=10)
 
         # Botones OAuth
         sc_buttons_frame = ctk.CTkFrame(sc_frame)
-        sc_buttons_frame.pack(fill="x", padx=10, pady=(0, 10))
+        sc_buttons_frame.pack(fill="x", padx=15, pady=(0, 15))
 
         self.sc_auth_button = ctk.CTkButton(sc_buttons_frame, text="🔐 Autenticar con Google",
                                             command=self.authenticate_search_console,
@@ -1221,12 +1229,73 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
 
     def setup_scraping_tab(self):
         """Configura la pestaña de scraping con interfaz mejorada"""
-        main_frame = ctk.CTkFrame(self.tab_scraping)
+        main_frame = ctk.CTkScrollableFrame(self.tab_scraping)
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # === SECCIÓN CONFIGURACIÓN DEL SCRAPER ===
+        config_section = ctk.CTkFrame(main_frame)
+        config_section.pack(fill="x", pady=(0, 20))
+
+        ctk.CTkLabel(config_section, text="⚙️ Configuración del Scraper",
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", padx=15, pady=(15, 5))
+
+        # Configuración del scraper
+        scraper_frame = ctk.CTkFrame(config_section)
+        scraper_frame.pack(fill="x", padx=15, pady=(0, 15))
+
+        # Dominio objetivo
+        domain_frame = ctk.CTkFrame(scraper_frame)
+        domain_frame.pack(fill="x", pady=5)
+        ctk.CTkLabel(domain_frame, text="Dominio objetivo:").pack(anchor="w")
+        self.domain_entry = ctk.CTkEntry(domain_frame, placeholder_text="ejemplo.com")
+        self.domain_entry.pack(fill="x", pady=(5, 0))
+
+        # Páginas a scrapear
+        pages_frame = ctk.CTkFrame(scraper_frame)
+        pages_frame.pack(fill="x", pady=5)
+        ctk.CTkLabel(pages_frame, text="Páginas a scrapear:").pack(anchor="w")
+        self.pages_var = ctk.DoubleVar(value=1.0)
+        pages_slider = ctk.CTkSlider(pages_frame, from_=1, to=10, number_of_steps=9, variable=self.pages_var, command=self.update_pages_label)
+        pages_slider.pack(fill="x", pady=(5, 0))
+        self.pages_label = ctk.CTkLabel(pages_frame, text="1 página")
+        self.pages_label.pack()
+
+        # País e idioma
+        geo_frame = ctk.CTkFrame(scraper_frame)
+        geo_frame.pack(fill="x", pady=5)
+        ctk.CTkLabel(geo_frame, text="País:").pack(side="left", padx=(0, 10))
+        self.country_var = ctk.StringVar(value="US")
+        country_combo = ctk.CTkComboBox(geo_frame, values=["US", "ES", "FR", "DE", "IT", "UK", "BR", "MX"], variable=self.country_var, width=100)
+        country_combo.pack(side="left", padx=(0, 20))
+        ctk.CTkLabel(geo_frame, text="Idioma:").pack(side="left", padx=(0, 10))
+        self.language_var = ctk.StringVar(value="en")
+        language_combo = ctk.CTkComboBox(geo_frame, values=["en", "es", "fr", "de", "it", "pt", "ru"], variable=self.language_var, width=100)
+        language_combo.pack(side="left")
+
+        # Delays
+        delays_frame = ctk.CTkFrame(scraper_frame)
+        delays_frame.pack(fill="x", pady=15)
+        ctk.CTkLabel(delays_frame, text="Delays (segundos):", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+        min_delay_frame = ctk.CTkFrame(delays_frame)
+        min_delay_frame.pack(fill="x", pady=5)
+        ctk.CTkLabel(min_delay_frame, text="Mínimo:").pack(side="left")
+        self.min_delay_var = ctk.StringVar(value="5")
+        min_delay_entry = ctk.CTkEntry(min_delay_frame, textvariable=self.min_delay_var, width=60)
+        min_delay_entry.pack(side="right")
+
+        max_delay_frame = ctk.CTkFrame(delays_frame)
+        max_delay_frame.pack(fill="x", pady=5)
+        ctk.CTkLabel(max_delay_frame, text="Máximo:").pack(side="left")
+        self.max_delay_var = ctk.StringVar(value="15")
+        max_delay_entry = ctk.CTkEntry(max_delay_frame, textvariable=self.max_delay_var, width=60)
+        max_delay_entry.pack(side="right")
+
+        # Línea separadora
+        ctk.CTkLabel(main_frame, text="-"*60).pack(pady=10)
 
         # Título principal con información de estado
         header_frame = ctk.CTkFrame(main_frame)
-        header_frame.pack(fill="x", padx=10, pady=(10, 5))
+        header_frame.pack(fill="x", pady=(0, 5))
 
         # Título y estado
         title_frame = ctk.CTkFrame(header_frame)
