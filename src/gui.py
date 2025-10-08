@@ -1026,61 +1026,7 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         ctk.CTkButton(config_frame, text="💾 Guardar Configuración API",
                      command=self.save_google_config, fg_color=COLORS['success']).pack(pady=10)
 
-        # === SECCIÓN SCRAPER ===
-        scraper_frame = ctk.CTkFrame(main_frame)
-        scraper_frame.pack(fill="x", pady=(0, 20))
 
-        ctk.CTkLabel(scraper_frame, text="🚀 Configuración del Scraper",
-                    font=ctk.CTkFont(size=18, weight="bold")).pack(anchor="w", padx=15, pady=(15, 10))
-
-        # Dominio objetivo
-        domain_frame = ctk.CTkFrame(scraper_frame)
-        domain_frame.pack(fill="x", padx=15, pady=5)
-        ctk.CTkLabel(domain_frame, text="Dominio objetivo:").pack(anchor="w")
-        self.domain_entry = ctk.CTkEntry(domain_frame, placeholder_text="ejemplo.com")
-        self.domain_entry.pack(fill="x", pady=(5, 0))
-
-        # Páginas a scrapear
-        pages_frame = ctk.CTkFrame(scraper_frame)
-        pages_frame.pack(fill="x", padx=15, pady=5)
-        ctk.CTkLabel(pages_frame, text="Páginas a scrapear:").pack(anchor="w")
-        self.pages_var = ctk.DoubleVar(value=1.0)
-        pages_slider = ctk.CTkSlider(pages_frame, from_=1, to=10, number_of_steps=9, variable=self.pages_var, command=self.update_pages_label)
-        pages_slider.pack(fill="x", pady=(5, 0))
-        self.pages_label = ctk.CTkLabel(pages_frame, text="1 página")
-        self.pages_label.pack()
-
-        # País e idioma
-        geo_frame = ctk.CTkFrame(scraper_frame)
-        geo_frame.pack(fill="x", padx=15, pady=5)
-        ctk.CTkLabel(geo_frame, text="País:").pack(side="left", padx=(0, 10))
-        self.country_var = ctk.StringVar(value="US")
-        country_combo = ctk.CTkComboBox(geo_frame, values=["US", "ES", "FR", "DE", "IT", "UK", "BR", "MX"], variable=self.country_var, width=100)
-        country_combo.pack(side="left", padx=(0, 20))
-        ctk.CTkLabel(geo_frame, text="Idioma:").pack(side="left", padx=(0, 10))
-        self.language_var = ctk.StringVar(value="en")
-        language_combo = ctk.CTkComboBox(geo_frame, values=["en", "es", "fr", "de", "it", "pt", "ru"], variable=self.language_var, width=100)
-        language_combo.pack(side="left")
-
-        # Delays
-        delays_frame = ctk.CTkFrame(scraper_frame)
-        delays_frame.pack(fill="x", padx=15, pady=10)
-        ctk.CTkLabel(delays_frame, text="Delays (segundos):", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
-        min_delay_frame = ctk.CTkFrame(delays_frame)
-        min_delay_frame.pack(fill="x", pady=5)
-        ctk.CTkLabel(min_delay_frame, text="Mínimo:").pack(side="left")
-        self.min_delay_var = ctk.StringVar(value="5")
-        min_delay_entry = ctk.CTkEntry(min_delay_frame, textvariable=self.min_delay_var, width=60)
-        min_delay_entry.pack(side="right")
-
-        max_delay_frame = ctk.CTkFrame(delays_frame)
-        max_delay_frame.pack(fill="x", pady=5)
-        ctk.CTkLabel(max_delay_frame, text="Máximo:").pack(side="left")
-        self.max_delay_var = ctk.StringVar(value="15")
-        max_delay_entry = ctk.CTkEntry(max_delay_frame, textvariable=self.max_delay_var, width=60)
-        max_delay_entry.pack(side="right")
-
-        # === SECCIÓN GOOGLE SEARCH CONSOLE ===
         sc_frame = ctk.CTkFrame(main_frame)
         sc_frame.pack(fill="x", pady=(0, 20))
         ctk.CTkLabel(sc_frame, text="🔗 Google Search Console", font=ctk.CTkFont(size=18, weight="bold")).pack(anchor="w", padx=15, pady=(15, 5))
@@ -1239,56 +1185,67 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         ctk.CTkLabel(config_section, text="⚙️ Configuración del Scraper",
                     font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", padx=15, pady=(15, 5))
 
-        # Configuración del scraper
+        # Configuración del scraper - Layout más compacto
         scraper_frame = ctk.CTkFrame(config_section)
         scraper_frame.pack(fill="x", padx=15, pady=(0, 15))
 
+        # Primera fila: Dominio y páginas
+        row1 = ctk.CTkFrame(scraper_frame, fg_color="transparent")
+        row1.pack(fill="x", pady=(0, 10))
+
         # Dominio objetivo
-        domain_frame = ctk.CTkFrame(scraper_frame)
-        domain_frame.pack(fill="x", pady=5)
-        ctk.CTkLabel(domain_frame, text="Dominio objetivo:").pack(anchor="w")
-        self.domain_entry = ctk.CTkEntry(domain_frame, placeholder_text="ejemplo.com")
-        self.domain_entry.pack(fill="x", pady=(5, 0))
+        domain_frame = ctk.CTkFrame(row1, fg_color="transparent")
+        domain_frame.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        ctk.CTkLabel(domain_frame, text="Dominio objetivo:").pack(anchor="w", pady=(0, 2))
+        self.domain_entry = ctk.CTkEntry(domain_frame, placeholder_text="ejemplo.com", height=32)
+        self.domain_entry.pack(fill="x")
 
         # Páginas a scrapear
-        pages_frame = ctk.CTkFrame(scraper_frame)
-        pages_frame.pack(fill="x", pady=5)
-        ctk.CTkLabel(pages_frame, text="Páginas a scrapear:").pack(anchor="w")
+        pages_frame = ctk.CTkFrame(row1, fg_color="transparent")
+        pages_frame.pack(side="right", padx=(0, 0))
+        ctk.CTkLabel(pages_frame, text="Páginas:").pack(anchor="w", pady=(0, 2))
+        pages_controls = ctk.CTkFrame(pages_frame, fg_color="transparent")
+        pages_controls.pack(fill="x")
         self.pages_var = ctk.DoubleVar(value=1.0)
-        pages_slider = ctk.CTkSlider(pages_frame, from_=1, to=10, number_of_steps=9, variable=self.pages_var, command=self.update_pages_label)
-        pages_slider.pack(fill="x", pady=(5, 0))
-        self.pages_label = ctk.CTkLabel(pages_frame, text="1 página")
-        self.pages_label.pack()
+        pages_slider = ctk.CTkSlider(pages_controls, from_=1, to=10, number_of_steps=9, variable=self.pages_var, command=self.update_pages_label, width=100, height=16)
+        pages_slider.pack(side="left", padx=(0, 8))
+        self.pages_label = ctk.CTkLabel(pages_controls, text="1 págs", font=ctk.CTkFont(size=10))
+        self.pages_label.pack(side="right")
 
-        # País e idioma
-        geo_frame = ctk.CTkFrame(scraper_frame)
-        geo_frame.pack(fill="x", pady=5)
-        ctk.CTkLabel(geo_frame, text="País:").pack(side="left", padx=(0, 10))
+        # Segunda fila: País, idioma y delays
+        row2 = ctk.CTkFrame(scraper_frame, fg_color="transparent")
+        row2.pack(fill="x", pady=(0, 5))
+
+        # País
+        country_frame = ctk.CTkFrame(row2, fg_color="transparent")
+        country_frame.pack(side="left", padx=(0, 10))
+        ctk.CTkLabel(country_frame, text="País:").pack(anchor="w", pady=(0, 2))
         self.country_var = ctk.StringVar(value="US")
-        country_combo = ctk.CTkComboBox(geo_frame, values=["US", "ES", "FR", "DE", "IT", "UK", "BR", "MX"], variable=self.country_var, width=100)
-        country_combo.pack(side="left", padx=(0, 20))
-        ctk.CTkLabel(geo_frame, text="Idioma:").pack(side="left", padx=(0, 10))
+        country_combo = ctk.CTkComboBox(country_frame, values=["US", "ES", "FR", "DE", "IT", "UK", "BR", "MX"], variable=self.country_var, width=80, height=28)
+        country_combo.pack()
+
+        # Idioma
+        lang_frame = ctk.CTkFrame(row2, fg_color="transparent")
+        lang_frame.pack(side="left", padx=(0, 10))
+        ctk.CTkLabel(lang_frame, text="Idioma:").pack(anchor="w", pady=(0, 2))
         self.language_var = ctk.StringVar(value="en")
-        language_combo = ctk.CTkComboBox(geo_frame, values=["en", "es", "fr", "de", "it", "pt", "ru"], variable=self.language_var, width=100)
-        language_combo.pack(side="left")
+        language_combo = ctk.CTkComboBox(lang_frame, values=["en", "es", "fr", "de", "it", "pt", "ru"], variable=self.language_var, width=80, height=28)
+        language_combo.pack()
 
         # Delays
-        delays_frame = ctk.CTkFrame(scraper_frame)
-        delays_frame.pack(fill="x", pady=15)
-        ctk.CTkLabel(delays_frame, text="Delays (segundos):", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
-        min_delay_frame = ctk.CTkFrame(delays_frame)
-        min_delay_frame.pack(fill="x", pady=5)
-        ctk.CTkLabel(min_delay_frame, text="Mínimo:").pack(side="left")
+        delays_frame = ctk.CTkFrame(row2, fg_color="transparent")
+        delays_frame.pack(side="left", padx=(0, 10))
+        ctk.CTkLabel(delays_frame, text="Delays (seg):", font=ctk.CTkFont(size=10)).pack(anchor="w", pady=(0, 2))
+        delays_inputs = ctk.CTkFrame(delays_frame, fg_color="transparent")
+        delays_inputs.pack()
+        min_delay_entry = ctk.CTkEntry(delays_inputs, placeholder_text="Min", width=45, height=28)
+        min_delay_entry.pack(side="left", padx=(0, 3))
         self.min_delay_var = ctk.StringVar(value="5")
-        min_delay_entry = ctk.CTkEntry(min_delay_frame, textvariable=self.min_delay_var, width=60)
-        min_delay_entry.pack(side="right")
-
-        max_delay_frame = ctk.CTkFrame(delays_frame)
-        max_delay_frame.pack(fill="x", pady=5)
-        ctk.CTkLabel(max_delay_frame, text="Máximo:").pack(side="left")
+        min_delay_entry.configure(textvariable=self.min_delay_var)
+        max_delay_entry = ctk.CTkEntry(delays_inputs, placeholder_text="Max", width=45, height=28)
+        max_delay_entry.pack(side="left")
         self.max_delay_var = ctk.StringVar(value="15")
-        max_delay_entry = ctk.CTkEntry(max_delay_frame, textvariable=self.max_delay_var, width=60)
-        max_delay_entry.pack(side="right")
+        max_delay_entry.configure(textvariable=self.max_delay_var)
 
         # Línea separadora
         ctk.CTkLabel(main_frame, text="-"*60).pack(pady=10)
