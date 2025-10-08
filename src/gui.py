@@ -23,6 +23,8 @@ import os
 import sys
 from pathlib import Path
 import pandas as pd
+import matplotlib
+matplotlib.use('TkAgg')  # Configurar backend antes de importar pyplot
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import seaborn as sns
@@ -57,6 +59,10 @@ COLORS = {
 }
 
 class KeywordScraperGUI:
+    def run(self):
+        """Inicia el loop principal de la interfaz gráfica"""
+        self.root.mainloop()
+
     def __init__(self):
         self.root = ctk.CTk()
         self.root.title("Keyword Position Scraper - Anti-detección 2025")
@@ -611,18 +617,26 @@ class KeywordScraperGUI:
         ctk.CTkButton(main_frame, text="📊 Generar Análisis", command=self.generate_analysis).pack(pady=(0, 20))
 
         # Placeholder para gráficos
-        chart_frame = ctk.CTkFrame(main_frame)
-        chart_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        self.chart_frame = ctk.CTkFrame(main_frame)
+        self.chart_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
-        ctk.CTkLabel(chart_frame, text="📋 Los gráficos aparecerán aquí después de generar el análisis", justify="center").pack(expand=True)
-
-        # Frame para matplotlib (inicialmente vacío)
-        self.fig, ((self.ax1, self.ax2), (self.ax3, self.ax4)) = plt.subplots(2, 2, figsize=(12, 8))
-        self.fig.tight_layout(pad=3.0)
-
-        # Canvas para matplotlib
-        self.canvas = plt.FigureCanvasTkAgg(self.fig, chart_frame)
-        self.canvas.get_tk_widget().pack(fill="both", expand=True)
+        # Intentar configurar matplotlib, pero manejar error graciosamente
+        self.matplotlib_available = False
+        try:
+            # Configurar matplotlib si está disponible
+            self.fig, ((self.ax1, self.ax2), (self.ax3, self.ax4)) = plt.subplots(2, 2, figsize=(12, 8))
+            self.fig.tight_layout(pad=3.0)
+            self.canvas = plt.FigureCanvasTkAgg(self.fig, self.chart_frame)
+            self.canvas.get_tk_widget().pack(fill="both", expand=True)
+            self.matplotlib_available = True
+        except Exception as e:
+            # Si matplotlib falla, mostrar mensaje y ocultar frame
+            self.chart_frame.pack_forget()
+            self.chart_frame = ctk.CTkFrame(main_frame)
+            self.chart_frame.pack(fill="both", expand=True, padx=10, pady=5)
+            ctk.CTkLabel(self.chart_frame, text="📋 Los gráficos aparecerán aquí después de generar el análisis\n\n⚠️ NOTA: Para activar gráficos instala:\nsudo apt install python3-tk", justify="center").pack(expand=True)
+            print(f"⚠️ Matplotlib no disponible: {e}")
+            self.matplotlib_available = False
 
     # ========== MÉTODOS DE UTILIDAD ==========
 
