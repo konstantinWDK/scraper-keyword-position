@@ -29,11 +29,34 @@ Herramienta completa para análisis de posiciones SEO usando Google Custom Searc
 ✅ **Gestión de Sesiones** - Historial completo de scraping  
 
 ### 🔄 Funcionalidades Avanzadas
-✅ **Auto-guardado** - Sesiones guardadas automáticamente  
-✅ **Keywords Relacionadas** - Sugerencias de Google Suggest  
-✅ **Análisis de Competencia** - Identificación de dominios top  
-✅ **Filtros Inteligentes** - Limpieza y deduplicación automática  
-✅ **Múltiples Formatos** - Exportación CSV, JSON y Excel  
+✅ **Auto-guardado** - Sesiones guardadas automáticamente
+✅ **Keywords Relacionadas** - Sugerencias de Google Suggest
+✅ **Análisis de Competencia** - Identificación de dominios top
+✅ **Filtros Inteligentes** - Limpieza y deduplicación automática
+✅ **Múltiples Formatos** - Exportación CSV, JSON y Excel
+
+### 🆕 **Funcionalidades Híbridas** (NUEVO)
+✅ **Integración Search Console** - Combina datos reales con scraping
+✅ **Detector de Oportunidades** - Keywords con alto ROI potencial
+✅ **Comparación de Posiciones** - SC vs Scraper en tiempo real
+✅ **Gaps de Contenido** - Identifica keywords sin cobertura
+✅ **Score de Visibilidad** - Métrica combinada de rendimiento SEO
+✅ **Sincronización Automática** - Keywords de SC a lista de scraping
+✅ **Reportes Híbridos HTML** - Análisis visual profesional
+✅ **Recomendaciones Accionables** - Insights automáticos priorizados
+
+📖 **[Ver documentación completa de funcionalidades híbridas](HYBRID_FEATURES.md)**
+
+### 🔐 **Autenticación Mejorada de Search Console** (NUEVO)
+✅ **Auto-Refresh de Tokens** - Sin interrupciones ni re-autenticación
+✅ **Sistema Multi-Cuenta** - Múltiples clientes sin re-autenticar
+✅ **Validación Automática de URLs** - Detección y corrección de formatos
+✅ **Caché Inteligente** - 10-30x más rápido en operaciones repetitivas
+✅ **Manejo Robusto de Errores** - Mensajes claros y accionables
+✅ **Logging Profesional** - Visibilidad total de operaciones
+✅ **100% Retrocompatible** - Tu código existente sigue funcionando
+
+🔒 **[Ver documentación de mejoras de autenticación](AUTH_MEJORAS.md)**  
 
 ## 📦 Instalación
 
