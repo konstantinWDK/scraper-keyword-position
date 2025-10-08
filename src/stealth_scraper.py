@@ -181,7 +181,6 @@ class StealthSerpScraper:
         self.logger.info(f"✅ Proceso completado - Total posiciones encontradas: {len(all_results)}")
         return all_results
 
-<<<<<<< HEAD
     def google_suggest_scraper(self, base_keyword, country="US", language="en", max_suggestions=25):
         """Obtiene sugerencias de Google Suggest API para completar keywords"""
         suggestions = []
@@ -242,7 +241,7 @@ class StealthSerpScraper:
                                 new_suggestions = data[1]
                                 suggestions.extend(new_suggestions)
                         except json.JSONDecodeError:
-                            self.logger.warning(f"TA respuesta de Google Suggest no es JSON válida para '{variation}'")
+                            self.logger.warning(f"La respuesta de Google Suggest no es JSON válida para '{variation}'")
                     else:
                         self.logger.warning(f"Sugerencias HTTP {response.status_code} para '{variation}'")
 
@@ -418,11 +417,125 @@ class StealthSerpScraper:
             'difficulty': round(difficulty, 0),
             'opportunity_score': round(opportunity, 0),
         }
+
+    def single_keyword_position_check(self, keyword, target_domain=None, pages=1):
+        """Analiza una sola keyword y devuelve todos los resultados encontrados"""
+        return self.serp_scraper_api(keyword, target_domain, pages)
+
+    def save_results(self, results, filename=None):
+        """Guarda resultados en CSV y JSON"""
+        if not results:
+            self.logger.warning("No results to save")
+            return
+
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+
+        if not filename:
+            filename = f"keyword_positions_{timestamp}"
+
+        # Guardar como CSV
+        df = pd.DataFrame(results)
+
+        # Path absoluto para data (calculado desde src/)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        data_dir_abs = os.path.join(parent_dir, 'data')
+
+        data_file_path = os.path.join(data_dir_abs, f"{filename}.csv")
+        df.to_csv(data_file_path, index=False, encoding='utf-8')
+
+        # Guardar como JSON
+        json_file_path = os.path.join(data_dir_abs, f"{filename}.json")
+        with open(json_file_path, 'w', encoding='utf-8') as f:
+            json.dump(results, f, indent=2, ensure_ascii=False)
+
+        self.logger.info(f"Results saved to {data_file_path} and {json_file_path}")
+
+        # Estadísticas
+        total_keywords = len(set([r['keyword'] for r in results]))
+        self.logger.info(f"Total keywords processed: {total_keywords}")
+        self.logger.info(f"Total positions found: {len(results)}")
+
+    def google_suggest_scraper(self, keyword, country="US", language="en"):
+        """Obtiene sugerencias de Google Suggest para una keyword"""
+        suggestions = []
+
+        try:
+            # Google Suggest API URL
+            url = "https://www.google.com/complete/search"
+
+            params = {
+                'q': keyword,
+                'client': 'firefox',
+                'hl': language.lower(),
+                'gl': country.lower()
+            }
+
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': '*/*',
+                'Accept-Language': f'{language.lower()}-{country.lower()},{language.lower()};q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+            }
+
+            response = self.session.get(url, params=params, headers=headers, timeout=10)
+
+            if response.status_code == 200:
+                # Google Suggest devuelve JSONP, pero podemos parsear como JSON
+                try:
+                    # Cuando no hay callback, devuelve JSON directo
+                    data = response.json()
+
+                    # El formato típico de Google Suggest es:
+                    # [query, [suggestion1, suggestion2, ...], ...]
+                    if isinstance(data, list) and len(data) >= 2:
+                        suggestions_list = data[1] if isinstance(data[1], list) else []
+
+                        # Filtrar solo strings válidos
+                        for suggestion in suggestions_list:
+                            if isinstance(suggestion, str) and suggestion.strip():
+                                suggestions.append(suggestion.strip())
+
+                    elif isinstance(data, list) and len(data) > 0:
+                        # A veces solo devuelve la lista de sugerencias
+                        for item in data:
+                            if isinstance(item, str) and item.strip():
+                                suggestions.append(item.strip())
+
+                except json.JSONDecodeError:
+                    # Si no es JSON directo, puede ser JSONP
+                    text = response.text.strip()
+                    if text.startswith('(') and text.endswith(')'):
+                        # Intentar quitar el callback function()
+                        try:
+                            json_text = text[1:-1]  # Quitar paréntesis
+                            data = json.loads(json_text)
+                            if isinstance(data, list) and len(data) >= 2:
+                                suggestions_list = data[1] if isinstance(data[1], list) else []
+                                for suggestion in suggestions_list:
+                                    if isinstance(suggestion, str) and suggestion.strip():
+                                        suggestions.append(suggestion.strip())
+                        except json.JSONDecodeError:
+                            pass
+
+                # Limitar a 10 sugerencias máxima
+                suggestions = suggestions[:10]
+
+                # Log detallado solo si hay sugerencias y para depuración
+                if suggestions:
+                    self.logger.debug(f"Encontradas {len(suggestions)} sugerencias para '{keyword}': {suggestions[:3]}...")
+                else:
+                    self.logger.debug(f"No se encontraron sugerencias adicionales para '{keyword}'")
+
+        except Exception as e:
+            self.logger.warning(f"Error obteniendo sugerencias para '{keyword}': {str(e)}")
+
+        return suggestions
 =======
     def single_keyword_position_check(self, keyword, target_domain=None, pages=1):
         """Analiza una sola keyword y devuelve todos los resultados encontrados"""
         return self.serp_scraper_api(keyword, target_domain, pages)
->>>>>>> testing
 
     def save_results(self, results, filename=None):
         """Guarda resultados en CSV y JSON"""
