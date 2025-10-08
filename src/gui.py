@@ -1082,7 +1082,19 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         main_frame = ctk.CTkFrame(self.tab_keywords)
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        ctk.CTkLabel(main_frame, text="🔑 Gestión de Keywords", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=10)
+        # Título con descripción
+        title_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        title_frame.pack(fill="x", pady=(0, 10))
+        
+        ctk.CTkLabel(title_frame, text="🔑 Gestión de Keywords", 
+                    font=ctk.CTkFont(size=20, weight="bold")).pack(pady=(0, 5))
+        
+        # Descripción de la pestaña
+        description_text = "Esta pestaña te permite gestionar las keywords que quieres analizar. Puedes cargarlas desde archivos, obtenerlas de Search Console o buscar sugerencias relacionadas."
+        ctk.CTkLabel(title_frame, text=description_text, 
+                    font=ctk.CTkFont(size=12), 
+                    text_color=COLORS['text_secondary'],
+                    wraplength=800).pack(pady=(0, 10))
 
         # Área de edición de keywords
         keywords_frame = ctk.CTkFrame(main_frame)
@@ -1100,8 +1112,7 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         buttons_frame.pack(fill="x", padx=10, pady=5)
 
         ctk.CTkButton(buttons_frame, text="📁 Cargar Archivo", command=self.load_keywords_file).pack(side="left", padx=5)
-        ctk.CTkButton(buttons_frame, text="📊 Importar CSV", command=self.import_from_generated_csv, fg_color=COLORS['info']).pack(side="left", padx=5)
-        ctk.CTkButton(buttons_frame, text="🔍 Search Console", command=self.import_from_search_console, fg_color=COLORS['accent']).pack(side="left", padx=5)
+        ctk.CTkButton(buttons_frame, text="🔍 Último Scan SC", command=self.show_last_sc_scan_selector, fg_color=COLORS['accent']).pack(side="left", padx=5)
         ctk.CTkButton(buttons_frame, text="☑️ Selector", command=self.show_keyword_selector, fg_color=COLORS['warning']).pack(side="left", padx=5)
         ctk.CTkButton(buttons_frame, text="🧹 Limpiar Duplicados", command=self.deduplicate_keywords).pack(side="left", padx=5)
         ctk.CTkButton(buttons_frame, text="💾 Guardar", command=self.save_keywords).pack(side="left", padx=5)
@@ -2387,8 +2398,8 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         except Exception as e:
             messagebox.showerror("Error", f"Error abriendo selector:\n\n{str(e)}")
 
-    def import_from_search_console(self):
-        """Importa keywords directamente desde Search Console con datos enriquecidos"""
+    def show_last_sc_scan_selector(self):
+        """Muestra selector de keywords del último scan de Search Console para selección manual"""
         try:
             if not self.search_console_api.is_authenticated():
                 messagebox.showwarning(
@@ -2397,7 +2408,7 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
                 )
                 return
 
-            # Obtener propiedad configurada
+            # Obtener proyecto activo
             project = self.project_manager.get_active_project()
             if not project or not project.get('search_console_property'):
                 messagebox.showwarning(
@@ -2407,108 +2418,215 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
                 return
 
             site_url = project['search_console_property']
+            
+            # Obtener datos del último scan (últimos 30 días)
+            self.log_message("🔄 Obteniendo keywords del último scan de Search Console...")
+            
+            # Obtener todas las keywords de los últimos 30 días
+            keywords_data = self.search_console_api.get_keywords_with_enriched_data(site_url, days=30, limit=500)
+            
+            if not keywords_data:
+                messagebox.showinfo("Sin datos", 
+                                  "No se encontraron keywords en el último scan de Search Console.\n\n"
+                                  "Posibles causas:\n"
+                                  "• No hay datos en los últimos 30 días\n"
+                                  "• El sitio no está recibiendo tráfico\n"
+                                  "• La propiedad no está correctamente configurada")
+                return
 
-            # Ventana de configuración
-            config_window = ctk.CTkToplevel(self.root)
-            config_window.title("🔍 Importar desde Search Console")
-            config_window.geometry("600x400")
-            config_window.transient(self.root)
-            config_window.grab_set()
+            # Crear ventana de selección
+            selector_window = ctk.CTkToplevel(self.root)
+            selector_window.title("🔍 Último Scan Search Console - Seleccionar Keywords")
+            selector_window.geometry("900x700")
+            selector_window.transient(self.root)
+            selector_window.grab_set()
 
-            main_frame = ctk.CTkFrame(config_window)
+            main_frame = ctk.CTkFrame(selector_window)
             main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
+            # Header
+            header_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            header_frame.pack(fill="x", pady=(0, 15))
+
             ctk.CTkLabel(
-                main_frame,
-                text="🔍 Configurar Importación",
+                header_frame,
+                text="🔍 Último Scan Search Console - Seleccionar Keywords",
                 font=ctk.CTkFont(size=18, weight="bold")
-            ).pack(pady=(0, 20))
+            ).pack(side="left")
 
-            # Período
-            period_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-            period_frame.pack(fill="x", pady=10)
+            # Contador
+            count_label = ctk.CTkLabel(
+                header_frame,
+                text=f"Total: {len(keywords_data)} keywords",
+                font=ctk.CTkFont(size=14)
+            )
+            count_label.pack(side="right")
 
-            ctk.CTkLabel(period_frame, text="Período (días):", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
-            days_var = tk.StringVar(value="30")
-            ctk.CTkEntry(period_frame, textvariable=days_var, width=100).pack(anchor="w", pady=5)
+            # Frame de búsqueda/filtro
+            search_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            search_frame.pack(fill="x", pady=(0, 10))
 
-            # Tipo de keywords
-            type_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-            type_frame.pack(fill="x", pady=10)
+            search_var = tk.StringVar()
+            search_entry = ctk.CTkEntry(
+                search_frame,
+                placeholder_text="🔍 Filtrar keywords...",
+                textvariable=search_var
+            )
+            search_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
-            ctk.CTkLabel(type_frame, text="Tipo de Keywords:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+            # Frame para estadísticas
+            stats_frame = ctk.CTkFrame(main_frame)
+            stats_frame.pack(fill="x", pady=(0, 10))
 
-            import_type = tk.StringVar(value="all")
-            ctk.CTkRadioButton(type_frame, text="🎯 Todas las keywords", variable=import_type, value="all").pack(anchor="w", pady=2)
-            ctk.CTkRadioButton(type_frame, text="🏆 Top 10 (posiciones 1-10)", variable=import_type, value="top_10").pack(anchor="w", pady=2)
-            ctk.CTkRadioButton(type_frame, text="🍃 Low Hanging Fruit (pos 11-20)", variable=import_type, value="low_hanging").pack(anchor="w", pady=2)
-            ctk.CTkRadioButton(type_frame, text="💎 Oportunidades (alta impresión, bajo CTR)", variable=import_type, value="opportunity").pack(anchor="w", pady=2)
-            ctk.CTkRadioButton(type_frame, text="⭐ High Performers (alto CTR/clicks)", variable=import_type, value="high_performers").pack(anchor="w", pady=2)
+            # Calcular estadísticas
+            total_clicks = sum(kw.get('clicks', 0) for kw in keywords_data)
+            total_impressions = sum(kw.get('impressions', 0) for kw in keywords_data)
+            avg_ctr = sum(kw.get('ctr', 0) for kw in keywords_data) / len(keywords_data) * 100 if keywords_data else 0
+            avg_position = sum(kw.get('position', 0) for kw in keywords_data) / len(keywords_data) if keywords_data else 0
 
-            # Botones
+            stats_text = f"📊 Estadísticas del Scan: {len(keywords_data)} keywords | {total_clicks} clicks | {total_impressions} impresiones | CTR: {avg_ctr:.2f}% | Posición: {avg_position:.1f}"
+            ctk.CTkLabel(stats_frame, text=stats_text, font=ctk.CTkFont(size=11)).pack(pady=10)
+
+            # Lista de keywords con checkboxes y datos enriquecidos
+            list_frame = ctk.CTkScrollableFrame(main_frame, height=400)
+            list_frame.pack(fill="both", expand=True, pady=(10, 15))
+
+            # Variables y checkboxes
+            checkbox_vars = {}
+            checkbox_widgets = []
+
+            def filter_keywords(*args):
+                search_text = search_var.get().lower()
+                for widget in checkbox_widgets:
+                    kw_text = widget.cget("text").lower()
+                    if search_text in kw_text:
+                        widget.pack(anchor="w", pady=2, fill="x")
+                    else:
+                        widget.pack_forget()
+
+            search_var.trace("w", filter_keywords)
+
+            # Ordenar por clicks (más relevantes primero)
+            keywords_data_sorted = sorted(keywords_data, key=lambda x: x.get('clicks', 0), reverse=True)
+
+            for keyword_data in keywords_data_sorted:
+                keyword = keyword_data['keyword']
+                clicks = keyword_data.get('clicks', 0)
+                impressions = keyword_data.get('impressions', 0)
+                ctr = keyword_data.get('ctr', 0) * 100
+                position = keyword_data.get('position', 0)
+
+                var = tk.BooleanVar(value=False)
+                checkbox_vars[keyword] = var
+
+                # Crear texto con estadísticas
+                stats_text = f"👁️ {impressions} | 👆 {clicks} | 📊 {ctr:.1f}% | 🎯 {position:.1f}"
+                
+                checkbox_frame = ctk.CTkFrame(list_frame)
+                checkbox_frame.pack(fill="x", pady=2)
+
+                cb = ctk.CTkCheckBox(
+                    checkbox_frame,
+                    text=f"{keyword}",
+                    variable=var,
+                    font=ctk.CTkFont(size=12, weight="bold")
+                )
+                cb.pack(side="left", anchor="w", padx=(10, 5))
+
+                # Estadísticas
+                stats_label = ctk.CTkLabel(
+                    checkbox_frame,
+                    text=stats_text,
+                    font=ctk.CTkFont(size=10),
+                    text_color=COLORS['text_secondary']
+                )
+                stats_label.pack(side="left", padx=(0, 10))
+
+                checkbox_widgets.append(checkbox_frame)
+
+            # Botones de selección rápida
+            quick_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            quick_frame.pack(fill="x", pady=(0, 10))
+
+            def select_top_clicks():
+                select_none()
+                top_keywords = sorted(keywords_data_sorted, key=lambda x: x.get('clicks', 0), reverse=True)[:20]
+                for kw_data in top_keywords:
+                    if kw_data['keyword'] in checkbox_vars:
+                        checkbox_vars[kw_data['keyword']].set(True)
+
+            def select_top_impressions():
+                select_none()
+                top_keywords = sorted(keywords_data_sorted, key=lambda x: x.get('impressions', 0), reverse=True)[:20]
+                for kw_data in top_keywords:
+                    if kw_data['keyword'] in checkbox_vars:
+                        checkbox_vars[kw_data['keyword']].set(True)
+
+            def select_best_ctr():
+                select_none()
+                # Filtrar keywords con al menos 10 impresiones
+                filtered = [kw for kw in keywords_data_sorted if kw.get('impressions', 0) >= 10]
+                top_keywords = sorted(filtered, key=lambda x: x.get('ctr', 0), reverse=True)[:20]
+                for kw_data in top_keywords:
+                    if kw_data['keyword'] in checkbox_vars:
+                        checkbox_vars[kw_data['keyword']].set(True)
+
+            def select_all():
+                for var in checkbox_vars.values():
+                    var.set(True)
+
+            def select_none():
+                for var in checkbox_vars.values():
+                    var.set(False)
+
+            ctk.CTkButton(quick_frame, text="🔥 Top Clicks", command=select_top_clicks, width=120).pack(side="left", padx=5)
+            ctk.CTkButton(quick_frame, text="👁️ Top Impresiones", command=select_top_impressions, width=120).pack(side="left", padx=5)
+            ctk.CTkButton(quick_frame, text="📊 Mejor CTR", command=select_best_ctr, width=120).pack(side="left", padx=5)
+            ctk.CTkButton(quick_frame, text="✅ Todas", command=select_all, width=100).pack(side="left", padx=5)
+            ctk.CTkButton(quick_frame, text="❌ Ninguna", command=select_none, width=100).pack(side="left", padx=5)
+
+            # Botones finales
             buttons_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-            buttons_frame.pack(fill="x", pady=(20, 0))
+            buttons_frame.pack(fill="x", pady=(10, 0))
 
-            def execute_import():
-                try:
-                    days = int(days_var.get())
-                    selected_type = import_type.get()
+            def apply_selection():
+                selected = [kw for kw, var in checkbox_vars.items() if var.get()]
 
-                    self.log_message(f"🔄 Importando keywords desde Search Console ({selected_type})...")
-                    config_window.destroy()
+                if not selected:
+                    messagebox.showwarning("Sin selección", "No has seleccionado ninguna keyword")
+                    return
 
-                    if selected_type == "all":
-                        keywords_data = self.search_console_api.get_keywords_with_enriched_data(site_url, days, limit=1000)
-                        keywords = [kw['keyword'] for kw in keywords_data]
-                    else:
-                        tiers = self.search_console_api.get_keywords_by_performance_tier(site_url, days)
-                        tier_map = {
-                            'top_10': 'top_10',
-                            'low_hanging': 'low_hanging_fruit',
-                            'opportunity': 'opportunity',
-                            'high_performers': 'high_performers'
-                        }
-                        keywords_data = tiers.get(tier_map[selected_type], [])
-                        keywords = [kw['keyword'] for kw in keywords_data]
+                self.set_current_keywords(selected)
+                self.update_keywords_count()
 
-                    if keywords:
-                        self.set_current_keywords(keywords)
-                        self.update_keywords_count()
+                messagebox.showinfo(
+                    "Selección Aplicada",
+                    f"✅ {len(selected)} keywords seleccionadas del último scan de Search Console\n\n"
+                    f"Ahora puedes ejecutar el scraping con estas keywords."
+                )
 
-                        messagebox.showinfo(
-                            "Importación Exitosa",
-                            f"✅ {len(keywords)} keywords importadas desde Search Console\n\n"
-                            f"Tipo: {selected_type}\n"
-                            f"Período: {days} días"
-                        )
-                        self.log_message(f"✅ {len(keywords)} keywords importadas desde Search Console")
-                    else:
-                        messagebox.showwarning("Sin datos", "No se encontraron keywords para los filtros seleccionados")
-
-                except ValueError:
-                    messagebox.showerror("Error", "El período debe ser un número válido")
-                except Exception as e:
-                    messagebox.showerror("Error", f"Error importando:\n\n{str(e)}")
-                    self.log_message(f"❌ Error importando desde SC: {str(e)}")
+                selector_window.destroy()
+                self.log_message(f"✅ {len(selected)} keywords seleccionadas del último scan SC")
 
             ctk.CTkButton(
                 buttons_frame,
-                text="✅ Importar",
-                command=execute_import,
+                text=f"✅ Aplicar Selección ({len(checkbox_vars)} disponibles)",
+                command=apply_selection,
                 fg_color=COLORS['success'],
-                width=200
+                width=250
             ).pack(side="left", padx=5)
 
             ctk.CTkButton(
                 buttons_frame,
                 text="❌ Cancelar",
-                command=config_window.destroy,
+                command=selector_window.destroy,
                 fg_color=COLORS['error'],
                 width=150
             ).pack(side="left", padx=5)
 
         except Exception as e:
-            messagebox.showerror("Error", f"Error abriendo importador:\n\n{str(e)}")
+            messagebox.showerror("Error", f"Error abriendo selector de SC:\n\n{str(e)}")
+            self.log_message(f"❌ Error en selector SC: {str(e)}")
 
     def set_current_keywords(self, keywords_list):
         """Establece keywords en el editor principal"""
