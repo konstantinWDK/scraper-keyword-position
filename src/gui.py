@@ -40,6 +40,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.settings import Config, config
 from stealth_scraper import StealthSerpScraper
 from project_manager import ProjectManager
+from gui_hybrid_extensions import HybridGUIExtensions
 from search_console_api import SearchConsoleAPI
 
 # Configurar tema ultra moderno
@@ -62,7 +63,7 @@ COLORS = {
     'border': '#404040'
 }
 
-class KeywordScraperGUI(ReportMethods):
+class KeywordScraperGUI(ReportMethods, HybridGUIExtensions):
     def run(self):
         """Inicia el loop principal de la interfaz gráfica"""
         self.root.mainloop()
@@ -152,13 +153,16 @@ class KeywordScraperGUI(ReportMethods):
         edit_window.title(f"Editar Proyecto: {project['name']}")
         edit_window.geometry("500x400")
         edit_window.transient(self.root)
-        edit_window.grab_set()
 
         # Centrar ventana
         edit_window.update_idletasks()
         x = (edit_window.winfo_screenwidth() // 2) - (500 // 2)
         y = (edit_window.winfo_screenheight() // 2) - (400 // 2)
         edit_window.geometry(f"500x400+{x}+{y}")
+
+        # Esperar a que la ventana sea visible antes de hacer grab_set (fix para Linux)
+        edit_window.wait_visibility()
+        edit_window.grab_set()
 
         main_frame = ctk.CTkFrame(edit_window)
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
@@ -198,7 +202,7 @@ class KeywordScraperGUI(ReportMethods):
 
             # Buscar y eliminar proyecto
             projects = self.project_manager.get_all_projects()
-            for project in projects:
+            for project in projects.values():
                 if project['name'] == project_name:
                     if self.project_manager.delete_project(project['id']):
                         self.refresh_projects_list()
@@ -335,7 +339,7 @@ class KeywordScraperGUI(ReportMethods):
         """Actualiza el dropdown de proyectos en la pestaña de informes"""
         try:
             projects = self.project_manager.get_all_projects()
-            project_names = ["Todos los proyectos"] + [p['name'] for p in projects]
+            project_names = ["Todos los proyectos"] + [p['name'] for p in projects.values()]
             
             self.reports_project_dropdown.configure(values=project_names)
             if not self.reports_project_filter.get():
@@ -362,13 +366,16 @@ class KeywordScraperGUI(ReportMethods):
             progress_window.title("Sincronizando con Search Console")
             progress_window.geometry("400x200")
             progress_window.transient(self.root)
-            progress_window.grab_set()
 
             # Centrar ventana
             progress_window.update_idletasks()
             x = (progress_window.winfo_screenwidth() // 2) - (200)
             y = (progress_window.winfo_screenheight() // 2) - (100)
             progress_window.geometry(f"400x200+{x}+{y}")
+
+            # Esperar a que la ventana sea visible antes de hacer grab_set (fix para Linux)
+            progress_window.wait_visibility()
+            progress_window.grab_set()
 
             progress_frame = ctk.CTkFrame(progress_window)
             progress_frame.pack(fill="both", expand=True, padx=20, pady=20)
@@ -481,13 +488,16 @@ class KeywordScraperGUI(ReportMethods):
             auth_window.title("Autenticación Google Search Console")
             auth_window.geometry("600x400")
             auth_window.transient(self.root)
-            auth_window.grab_set()
 
             # Centrar ventana
             auth_window.update_idletasks()
             x = (auth_window.winfo_screenwidth() // 2) - 300
             y = (auth_window.winfo_screenheight() // 2) - 200
             auth_window.geometry(f"600x400+{x}+{y}")
+
+            # Esperar a que la ventana sea visible antes de hacer grab_set (fix para Linux)
+            auth_window.wait_visibility()
+            auth_window.grab_set()
 
             main_frame = ctk.CTkFrame(auth_window)
             main_frame.pack(fill="both", expand=True, padx=20, pady=20)
@@ -639,7 +649,7 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
             
             # Buscar y establecer proyecto activo
             projects = self.project_manager.get_all_projects()
-            for project in projects:
+            for project in projects.values():
                 if project['name'] == project_name:
                     self.project_manager.set_active_project(project['id'])
                     self.update_project_info(project)
@@ -791,6 +801,7 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         self.setup_reports_tab()
         self.setup_analysis_tab()
         self.setup_search_console_tab()
+        self.setup_hybrid_tab()  # Pestaña híbrida
 
     def log_message(self, message, level="info"):
         """Añade mensaje a los logs con formato mejorado"""
@@ -2940,13 +2951,16 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
             sites_window.title("Mis Sitios en Search Console")
             sites_window.geometry("700x500")
             sites_window.transient(self.root)
-            sites_window.grab_set()
 
             # Centrar ventana
             sites_window.update_idletasks()
             x = (sites_window.winfo_screenwidth() // 2) - 350
             y = (sites_window.winfo_screenheight() // 2) - 250
             sites_window.geometry(f"700x500+{x}+{y}")
+
+            # Esperar a que la ventana sea visible antes de hacer grab_set (fix para Linux)
+            sites_window.wait_visibility()
+            sites_window.grab_set()
 
             main_frame = ctk.CTkFrame(sites_window)
             main_frame.pack(fill="both", expand=True, padx=20, pady=20)
