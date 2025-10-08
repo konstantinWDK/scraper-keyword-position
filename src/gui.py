@@ -691,8 +691,25 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
     def __init__(self):
         self.root = ctk.CTk()
         self.root.title("Keyword Position Scraper - Anti-detección 2025")
-        self.root.geometry("1200x800")
-        self.root.minsize(1000, 700)
+        
+        # Configurar tamaño adaptable
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        
+        # Tamaño inicial como porcentaje de la pantalla
+        initial_width = min(1200, int(screen_width * 0.8))
+        initial_height = min(800, int(screen_height * 0.8))
+        
+        self.root.geometry(f"{initial_width}x{initial_height}")
+        
+        # Tamaño mínimo para mantener usabilidad
+        min_width = 900
+        min_height = 600
+        self.root.minsize(min_width, min_height)
+        
+        # Configurar grid para que se expanda
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
 
         # Variables de estado
         self.scraper = None
