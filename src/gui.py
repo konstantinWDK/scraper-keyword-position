@@ -25,6 +25,7 @@ from pathlib import Path
 import pandas as pd
 from datetime import datetime
 import matplotlib
+import random
 matplotlib.use('TkAgg')  # Configurar backend antes de importar pyplot
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -2639,12 +2640,61 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
             target_domain = self.domain_entry.get().strip() or None
             self.progress_label.configure(text="🕐 Ejecutando búsquedas en Google...")
 
-            results = self.scraper.batch_position_check(
-                self.keywords_list,
-                target_domain,
-                int(self.pages_var.get()),
-                stop_callback=lambda: not self.is_running
-            )
+            # Inicializar contadores para actualización en tiempo real
+            processed_keywords = 0
+            total_keywords = len(self.keywords_list)
+            
+            # Función de callback para actualizar progreso
+            def update_progress_callback(current, total, message=""):
+                if self.is_running:
+                    # Actualizar en el hilo principal usando after()
+                    self.root.after(0, lambda: self.update_progress(current, total, message))
+                    self.root.after(0, lambda: self.scraping_stats_label.configure(
+                        text=f"Keywords: {total} | Procesadas: {current} | Restantes: {total - current}"
+                    ))
+
+            # Actualizar progreso inicial
+            self.root.after(0, lambda: self.update_progress(0, total_keywords, "Iniciando..."))
+            self.root.after(0, lambda: self.scraping_stats_label.configure(
+                text=f"Keywords: {total_keywords} | Procesadas: 0 | Restantes: {total_keywords}"
+            ))
+
+            # Ejecutar scraping con callback de progreso
+            results = []
+            for i, keyword in enumerate(self.keywords_list):
+                if not self.is_running:
+                    break
+                    
+                # Actualizar progreso antes de procesar cada keyword
+                self.root.after(0, lambda current=i+1, total=total_keywords: 
+                              self.update_progress(current, total, f"Procesando: {keyword}"))
+                
+                # Procesar keyword individual
+                keyword_results = self.scraper.serp_scraper_api(keyword, target_domain, int(self.pages_var.get()))
+                results.extend(keyword_results)
+                
+                # Actualizar contador
+                processed_keywords += 1
+                
+                # Actualizar estadísticas
+                self.root.after(0, lambda: self.scraping_stats_label.configure(
+                    text=f"Keywords: {total_keywords} | Procesadas: {processed_keywords} | Restantes: {total_keywords - processed_keywords}"
+                ))
+                
+                # Delay entre keywords
+                if i < len(self.keywords_list) - 1 and self.is_running:
+                    delay = random.uniform(
+                        int(self.min_delay_var.get()),
+                        int(self.max_delay_var.get())
+                    )
+                    self.log_message(f"⏳ Esperando {delay:.1f}s antes del siguiente keyword...")
+                    
+                    # Dividir el delay en pequeños intervalos para verificar stop más frecuentemente
+                    delay_intervals = int(delay * 10)  # 10 verificaciones por segundo
+                    for _ in range(delay_intervals):
+                        if not self.is_running:
+                            break
+                        time.sleep(0.1)
 
             if results:
                 self.current_results = results
