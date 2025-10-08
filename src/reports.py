@@ -42,23 +42,25 @@ class ReportManager:
         plt.style.use('dark_background')
         sns.set_palette("husl")
 
-    def save_scraping_session(self, results: List[Dict], session_info: Dict) -> str:
+    def save_scraping_session(self, results: List[Dict], session_info: Dict, project_id: str = None) -> str:
         """
         Guarda una sesión completa de scraping con metadatos
-        
+
         Args:
             results: Lista de resultados del scraping
             session_info: Información de la sesión (keywords, dominio, etc.)
-            
+            project_id: ID del proyecto (opcional)
+
         Returns:
             str: ID único de la sesión guardada
         """
         session_id = str(uuid.uuid4())[:8]
         timestamp = datetime.now().isoformat()
-        
+
         session_data = {
             "session_id": session_id,
             "timestamp": timestamp,
+            "project_id": project_id,
             "session_info": session_info,
             "results": results,
             "total_keywords": len(set([r.get('keyword', '') for r in results])),
@@ -68,15 +70,22 @@ class ReportManager:
             "top_10_count": len([r for r in results if r.get('position', 999) <= 10]),
             "top_3_count": len([r for r in results if r.get('position', 999) <= 3])
         }
-        
+
+        # Determinar carpeta de guardado
+        if project_id:
+            json_dir = self.reports_dir.parent / "projects" / project_id / "reports" / "json"
+            json_dir.mkdir(parents=True, exist_ok=True)
+        else:
+            json_dir = self.reports_dir / "json"
+
         # Guardar archivo JSON
         filename = f"session_{session_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        filepath = self.reports_dir / "json" / filename
-        
+        filepath = json_dir / filename
+
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(session_data, f, indent=2, ensure_ascii=False)
-        
-        self.logger.info(f"✅ Sesión guardada: {filename}")
+
+        self.logger.info(f"✅ Sesión guardada: {filename} (proyecto: {project_id or 'general'})")
         return session_id
 
     def load_session(self, session_id: str) -> Optional[Dict]:

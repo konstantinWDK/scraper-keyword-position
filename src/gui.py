@@ -1099,7 +1099,9 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         buttons_frame.pack(fill="x", padx=10, pady=5)
 
         ctk.CTkButton(buttons_frame, text="📁 Cargar Archivo", command=self.load_keywords_file).pack(side="left", padx=5)
-        ctk.CTkButton(buttons_frame, text="📊 Importar desde CSV Generado", command=self.import_from_generated_csv, fg_color=COLORS['info']).pack(side="left", padx=5)
+        ctk.CTkButton(buttons_frame, text="📊 Importar CSV", command=self.import_from_generated_csv, fg_color=COLORS['info']).pack(side="left", padx=5)
+        ctk.CTkButton(buttons_frame, text="🔍 Search Console", command=self.import_from_search_console, fg_color=COLORS['accent']).pack(side="left", padx=5)
+        ctk.CTkButton(buttons_frame, text="☑️ Selector", command=self.show_keyword_selector, fg_color=COLORS['warning']).pack(side="left", padx=5)
         ctk.CTkButton(buttons_frame, text="🧹 Limpiar Duplicados", command=self.deduplicate_keywords).pack(side="left", padx=5)
         ctk.CTkButton(buttons_frame, text="💾 Guardar", command=self.save_keywords).pack(side="left", padx=5)
 
@@ -2220,6 +2222,293 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         except Exception as e:
             messagebox.showerror("Error", f"Error abriendo selector:\n\n{str(e)}")
 
+    def show_keyword_selector(self):
+        """Muestra selector de keywords con checkboxes para selección múltiple"""
+        try:
+            current_keywords = self.get_current_keywords()
+
+            if not current_keywords:
+                messagebox.showinfo("Sin Keywords", "No hay keywords cargadas.\n\nCarga keywords primero desde un archivo o CSV.")
+                return
+
+            # Crear ventana de selección
+            selector_window = ctk.CTkToplevel(self.root)
+            selector_window.title("☑️ Selector de Keywords")
+            selector_window.geometry("800x600")
+            selector_window.transient(self.root)
+            selector_window.grab_set()
+
+            main_frame = ctk.CTkFrame(selector_window)
+            main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+            # Header
+            header_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            header_frame.pack(fill="x", pady=(0, 15))
+
+            ctk.CTkLabel(
+                header_frame,
+                text="☑️ Seleccionar Keywords para Scraping",
+                font=ctk.CTkFont(size=18, weight="bold")
+            ).pack(side="left")
+
+            # Contador
+            count_label = ctk.CTkLabel(
+                header_frame,
+                text=f"Total: {len(current_keywords)}",
+                font=ctk.CTkFont(size=14)
+            )
+            count_label.pack(side="right")
+
+            # Frame de búsqueda/filtro
+            search_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            search_frame.pack(fill="x", pady=(0, 10))
+
+            search_var = tk.StringVar()
+            search_entry = ctk.CTkEntry(
+                search_frame,
+                placeholder_text="🔍 Filtrar keywords...",
+                textvariable=search_var
+            )
+            search_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
+
+            # Botones de selección rápida
+            quick_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            quick_frame.pack(fill="x", pady=(0, 10))
+
+            # Lista de keywords con checkboxes
+            list_frame = ctk.CTkScrollableFrame(main_frame, height=350)
+            list_frame.pack(fill="both", expand=True, pady=(10, 15))
+
+            # Variables y checkboxes
+            checkbox_vars = {}
+            checkbox_widgets = []
+
+            def filter_keywords(*args):
+                search_text = search_var.get().lower()
+                for widget in checkbox_widgets:
+                    kw_text = widget.cget("text").lower()
+                    if search_text in kw_text:
+                        widget.pack(anchor="w", pady=2, fill="x")
+                    else:
+                        widget.pack_forget()
+
+            search_var.trace("w", filter_keywords)
+
+            for keyword in current_keywords:
+                var = tk.BooleanVar(value=False)
+                checkbox_vars[keyword] = var
+
+                cb = ctk.CTkCheckBox(
+                    list_frame,
+                    text=keyword,
+                    variable=var,
+                    font=ctk.CTkFont(size=12)
+                )
+                cb.pack(anchor="w", pady=2, fill="x")
+                checkbox_widgets.append(cb)
+
+            # Funciones de selección rápida
+            def select_all():
+                for var in checkbox_vars.values():
+                    var.set(True)
+
+            def select_none():
+                for var in checkbox_vars.values():
+                    var.set(False)
+
+            def select_first_n():
+                n_window = ctk.CTkToplevel(selector_window)
+                n_window.title("Seleccionar primeras N")
+                n_window.geometry("300x150")
+                n_window.transient(selector_window)
+
+                ctk.CTkLabel(n_window, text="¿Cuántas keywords?").pack(pady=10)
+                n_entry = ctk.CTkEntry(n_window)
+                n_entry.pack(pady=5)
+                n_entry.insert(0, "10")
+
+                def apply_n():
+                    try:
+                        n = int(n_entry.get())
+                        select_none()
+                        for i, (kw, var) in enumerate(checkbox_vars.items()):
+                            if i < n:
+                                var.set(True)
+                        n_window.destroy()
+                    except:
+                        messagebox.showerror("Error", "Ingresa un número válido")
+
+                ctk.CTkButton(n_window, text="Aplicar", command=apply_n).pack(pady=10)
+
+            # Botones de selección rápida
+            ctk.CTkButton(quick_frame, text="✅ Todas", command=select_all, width=100).pack(side="left", padx=5)
+            ctk.CTkButton(quick_frame, text="❌ Ninguna", command=select_none, width=100).pack(side="left", padx=5)
+            ctk.CTkButton(quick_frame, text="🔢 Primeras N", command=select_first_n, width=100).pack(side="left", padx=5)
+
+            # Botones finales
+            buttons_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            buttons_frame.pack(fill="x", pady=(10, 0))
+
+            def apply_selection():
+                selected = [kw for kw, var in checkbox_vars.items() if var.get()]
+
+                if not selected:
+                    messagebox.showwarning("Sin selección", "No has seleccionado ninguna keyword")
+                    return
+
+                self.set_current_keywords(selected)
+                self.update_keywords_count()
+
+                messagebox.showinfo(
+                    "Selección Aplicada",
+                    f"✅ {len(selected)} keywords seleccionadas\n\nAhora puedes ejecutar el scraping."
+                )
+
+                selector_window.destroy()
+                self.log_message(f"✅ {len(selected)} keywords seleccionadas para scraping")
+
+            ctk.CTkButton(
+                buttons_frame,
+                text=f"✅ Aplicar Selección",
+                command=apply_selection,
+                fg_color=COLORS['success'],
+                width=200
+            ).pack(side="left", padx=5)
+
+            ctk.CTkButton(
+                buttons_frame,
+                text="❌ Cancelar",
+                command=selector_window.destroy,
+                fg_color=COLORS['error'],
+                width=150
+            ).pack(side="left", padx=5)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error abriendo selector:\n\n{str(e)}")
+
+    def import_from_search_console(self):
+        """Importa keywords directamente desde Search Console con datos enriquecidos"""
+        try:
+            if not self.search_console_api.is_authenticated():
+                messagebox.showwarning(
+                    "No Autenticado",
+                    "No estás autenticado con Search Console.\n\nAutentícate primero en la pestaña 'Google Search Console'."
+                )
+                return
+
+            # Obtener propiedad configurada
+            project = self.project_manager.get_active_project()
+            if not project or not project.get('search_console_property'):
+                messagebox.showwarning(
+                    "Sin propiedad",
+                    "No hay una propiedad de Search Console configurada.\n\nCrea un proyecto y configura la propiedad."
+                )
+                return
+
+            site_url = project['search_console_property']
+
+            # Ventana de configuración
+            config_window = ctk.CTkToplevel(self.root)
+            config_window.title("🔍 Importar desde Search Console")
+            config_window.geometry("600x400")
+            config_window.transient(self.root)
+            config_window.grab_set()
+
+            main_frame = ctk.CTkFrame(config_window)
+            main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+            ctk.CTkLabel(
+                main_frame,
+                text="🔍 Configurar Importación",
+                font=ctk.CTkFont(size=18, weight="bold")
+            ).pack(pady=(0, 20))
+
+            # Período
+            period_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            period_frame.pack(fill="x", pady=10)
+
+            ctk.CTkLabel(period_frame, text="Período (días):", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+            days_var = tk.StringVar(value="30")
+            ctk.CTkEntry(period_frame, textvariable=days_var, width=100).pack(anchor="w", pady=5)
+
+            # Tipo de keywords
+            type_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            type_frame.pack(fill="x", pady=10)
+
+            ctk.CTkLabel(type_frame, text="Tipo de Keywords:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+
+            import_type = tk.StringVar(value="all")
+            ctk.CTkRadioButton(type_frame, text="🎯 Todas las keywords", variable=import_type, value="all").pack(anchor="w", pady=2)
+            ctk.CTkRadioButton(type_frame, text="🏆 Top 10 (posiciones 1-10)", variable=import_type, value="top_10").pack(anchor="w", pady=2)
+            ctk.CTkRadioButton(type_frame, text="🍃 Low Hanging Fruit (pos 11-20)", variable=import_type, value="low_hanging").pack(anchor="w", pady=2)
+            ctk.CTkRadioButton(type_frame, text="💎 Oportunidades (alta impresión, bajo CTR)", variable=import_type, value="opportunity").pack(anchor="w", pady=2)
+            ctk.CTkRadioButton(type_frame, text="⭐ High Performers (alto CTR/clicks)", variable=import_type, value="high_performers").pack(anchor="w", pady=2)
+
+            # Botones
+            buttons_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            buttons_frame.pack(fill="x", pady=(20, 0))
+
+            def execute_import():
+                try:
+                    days = int(days_var.get())
+                    selected_type = import_type.get()
+
+                    self.log_message(f"🔄 Importando keywords desde Search Console ({selected_type})...")
+                    config_window.destroy()
+
+                    if selected_type == "all":
+                        keywords_data = self.search_console_api.get_keywords_with_enriched_data(site_url, days, limit=1000)
+                        keywords = [kw['keyword'] for kw in keywords_data]
+                    else:
+                        tiers = self.search_console_api.get_keywords_by_performance_tier(site_url, days)
+                        tier_map = {
+                            'top_10': 'top_10',
+                            'low_hanging': 'low_hanging_fruit',
+                            'opportunity': 'opportunity',
+                            'high_performers': 'high_performers'
+                        }
+                        keywords_data = tiers.get(tier_map[selected_type], [])
+                        keywords = [kw['keyword'] for kw in keywords_data]
+
+                    if keywords:
+                        self.set_current_keywords(keywords)
+                        self.update_keywords_count()
+
+                        messagebox.showinfo(
+                            "Importación Exitosa",
+                            f"✅ {len(keywords)} keywords importadas desde Search Console\n\n"
+                            f"Tipo: {selected_type}\n"
+                            f"Período: {days} días"
+                        )
+                        self.log_message(f"✅ {len(keywords)} keywords importadas desde Search Console")
+                    else:
+                        messagebox.showwarning("Sin datos", "No se encontraron keywords para los filtros seleccionados")
+
+                except ValueError:
+                    messagebox.showerror("Error", "El período debe ser un número válido")
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error importando:\n\n{str(e)}")
+                    self.log_message(f"❌ Error importando desde SC: {str(e)}")
+
+            ctk.CTkButton(
+                buttons_frame,
+                text="✅ Importar",
+                command=execute_import,
+                fg_color=COLORS['success'],
+                width=200
+            ).pack(side="left", padx=5)
+
+            ctk.CTkButton(
+                buttons_frame,
+                text="❌ Cancelar",
+                command=config_window.destroy,
+                fg_color=COLORS['error'],
+                width=150
+            ).pack(side="left", padx=5)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error abriendo importador:\n\n{str(e)}")
+
     def set_current_keywords(self, keywords_list):
         """Establece keywords en el editor principal"""
         if not self.main_keywords_text or not keywords_list:
@@ -2377,9 +2666,14 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
                 # Auto-save results when scraping completes
                 if hasattr(self.scraper, 'save_results'):
                     try:
-                        session_id = self.scraper.save_results(results)
+                        # Obtener proyecto activo
+                        project = self.project_manager.get_active_project()
+                        project_id = project['id'] if project else None
+
+                        session_id = self.scraper.save_results(results, project_id=project_id)
                         if session_id:
-                            self.log_message(f"💾 Resultados guardados automáticamente - Sesión: {session_id}")
+                            project_name = project['name'] if project else 'General'
+                            self.log_message(f"💾 Resultados guardados en proyecto '{project_name}' - Sesión: {session_id}")
                             # Refresh reports list if the reports tab is active
                             if hasattr(self, 'refresh_reports_list'):
                                 self.root.after(1000, self.refresh_reports_list)

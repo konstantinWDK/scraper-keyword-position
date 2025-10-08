@@ -444,7 +444,7 @@ class StealthSerpScraper:
         """Analiza una sola keyword y devuelve todos los resultados encontrados"""
         return self.serp_scraper_api(keyword, target_domain, pages)
 
-    def save_results(self, results, filename=None):
+    def save_results(self, results, filename=None, project_id=None):
         """Guarda resultados en CSV y JSON y crea reporte de sesión"""
         if not results:
             self.logger.warning("No results to save")
@@ -461,7 +461,14 @@ class StealthSerpScraper:
         # Path absoluto para data (calculado desde src/)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = os.path.dirname(current_dir)
-        data_dir_abs = os.path.join(parent_dir, 'data')
+
+        # Si hay project_id, guardar en carpeta del proyecto
+        if project_id:
+            data_dir_abs = os.path.join(parent_dir, 'data', 'projects', project_id, 'reports')
+            os.makedirs(data_dir_abs, exist_ok=True)
+            self.logger.info(f"Guardando resultados en proyecto: {project_id}")
+        else:
+            data_dir_abs = os.path.join(parent_dir, 'data')
 
         data_file_path = os.path.join(data_dir_abs, f"{filename}.csv")
         df.to_csv(data_file_path, index=False, encoding='utf-8')
@@ -477,11 +484,12 @@ class StealthSerpScraper:
             'filename': filename,
             'total_keywords': len(set([r['keyword'] for r in results])),
             'total_results': len(results),
-            'config': self.config
+            'config': self.config,
+            'project_id': project_id
         }
-        
+
         try:
-            session_id = self.report_manager.save_scraping_session(results, session_info)
+            session_id = self.report_manager.save_scraping_session(results, session_info, project_id=project_id)
             self.logger.info(f"Session report saved with ID: {session_id}")
         except Exception as e:
             self.logger.warning(f"Failed to save session report: {str(e)}")
@@ -492,7 +500,7 @@ class StealthSerpScraper:
         total_keywords = len(set([r['keyword'] for r in results]))
         self.logger.info(f"Total keywords processed: {total_keywords}")
         self.logger.info(f"Total positions found: {len(results)}")
-        
+
         return session_id if 'session_id' in locals() else None
 
     def google_suggest_scraper(self, keyword, country="US", language="en"):

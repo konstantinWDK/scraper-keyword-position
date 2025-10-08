@@ -336,7 +336,7 @@ class SearchConsoleAPI:
         try:
             end_date = datetime.now().date()
             start_date = end_date - timedelta(days=days)
-            
+
             # Obtener datos generales
             general_data = self.get_search_analytics(
                 site_url=site_url,
@@ -345,26 +345,26 @@ class SearchConsoleAPI:
                 dimensions=[],
                 row_limit=1
             )
-            
+
             # Obtener top queries
             top_queries = self.get_top_queries(site_url, days, 50)
-            
+
             # Obtener top pages
             top_pages = self.get_top_pages(site_url, days, 50)
-            
+
             # Calcular métricas
             total_clicks = 0
             total_impressions = 0
             total_ctr = 0
             avg_position = 0
-            
+
             if general_data.get('rows'):
                 row = general_data['rows'][0]
                 total_clicks = row.get('clicks', 0)
                 total_impressions = row.get('impressions', 0)
                 total_ctr = row.get('ctr', 0) * 100
                 avg_position = row.get('position', 0)
-            
+
             return {
                 'site_url': site_url,
                 'period': f"{start_date} to {end_date}",
@@ -378,10 +378,175 @@ class SearchConsoleAPI:
                 'top_pages': top_pages[:20],
                 'last_updated': datetime.now().isoformat()
             }
-            
+
         except Exception as e:
             self.logger.error(f"Error obteniendo resumen: {e}")
             return {}
+
+    def get_keywords_with_enriched_data(self, site_url: str, days: int = 30, limit: int = 1000) -> List[Dict]:
+        """
+        Obtiene keywords con datos enriquecidos de Search Console
+        Incluye: clicks, impressions, CTR, position, device breakdown
+        """
+        try:
+            end_date = datetime.now().date()
+            start_date = end_date - timedelta(days=days)
+
+            # Obtener queries con métricas
+            data = self.get_search_analytics(
+                site_url=site_url,
+                start_date=start_date.isoformat(),
+                end_date=end_date.isoformat(),
+                dimensions=['query'],
+                row_limit=limit
+            )
+
+            enriched_keywords = []
+
+            for row in data.get('rows', []):
+                keyword = row['keys'][0]
+                clicks = row.get('clicks', 0)
+                impressions = row.get('impressions', 0)
+                ctr = row.get('ctr', 0) * 100
+                position = row.get('position', 0)
+
+                enriched_keywords.append({
+                    'keyword': keyword,
+                    'clicks': clicks,
+                    'impressions': impressions,
+                    'ctr': round(ctr, 2),
+                    'position': round(position, 1),
+                    'score': clicks * 2 + impressions * 0.1  # Score para priorización
+                })
+
+            # Ordenar por score (más relevantes primero)
+            enriched_keywords.sort(key=lambda x: x['score'], reverse=True)
+
+            return enriched_keywords
+
+        except Exception as e:
+            self.logger.error(f"Error obteniendo keywords enriquecidas: {e}")
+            return []
+
+    def get_keywords_by_performance_tier(self, site_url: str, days: int = 30) -> Dict[str, List[Dict]]:
+        """
+        Clasifica keywords en tiers según rendimiento:
+        - high_performers: Alto CTR y/o muchos clicks
+        - opportunity: Alta impresión pero bajo CTR (oportunidad de mejora)
+        - low_hanging_fruit: Posición 11-20 con buenas impresiones (fáciles de mejorar)
+        - top_10: Keywords ya en top 10
+        """
+        try:
+            keywords = self.get_keywords_with_enriched_data(site_url, days, limit=2000)
+
+            tiers = {
+                'high_performers': [],
+                'opportunity': [],
+                'low_hanging_fruit': [],
+                'top_10': [],
+                'other': []
+            }
+
+            for kw in keywords:
+                position = kw['position']
+                ctr = kw['ctr']
+                clicks = kw['clicks']
+                impressions = kw['impressions']
+
+                # Top 10
+                if position <= 10:
+                    tiers['top_10'].append(kw)
+                # Low hanging fruit (11-20 con buenas impresiones)
+                elif 11 <= position <= 20 and impressions >= 100:
+                    tiers['low_hanging_fruit'].append(kw)
+                # Opportunity (muchas impresiones pero bajo CTR)
+                elif impressions >= 500 and ctr < 2:
+                    tiers['opportunity'].append(kw)
+                # High performers (buen CTR o muchos clicks)
+                elif ctr >= 5 or clicks >= 50:
+                    tiers['high_performers'].append(kw)
+                else:
+                    tiers['other'].append(kw)
+
+            return tiers
+
+        except Exception as e:
+            self.logger.error(f"Error clasificando keywords: {e}")
+            return {}
+
+    def get_keyword_variations(self, site_url: str, base_keyword: str, days: int = 30) -> List[Dict]:
+        """
+        Obtiene variaciones de una keyword base que ya están rankeando
+        """
+        try:
+            end_date = datetime.now().date()
+            start_date = end_date - timedelta(days=days)
+
+            # Buscar keywords que contengan la base
+            filters = [{
+                'dimension': 'query',
+                'operator': 'contains',
+                'expression': base_keyword.lower()
+            }]
+
+            data = self.get_search_analytics(
+                site_url=site_url,
+                start_date=start_date.isoformat(),
+                end_date=end_date.isoformat(),
+                dimensions=['query'],
+                filters=filters,
+                row_limit=500
+            )
+
+            variations = []
+
+            for row in data.get('rows', []):
+                keyword = row['keys'][0]
+
+                variations.append({
+                    'keyword': keyword,
+                    'clicks': row.get('clicks', 0),
+                    'impressions': row.get('impressions', 0),
+                    'ctr': round(row.get('ctr', 0) * 100, 2),
+                    'position': round(row.get('position', 0), 1)
+                })
+
+            # Ordenar por impresiones
+            variations.sort(key=lambda x: x['impressions'], reverse=True)
+
+            return variations
+
+        except Exception as e:
+            self.logger.error(f"Error obteniendo variaciones: {e}")
+            return []
+
+    def export_keywords_to_csv(self, site_url: str, days: int = 30, filename: str = None) -> str:
+        """
+        Exporta keywords con datos enriquecidos a CSV
+        """
+        try:
+            import pandas as pd
+
+            keywords = self.get_keywords_with_enriched_data(site_url, days)
+
+            if not keywords:
+                return None
+
+            df = pd.DataFrame(keywords)
+
+            if filename is None:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"data/search_console_keywords_{timestamp}.csv"
+
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            df.to_csv(filename, index=False)
+
+            self.logger.info(f"Keywords exportadas a {filename}")
+            return filename
+
+        except Exception as e:
+            self.logger.error(f"Error exportando keywords: {e}")
+            return None
     
     def validate_site_access(self, site_url: str) -> bool:
         """Valida que se tenga acceso a un sitio"""
