@@ -906,22 +906,40 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
                                   font=ctk.CTkFont(size=24, weight="bold"))
         title_label.pack(pady=(0, 20))
 
-        # Selector de proyecto activo
+        # Selector de proyecto activo con botones en la misma fila
         project_selector_frame = ctk.CTkFrame(main_frame)
         project_selector_frame.pack(fill="x", pady=(0, 20))
 
-        ctk.CTkLabel(project_selector_frame, text="📂 Proyecto Activo:", 
-                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", padx=15, pady=(15, 5))
+        # Fila superior: selector de proyecto y botones
+        selector_row = ctk.CTkFrame(project_selector_frame, fg_color="transparent")
+        selector_row.pack(fill="x", padx=15, pady=(15, 10))
 
-        # Dropdown para seleccionar proyecto
+        # Etiqueta y dropdown a la izquierda
+        left_frame = ctk.CTkFrame(selector_row, fg_color="transparent")
+        left_frame.pack(side="left", fill="x", expand=True)
+
+        ctk.CTkLabel(left_frame, text="📂 Proyecto Activo:", 
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(0, 5))
+
         self.active_project_var = ctk.StringVar()
         self.project_dropdown = ctk.CTkComboBox(
-            project_selector_frame,
+            left_frame,
             variable=self.active_project_var,
             command=self.on_project_selected,
             width=400
         )
-        self.project_dropdown.pack(anchor="w", padx=15, pady=(0, 15))
+        self.project_dropdown.pack(anchor="w", pady=(0, 5))
+
+        # Botones a la derecha
+        buttons_frame = ctk.CTkFrame(selector_row, fg_color="transparent")
+        buttons_frame.pack(side="right", padx=(10, 0))
+
+        ctk.CTkButton(buttons_frame, text="🔄 Actualizar", 
+                     command=self.refresh_projects_dropdown, width=100).pack(side="left", padx=2, pady=5)
+        ctk.CTkButton(buttons_frame, text="📊 Informes", 
+                     command=self.view_project_reports, width=100).pack(side="left", padx=2, pady=5)
+        ctk.CTkButton(buttons_frame, text="🔗 SC", 
+                     command=self.sync_search_console, width=80).pack(side="left", padx=2, pady=5)
 
         # Información del proyecto activo
         self.project_info_frame = ctk.CTkFrame(project_selector_frame)
@@ -933,17 +951,6 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
             font=ctk.CTkFont(size=12)
         )
         self.project_info_label.pack(pady=10)
-
-        # Botones de acción rápida
-        actions_frame = ctk.CTkFrame(project_selector_frame)
-        actions_frame.pack(fill="x", padx=15, pady=(0, 15))
-
-        ctk.CTkButton(actions_frame, text="🔄 Actualizar", 
-                     command=self.refresh_projects_dropdown, width=120).pack(side="left", padx=(10, 5), pady=10)
-        ctk.CTkButton(actions_frame, text="📊 Ver Informes", 
-                     command=self.view_project_reports, width=120).pack(side="left", padx=5, pady=10)
-        ctk.CTkButton(actions_frame, text="🔗 Search Console", 
-                     command=self.sync_search_console, width=140).pack(side="left", padx=5, pady=10)
 
         # Sección de crear nuevo proyecto
         create_frame = ctk.CTkFrame(main_frame)
