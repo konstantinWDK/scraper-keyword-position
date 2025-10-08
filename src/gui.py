@@ -18,6 +18,7 @@ import customtkinter as ctk
 import threading
 import time
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -1379,9 +1380,17 @@ class KeywordScraperGUI:
                      command=self.load_keywords_file, height=60,
                      fg_color=COLORS['accent'], font=ctk.CTkFont(size=11, weight="bold")).pack(fill="x", pady=(0, 8))
 
-        ctk.CTkButton(import_grid, text="🎯 GOOGLE SUGGEST\n(Generar Ideas)",
+        # Container para Google Suggest con entrada
+        suggest_container = ctk.CTkFrame(import_grid, fg_color="transparent")
+        suggest_container.pack(fill="x", pady=(0, 8))
+
+        self.suggest_entry = ctk.CTkEntry(suggest_container, placeholder_text="Keyword base para sugerencias...",
+                                        height=30)
+        self.suggest_entry.pack(fill="x")
+
+        ctk.CTkButton(suggest_container, text="🎯 GOOGLE SUGGEST\n(Generar Ideas)",
                      command=self.generate_suggestions, height=50,
-                     fg_color=COLORS['success']).pack(fill="x", pady=(0, 8))
+                     fg_color=COLORS['success']).pack(fill="x", pady=(5, 0))
 
         ctk.CTkButton(import_grid, text="🔄 GENERAR VARIANTES\n(Expansión Inteligente)",
                      command=self.generate_keyword_variants, height=50,
@@ -1443,93 +1452,181 @@ class KeywordScraperGUI:
                      command=self.export_keywords_advanced, height=50,
                      fg_color=COLORS['info']).pack(fill="x", pady=(0, 8))
 
-        # ===================== PANEL DERECH0: CONSOLA DESLIZABLE =====================
+        # ===================== PANEL DERECHA: CONSOLA UNIFICADA DE SCRAPING =====================
 
-        # HEADER DE LA CONSOLA
+        # HEADER DE LA CONSOLA UNIFICADA
         console_header = ctk.CTkFrame(right_panel, fg_color=COLORS['surface'], height=40)
         console_header.pack(fill="x", pady=(10, 0))
         console_header.pack_propagate(False)
 
-        # Título y botón de toggle
+        # Título que indica que es la consola unificada
         console_title_frame = ctk.CTkFrame(console_header, fg_color="transparent")
         console_title_frame.pack(fill="x", padx=10)
 
-        # Variable para controlar el estado de la consola (plegada/desplegada)
-        self.console_collapsed = ctk.BooleanVar(value=False)
+        ctk.CTkLabel(console_title_frame, text="📋 CONSOLA UNIFICADA DE SCRAPING",
+                    font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
 
-        toggle_btn = ctk.CTkButton(console_title_frame, text="⬇️",
-                                  command=self.toggle_console, width=30, height=20,
-                                  font=ctk.CTkFont(size=10, weight="bold"))
-        toggle_btn.pack(side="left")
-
-        ctk.CTkLabel(console_title_frame, text="📋 CONSOLA DE ACTIVIDAD",
-                    font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=10)
+        # Información de sincronización
+        ctk.CTkLabel(console_title_frame, text="🔄 Sincronizada con pestaña Scraping",
+                    font=ctk.CTkFont(size=9), text_color=COLORS['text_secondary']).pack(side="right")
 
         # Menú de opciones para la consola
         console_menu = ctk.CTkFrame(console_title_frame, fg_color="transparent")
-        console_menu.pack(side="right")
+        console_menu.pack(side="left", padx=(10, 0))
 
         ctk.CTkButton(console_menu, text="🧹 Limpiar",
-                     command=self.clear_console, width=60, height=20,
+                     command=self.clear_keywords_console, width=60, height=20,
                      font=ctk.CTkFont(size=9)).pack(side="left", padx=(0, 5))
 
         ctk.CTkButton(console_menu, text="💾 Guardar",
-                     command=self.save_console_logs, width=60, height=20,
+                     command=self.save_keywords_console_logs, width=60, height=20,
                      font=ctk.CTkFont(size=9)).pack(side="left")
 
-        # ÁREA DE TEXTO DE LA CONSOLA (ESCODIBLE)
-        self.console_frame = ctk.CTkFrame(right_panel, fg_color=COLORS['primary'])
-        self.console_frame.pack(fill="both", expand=True, padx=10, pady=(5, 10))
+        # Botón para ir a pestaña scraping
+        ctk.CTkButton(console_menu, text="🚀 Ir a Scraping", width=90, height=20,
+                     command=lambda: self.tabview.set("🚀 Scraping"),
+                     font=ctk.CTkFont(size=9)).pack(side="right")
+
+        # ÁREA DE TEXTO DE LA CONSOLA (SIEMPRE VISIBLE - SIN TOGGLE)
+        self.keywords_console_frame = ctk.CTkFrame(right_panel, fg_color=COLORS['primary'])
+        self.keywords_console_frame.pack(fill="both", expand=True, padx=10, pady=(5, 10))
 
         # ÁREA PRINCIPAL DE LA CONSOLA
-        self.console_scroll = ctk.CTkScrollableFrame(self.console_frame, fg_color=COLORS['secondary'])
-        self.console_scroll.pack(fill="both", expand=True, padx=5, pady=5)
+        self.keywords_console_scroll = ctk.CTkScrollableFrame(self.keywords_console_frame, fg_color=COLORS['secondary'])
+        self.keywords_console_scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # Área de texto para logs
-        self.console_text = ctk.CTkTextbox(self.console_scroll,
-                                          font=ctk.CTkFont(family="Consolas", size=10),
-                                          wrap="word")
-        self.console_text.pack(fill="both", expand=True, padx=5, pady=5)
+        # Área de texto para logs (MISMA QUE EN SCRAPING)
+        self.keywords_console_text = ctk.CTkTextbox(self.keywords_console_scroll,
+                                                   font=ctk.CTkFont(family="Consolas", size=10),
+                                                   wrap="word")
+        self.keywords_console_text.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # Inicializar consola con mensaje de bienvenida
-        self.clear_console()
+        # Inicializar consola con información específica de keywords
+        self.initialize_keywords_console()
 
-        # CONEXIÓN CON EL SISTEMA DE LOGGING GLOBAL
-        # El sistema de logging ya está conectado al archivo, ahora también a la consola visual
+        # CONEXIÓN UNIFICADA CON EL SISTEMA DE LOGGING GLOBAL
+        # Ambas consolas mostrarán los mismos logs
 
-        # Crear un handler personalizado para la consola visual
-        class ConsoleHandler(logging.Handler):
-            def __init__(self, console_callback):
+        # Crear un handler personalizado para la consola de keywords
+        class KeywordsConsoleHandler(logging.Handler):
+            def __init__(self, gui_instance):
                 super().__init__()
-                self.console_callback = console_callback
+                self.gui_instance = gui_instance
                 self.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s - %(message)s', datefmt='%H:%M:%S'))
 
             def emit(self, record):
                 try:
                     msg = self.format(record)
-                    # Usar after para asegurar que se actualice en el thread principal
-                    if hasattr(self.console_callback, 'after'):
-                        self.console_callback.after(0, lambda: self.update_console(msg))
-                    else:
-                        self.update_console(msg)
-                except:
-                    pass
+                    # Actualizar ambas consolas simultáneamente
+                    self.update_keywords_console(msg)
 
-            def update_console(self, msg):
+                    # También actualizar la consola de scraping si existe
+                    if hasattr(self.gui_instance, 'logs_text'):
+                        try:
+                            self.gui_instance.logs_text.configure(state="normal")
+                            self.gui_instance.logs_text.insert("end", msg + "\n")
+                            self.gui_instance.logs_text.see("end")
+                            self.gui_instance.logs_text.configure(state="disabled")
+                        except:
+                            pass  # Si no existe aún, continuar
+
+                except Exception as e:
+                    print(f"Error en KeywordsConsoleHandler: {e}")
+
+            def update_keywords_console(self, msg):
                 try:
-                    if hasattr(self.console_callback, 'console_text'):
-                        self.console_callback.console_text.insert("end", msg + "\n")
-                        self.console_callback.console_text.see("end")
+                    if hasattr(self.gui_instance, 'keywords_console_text'):
+                        self.gui_instance.keywords_console_text.insert("end", msg + "\n")
+                        self.gui_instance.keywords_console_text.see("end")
                 except:
                     pass
 
-        # Añadir el handler personalizado a los loggers existentes
-        console_handler = ConsoleHandler(self)
-        console_handler.setLevel(logging.INFO)
+        # Añadir el handler personalizado al logger del scraper
+        # Esto garantiza que ambas consolas muestren la misma información
+        keywords_console_handler = KeywordsConsoleHandler(self)
+        keywords_console_handler.setLevel(logging.INFO)
 
-        # Conectar con el logger del scraper
+        # Conectar con el logger del scraper (ya existente)
         if hasattr(self, 'scraper') and self.scraper and hasattr(self.scraper, 'logger'):
-            self.scraper.logger.addHandler(console_handler)
+            # Verificar si ya tiene el handler para evitar duplicados
+            has_keywords_handler = any(isinstance(h, KeywordsConsoleHandler) for h in self.scraper.logger.handlers)
+            if not has_keywords_handler:
+                self.scraper.logger.addHandler(keywords_console_handler)
+        else:
+            # Crear scraper temporal si no existe y conectar el handler
+            self.scraper = StealthSerpScraper(Config())
+            self.scraper.logger.addHandler(keywords_console_handler)
+
+        # También conectar con el logger raíz para mensajes del sistema
+        import logging as root_logging
+        root_logger = root_logging.getLogger()
+        has_keywords_handler_root = any(isinstance(h, KeywordsConsoleHandler) for h in root_logger.handlers)
+        if not has_keywords_handler_root:
+            root_logger.addHandler(keywords_console_handler)
+
+    def initialize_keywords_console(self):
+        """Inicializa la consola de keywords con información relevante"""
+        try:
+            welcome_msg = f"""📋 CONSOLA DE KEYWORDS PRO SUITE - UNIFICADA
+{'='*65}
+✅ Esta consola está sincronizada con la consola de Scraping
+📊 Funcionalidades disponibles:
+• Carga y edición de keywords
+• Generación de sugerencias Google Suggest
+• Creación de variantes long-tail
+• Limpieza y filtrado avanzado
+• Análisis de competitividad SEO
+• Exportación en múltiples formatos
+
+🔄 Todos los logs aparecerán en ambas pestañas simultáneamente
+{'='*65}
+"""
+            self.keywords_console_text.insert("1.0", welcome_msg)
+            self.keywords_console_text.see("end")
+        except Exception as e:
+            print(f"Error inicializando consola de keywords: {e}")
+
+    def clear_keywords_console(self):
+        """Limpia la consola de keywords manteniendo la sincronización"""
+        try:
+            # También limpiar la consola de scraping si existe
+            if hasattr(self, 'logs_text'):
+                try:
+                    self.logs_text.configure(state="normal")
+                    self.logs_text.delete("1.0", "end")
+                    self.logs_text.configure(state="disabled")
+                except:
+                    pass
+
+            # Limpiar consola de keywords
+            self.initialize_keywords_console()
+
+            self.log_message("🧹 Consolas limpiadas (proceso de keywords)")
+
+        except Exception as e:
+            print(f"Error limpiando consola de keywords: {e}")
+
+    def save_keywords_console_logs(self):
+        """Guarda el contenido de la consola de keywords"""
+        try:
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            filename = f"keywords_console_logs_{timestamp}.txt"
+
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".txt",
+                filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+                initialfile=filename
+            )
+
+            if file_path:
+                content = self.keywords_console_text.get("1.0", "end")
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(content)
+
+                messagebox.showinfo("Éxito", f"Logs de consola guardados en:\n{file_path}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error guardando logs: {e}")
 
     def toggle_console(self):
         """Alterna entre mostrar/ocultar la consola deslizable"""
@@ -2024,10 +2121,12 @@ class KeywordScraperGUI:
         
     def update_keywords_count(self):
         """Actualiza el contador de keywords"""
-        keywords_text = self.keywords_text.get("1.0", "end-1c")
-        keywords_list = [k.strip() for k in keywords_text.split('\n') if k.strip()]
-        self.keywords_list = keywords_list
-        self.keywords_count_label.configure(text=str(len(keywords_list)))
+        # Usar el sistema unificado de keywords
+        current_keywords = self.get_current_keywords()
+        self.keywords_list = current_keywords
+
+        if hasattr(self, 'keywords_count_label'):
+            self.keywords_count_label.configure(text=str(len(current_keywords)))
 
     def update_cost_display(self):
         """Actualiza la visualización de costos"""
@@ -2604,119 +2703,132 @@ class KeywordScraperGUI:
         edit_window.geometry("600x400")
         edit_window.transient(self.root)
         edit_window.grab_set()
-        
+
         # Text area para edición
         text_area = ctk.CTkTextbox(edit_window, font=ctk.CTkFont(family="Consolas", size=12))
         text_area.pack(fill="both", expand=True, padx=20, pady=20)
-        text_area.insert("1.0", self.keywords_text.get("1.0", "end-1c"))
-        
+
+        # Usar el sistema unificado de keywords
+        current_keywords = self.get_current_keywords()
+        text_area.insert("1.0", "\n".join(current_keywords))
+
         def save_changes():
-            self.keywords_text.delete("1.0", "end")
-            self.keywords_text.insert("1.0", text_area.get("1.0", "end-1c"))
-            self.update_keywords_count()
+            new_content = text_area.get("1.0", "end-1c")
+            keywords = [k.strip() for k in new_content.split('\n') if k.strip()]
+            self.set_current_keywords(keywords)
+            self.update_integration_status()
             edit_window.destroy()
-            
+
         # Botones
         button_frame = ctk.CTkFrame(edit_window)
         button_frame.pack(fill="x", padx=20, pady=10)
-        
-        ctk.CTkButton(button_frame, text="💾 Guardar", 
+
+        ctk.CTkButton(button_frame, text="💾 Guardar",
                      command=save_changes, fg_color="green").pack(side="right", padx=5)
-        ctk.CTkButton(button_frame, text="❌ Cancelar", 
+        ctk.CTkButton(button_frame, text="❌ Cancelar",
                      command=edit_window.destroy).pack(side="right", padx=5)
         
     def generate_suggestions(self):
         """Genera keywords usando Google Suggest"""
+        if not hasattr(self, 'suggest_entry'):
+            messagebox.showwarning("Error", "Componente de entrada no inicializado")
+            return
+
         base_keyword = self.suggest_entry.get().strip()
         if not base_keyword:
             messagebox.showwarning("Advertencia", "Ingresa una keyword base")
             return
-            
+
         def suggest_thread():
             try:
                 self.log_message(f"🔍 Generando sugerencias para: '{base_keyword}'")
-                
+
                 # Usar el scraper existente o crear uno nuevo
                 if not self.scraper:
                     from config.settings import config
                     self.scraper = StealthSerpScraper(config)
-                
+
+                # Asegurar valores por defecto si los widgets no existen o están vacíos
+                country = self.country_var.get() if hasattr(self, 'country_var') and self.country_var.get() else "US"
+                language = self.language_var.get() if hasattr(self, 'language_var') and self.language_var.get() else "en"
+
                 suggestions = self.scraper.google_suggest_scraper(
                     base_keyword,
-                    country=self.country_var.get(),
-                    language=self.language_var.get()
+                    country=country,
+                    language=language
                 )
-                
+
                 if suggestions:
-                    # Añadir sugerencias a la lista actual
-                    current_text = self.keywords_text.get("1.0", "end-1c")
-                    current_keywords = [k.strip() for k in current_text.split('\n') if k.strip()]
-                    
+                    # Añadir sugerencias a la lista actual usando el sistema unificado
+                    current_keywords = self.get_current_keywords()
+
                     # Combinar y eliminar duplicados
                     all_keywords = list(set(current_keywords + suggestions))
-                    
-                    self.keywords_text.delete("1.0", "end")
-                    self.keywords_text.insert("1.0", "\n".join(all_keywords))
-                    self.update_keywords_count()
-                    
-                    self.log_message(f"✅ Generadas {len(suggestions)} sugerencias")
+
+                    # Establecer las keywords usando el sistema unificado
+                    self.set_current_keywords(all_keywords)
+
+                    self.log_message(f"✅ Generadas {len(suggestions)} sugerencias añadidas a la lista")
                 else:
                     self.log_message("❌ No se encontraron sugerencias")
-                    
+
             except Exception as e:
                 self.log_message(f"❌ Error generando sugerencias: {e}")
-                
+
         # Ejecutar en hilo separado
         threading.Thread(target=suggest_thread, daemon=True).start()
         
     def deduplicate_keywords(self):
         """Elimina keywords duplicadas"""
         from utils import KeywordManager
-        
-        keywords_text = self.keywords_text.get("1.0", "end-1c")
-        keywords_list = [k.strip() for k in keywords_text.split('\n') if k.strip()]
-        
+
+        current_keywords = self.get_current_keywords()
+        keywords_list = [k.strip() for k in current_keywords if k.strip()]
+
         unique_keywords = KeywordManager.deduplicate_keywords(keywords_list)
-        
-        self.keywords_text.delete("1.0", "end")
-        self.keywords_text.insert("1.0", "\n".join(unique_keywords))
-        self.update_keywords_count()
-        
+
+        # Usar sistema unificado para actualizar
+        self.set_current_keywords(unique_keywords.copy())
+
         removed = len(keywords_list) - len(unique_keywords)
         self.log_message(f"🧹 Eliminadas {removed} keywords duplicadas")
         
     def filter_keywords(self):
         """Filtra keywords por criterios"""
         from utils import KeywordManager
-        
-        keywords_text = self.keywords_text.get("1.0", "end-1c")
-        keywords_list = [k.strip() for k in keywords_text.split('\n') if k.strip()]
-        
+
+        current_keywords = self.get_current_keywords()
+        keywords_list = [k.strip() for k in current_keywords if k.strip()]
+
         filtered_keywords = KeywordManager.filter_keywords(keywords_list)
-        
-        self.keywords_text.delete("1.0", "end")
-        self.keywords_text.insert("1.0", "\n".join(filtered_keywords))
-        self.update_keywords_count()
-        
+
+        # Usar sistema unificado para actualizar
+        self.set_current_keywords(filtered_keywords.copy())
+
         removed = len(keywords_list) - len(filtered_keywords)
         self.log_message(f"🚫 Filtradas {removed} keywords")
         
     def save_keywords(self):
         """Guarda keywords en archivo"""
         try:
+            current_keywords = self.get_current_keywords()
+
+            if not current_keywords:
+                messagebox.showwarning("Advertencia", "No hay keywords para guardar")
+                return
+
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".txt",
                 filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
             )
-            
+
             if file_path:
-                keywords_text = self.keywords_text.get("1.0", "end-1c")
                 with open(file_path, 'w', encoding='utf-8') as f:
-                    f.write(keywords_text)
-                    
+                    f.write("\n".join(current_keywords))
+
                 messagebox.showinfo("Éxito", f"Keywords guardadas en {file_path}")
                 self.log_message(f"💾 Keywords guardadas en {file_path}")
-                
+
         except Exception as e:
             messagebox.showerror("Error", f"Error guardando keywords: {e}")
             
@@ -3723,17 +3835,67 @@ class KeywordScraperGUI:
 
             self.log_message(f"📂 Cargando reporte histórico: {filename}")
 
+            results = []
+
             # Cargar según el tipo de archivo
             if filename.endswith('.csv'):
-                df = pd.read_csv(filepath)
+                try:
+                    df = pd.read_csv(filepath)
+
+                    # Verificar que tenga las columnas necesarias
+                    required_cols = ['keyword', 'position']
+                    available_cols = df.columns.tolist()
+
+                    if not any(col in available_cols for col in required_cols):
+                        # Si no tiene las columnas esperadas, intentar mapear automáticamente
+                        if len(available_cols) >= 2:
+                            # Asumir primera columna keywords, segunda posición
+                            df = df.rename(columns={available_cols[0]: 'keyword', available_cols[1]: 'position'})
+
+                            # Añadir columnas faltantes con valores por defecto
+                            if 'title' not in df.columns:
+                                df['title'] = df['keyword']
+                            if 'domain' not in df.columns:
+                                df['domain'] = 'desconocido'
+                            if 'page' not in df.columns:
+                                df['page'] = 1
+
+                    results = df.to_dict('records')
+
+                except Exception as csv_error:
+                    # Si hay error con CSV, intentar como archivo de texto
+                    self.log_message(f"⚠️ CSV con formato atípico, intentando como texto: {str(csv_error)[:50]}")
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        lines = f.readlines()
+                        for i, line in enumerate(lines):
+                            if i > 0:  # Saltar primera línea (header)
+                                parts = line.strip().split(',')
+                                if len(parts) >= 2:
+                                    try:
+                                        results.append({
+                                            'keyword': parts[0].strip(),
+                                            'position': int(parts[1].strip()),
+                                            'title': parts[2].strip() if len(parts) > 2 else parts[0],
+                                            'domain': parts[3].strip() if len(parts) > 3 else 'desconocido',
+                                            'page': int(parts[4].strip()) if len(parts) > 4 else 1
+                                        })
+                                    except:
+                                        continue
+
             elif filename.endswith('.json'):
-                df = pd.read_json(filepath)
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        results = json.load(f)
+                except Exception as json_error:
+                    messagebox.showerror("Error", f"Error leyendo archivo JSON: {str(json_error)}")
+                    return
             else:
                 messagebox.showerror("Error", "Tipo de archivo no soportado")
                 return
 
-            # Convertir a formato compatible con la aplicación
-            results = df.to_dict('records')
+            if not results:
+                messagebox.showwarning("Aviso", "El archivo no contiene datos válidos para mostrar")
+                return
 
             # Actualizar resultados actuales
             self.current_results = results
@@ -3742,23 +3904,34 @@ class KeywordScraperGUI:
             self.update_results_table()
 
             # Actualizar bloques de estadísticas
-            self.update_stats_blocks()
+            try:
+                self.update_stats_blocks()
+            except Exception as stats_error:
+                self.log_message(f"⚠️ Error actualizando estadísticas: {str(stats_error)[:50]}")
 
             # Actualizar pestaña de análisis
-            self.update_charts()
+            try:
+                self.update_charts()
+            except Exception as charts_error:
+                self.log_message(f"⚠️ Error actualizando gráficos: {str(charts_error)[:50]}")
+
+            # Cambiar a pestaña de resultados
+            self.tabview.set("📊 Resultados")
 
             # Actualizar información de sesión
             if hasattr(self, 'session_info_label'):
-                self.session_info_label.configure(text=f"Informe cargado: {filename}")
+                self.session_info_label.configure(text=f"Informe cargado: {filename} ({len(results)} filas)")
 
             # Actualizar estado
             if hasattr(self, 'results_status_label'):
-                self.results_status_label.configure(text=f"✅ Reporte '{filename}' cargado exitosamente")
+                self.results_status_label.configure(text=f"✅ Reporte '{filename}' cargado exitosamente - {len(results)} resultados")
 
+            messagebox.showinfo("Carga Exitosa", f"✅ Reporte histórico cargado correctamente!\n\n📄 Archivo: {filename}\n📊 Registros: {len(results)}\n\nLos datos están disponibles en la pestaña de Resultados.")
             self.log_message(f"✅ Reporte histórico cargado: {len(results)} resultados")
 
         except Exception as e:
-            messagebox.showerror("Error", f"Error cargando el reporte:\n\n{str(e)}")
+            error_msg = f"Error cargando el reporte:\n\n{str(e)}\n\n💡 Posibles causas:\n• Formato de archivo incompatible\n• Archivo corrupto\n• Columnas faltantes"
+            messagebox.showerror("Error", error_msg)
             self.log_message(f"❌ Error cargando reporte: {str(e)[:80]}")
 
     def update_stats_blocks(self):
@@ -4113,7 +4286,9 @@ class KeywordScraperGUI:
 
     def analyze_keyword_competitiveness(self):
         """Análisis de competitividad y dificultad SEO de keywords"""
-        if not self.keywords_text.get("1.0", "end-1c").strip():
+        current_keywords = self.get_current_keywords()
+
+        if not current_keywords:
             messagebox.showwarning("Advertencia", "No hay keywords para analizar")
             return
 
@@ -4122,8 +4297,7 @@ class KeywordScraperGUI:
             messagebox.showwarning("Error", "Configura tus credenciales de Google API primero\n\nVe a la pestaña '🔐 Google API'")
             return
 
-        text = self.keywords_text.get("1.0", "end-1c")
-        keywords = [k.strip() for k in text.split('\n') if k.strip()]
+        keywords = current_keywords.copy()
 
         if len(keywords) > 20:
             if not messagebox.askyesno("Demasiadas Keywords",
@@ -4255,12 +4429,13 @@ class KeywordScraperGUI:
 
     def generate_keyword_variants(self):
         """Genera variantes long-tail y relacionadas de las keywords actuales"""
-        if not self.keywords_text.get("1.0", "end-1c").strip():
+        current_keywords = self.get_current_keywords()
+
+        if not current_keywords:
             messagebox.showwarning("Advertencia", "No hay keywords para generar variantes")
             return
 
-        text = self.keywords_text.get("1.0", "end-1c")
-        keywords = [k.strip() for k in text.split('\n') if k.strip()]
+        keywords = current_keywords.copy()
 
         if not keywords:
             return
@@ -4315,12 +4490,13 @@ class KeywordScraperGUI:
 
     def export_keywords_advanced(self):
         """Exportación avanzada de keywords con múltiples formatos"""
-        if not self.keywords_text.get("1.0", "end-1c").strip():
+        current_keywords = self.get_current_keywords()
+
+        if not current_keywords:
             messagebox.showwarning("Advertencia", "No hay keywords para exportar")
             return
 
-        text = self.keywords_text.get("1.0", "end-1c")
-        keywords = [k.strip() for k in text.split('\n') if k.strip()]
+        keywords = current_keywords.copy()
 
         if not keywords:
             return
@@ -4531,8 +4707,7 @@ class KeywordScraperGUI:
     def update_keywords_stats(self):
         """Actualiza las estadísticas de keywords en tiempo real"""
         try:
-            text = self.keywords_text.get("1.0", "end-1c")
-            keywords = [k.strip() for k in text.split('\n') if k.strip()]
+            keywords = self.get_current_keywords()
 
             total = len(keywords)
             unique = len(set(kw.lower() for kw in keywords))
@@ -4543,20 +4718,26 @@ class KeywordScraperGUI:
             else:
                 avg_difficulty = 0
 
-            # Actualizar bloques
-            self.kw_total_label.configure(text=str(total))
-            self.kw_analyzed_label.configure(text=str(total))  # Por ahora mismo que total
-            self.kw_unique_label.configure(text=str(unique))
-            self.kw_difficulty_label.configure(text=f"{avg_difficulty:.0f}%" if avg_difficulty > 0 else "N/A")
+            # Actualizar bloques si existen
+            if hasattr(self, 'kw_total_label'):
+                self.kw_total_label.configure(text=str(total))
+            if hasattr(self, 'kw_analyzed_label'):
+                self.kw_analyzed_label.configure(text=str(total))  # Por ahora mismo que total
+            if hasattr(self, 'kw_unique_label'):
+                self.kw_unique_label.configure(text=str(unique))
+            if hasattr(self, 'kw_difficulty_label'):
+                self.kw_difficulty_label.configure(text=f"{avg_difficulty:.0f}%" if avg_difficulty > 0 else "N/A")
 
-            # Actualizar estado
-            if total > 0:
-                self.keyword_status_label.configure(text=f"✅ Listo: {total} keywords - {unique} únicas - Dificultad promedio: {avg_difficulty:.0f}%")
-            else:
-                self.keyword_status_label.configure(text="📋 Listo para trabajar con keywords - Una keyword por línea")
+            # Actualizar estado si existe
+            if hasattr(self, 'keyword_status_label'):
+                if total > 0:
+                    self.keyword_status_label.configure(text=f"✅ Listo: {total} keywords - {unique} únicas - Dificultad promedio: {avg_difficulty:.0f}%")
+                else:
+                    self.keyword_status_label.configure(text="📋 Listo para trabajar con keywords - Una keyword por línea")
 
         except Exception as e:
-            self.keyword_status_label.configure(text="⚠️ Error actualizando estadísticas")
+            if hasattr(self, 'keyword_status_label'):
+                self.keyword_status_label.configure(text="⚠️ Error actualizando estadísticas")
 
     def clear_current_results(self):
         """Limpia todos los resultados actuales"""
