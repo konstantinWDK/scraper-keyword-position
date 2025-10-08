@@ -1332,347 +1332,265 @@ class KeywordScraperGUI:
                      command=self.validate_config).pack(side="left", padx=5)
         
     def setup_keywords_tab(self):
-        """Configura la SUPER SUITE INTEGRADA de keywords - Todo en una pestaña poderosa"""
-        main_frame = ctk.CTkScrollableFrame(self.tab_keywords)
-        main_frame.pack(fill="both", expand=True)
+        """NUEVA UI AMPLIAMENTE REDISEÑADA: 50% CONTROLES IZQUIERDA + 50% CONSOLA DESLIZABLE DERECHA"""
+        # FRAME PRINCIPAL DIVIDIDO EN DOS COLUMNAS
+        main_container = ctk.CTkFrame(self.tab_keywords)
+        main_container.pack(fill="both", expand=True)
 
-        # 🔄 FUNCIONALIDAD DE SCROLL CON RUEDA DEL MOUSE
-        def _on_mouse_wheel(event):
-            """Maneja el scroll con la rueda del mouse en scrollable frames"""
-            try:
-                if event.delta > 0:
-                    main_frame._parent_canvas.yview_scroll(-1, "units")
-                else:
-                    main_frame._parent_canvas.yview_scroll(1, "units")
-            except:
-                pass
+        # COLUMNA IZQUIERDA (50%): CONTROLES Y BOTONES
+        left_panel = ctk.CTkFrame(main_container, fg_color=COLORS['secondary'])
+        left_panel.pack(side="left", fill="both", expand=True, padx=(10, 5), pady=10)
 
-        # Bind mouse wheel to scrollable frame
-        main_frame.bind('<MouseWheel>', _on_mouse_wheel)
-        main_frame.bind('<Button-4>', lambda e: main_frame._parent_canvas.yview_scroll(-1, "units"))
-        main_frame.bind('<Button-5>', lambda e: main_frame._parent_canvas.yview_scroll(1, "units"))
+        # COLUMNA DERECHA (50%): CONSOLA DESLIZABLE PARA LOGS
+        right_panel = ctk.CTkFrame(main_container)
+        right_panel.pack(side="right", fill="both", expand=True, padx=(5, 10), pady=10)
 
-        # También aplicar a todos los CTkScrollableFrame hijos
-        def bind_scroll_to_children(widget):
-            """Recursivamente bindea scroll a todos los scrollable frames hijos"""
-            for child in widget.winfo_children():
-                if isinstance(child, ctk.CTkScrollableFrame):
-                    child.bind('<MouseWheel>', _on_mouse_wheel)
-                    child.bind('<Button-4>', lambda e: child._parent_canvas.yview_scroll(-1, "units"))
-                    child.bind('<Button-5>', lambda e: child._parent_canvas.yview_scroll(1, "units"))
-                bind_scroll_to_children(child)
+        # ===================== PANEL IZQUIERDO: CONTROLES =====================
 
-        # Aplicar binding después de que todos los widgets estén creados
-        self.root.after(100, lambda: bind_scroll_to_children(main_frame))
+        # HEADER DEL PANEL IZQUIERDO
+        left_header = ctk.CTkFrame(left_panel, fg_color=COLORS['surface'], height=60)
+        left_header.pack(fill="x", pady=(10, 15))
+        left_header.pack_propagate(False)
 
-        # HEADER ULTRA PREMIUM - Similar a Neil Patel Pro
-        header_frame = ctk.CTkFrame(main_frame, fg_color=COLORS['surface'], height=100)
-        header_frame.pack(fill="x", pady=(0, 20))
-        header_frame.pack_propagate(False)
+        ctk.CTkLabel(left_header, text="🎮 PANEL DE CONTROL",
+                    font=ctk.CTkFont(size=18, weight="bold")).pack(pady=(10, 5))
 
-        header_title = ctk.CTkLabel(header_frame, text="🚀 KEYWORD POWER SUITE PRO 2025",
-                                   font=ctk.CTkFont(size=24, weight="bold"),
+        ctk.CTkLabel(left_header, text="Herramientas • Importación • Procesamiento",
+                    font=ctk.CTkFont(size=10), text_color=COLORS['text_secondary']).pack()
+
+        # ÁREA DE BOTONES EN EL PANEL IZQUIERDO - ORGANIZADOS EN COLUMNAS
+        buttons_container = ctk.CTkScrollableFrame(left_panel)
+        buttons_container.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+        # Sección 1: IMPORTACIÓN DE KEYWORDS
+        import_section = ctk.CTkFrame(buttons_container, fg_color=COLORS['primary'])
+        import_section.pack(fill="x", pady=(10, 15))
+
+        import_title = ctk.CTkLabel(import_section, text="📥 IMPORTACIÓN DE KEYWORDS",
+                                   font=ctk.CTkFont(size=14, weight="bold"),
                                    text_color=COLORS['text_primary'])
-        header_title.pack(anchor="w", padx=20, pady=(20, 5))
+        import_title.pack(pady=(10, 15))
 
-        header_subtitle = ctk.CTkLabel(header_frame, text="Suite integrada completa: Importar • Procesar • Analizar • Scrapear • Exportar",
-                                      font=ctk.CTkFont(size=12),
-                                      text_color=COLORS['text_secondary'])
-        header_subtitle.pack(anchor="w", padx=20, pady=(0, 20))
+        # Grid de botones de importación (2 columnas)
+        import_grid = ctk.CTkFrame(import_section, fg_color="transparent")
+        import_grid.pack(fill="x", padx=15, pady=(0, 10))
 
-        # BLOQUES DE ESTADO GLOBAL - SEMPRE VISIBLES
-        status_grid = ctk.CTkFrame(main_frame, fg_color=COLORS['secondary'])
-        status_grid.pack(fill="x", pady=(0, 20))
+        ctk.CTkButton(import_grid, text="📁 CARGAR TXT/CSV/JSON\n(Archivos Completos)",
+                     command=self.load_keywords_file, height=60,
+                     fg_color=COLORS['accent'], font=ctk.CTkFont(size=11, weight="bold")).pack(fill="x", pady=(0, 8))
 
-        status_row = ctk.CTkFrame(status_grid)
-        status_row.pack(fill="x", padx=20, pady=15)
+        ctk.CTkButton(import_grid, text="🎯 GOOGLE SUGGEST\n(Generar Ideas)",
+                     command=self.generate_suggestions, height=50,
+                     fg_color=COLORS['success']).pack(fill="x", pady=(0, 8))
 
-        # Estado 1: Keywords en editor
-        self.status_editor_block = ctk.CTkFrame(status_row, fg_color=COLORS['info'], width=200, height=70)
-        self.status_editor_block.pack(side="left", padx=(0, 10))
-        self.status_editor_block.pack_propagate(False)
-        ctk.CTkLabel(self.status_editor_block, text="📝 EDITOR", font=ctk.CTkFont(size=9, weight="bold"),
-                    text_color="white").pack(anchor="w", padx=6, pady=(6, 0))
-        self.status_editor_count = ctk.CTkLabel(self.status_editor_block, text="0", font=ctk.CTkFont(size=20, weight="bold"),
-                                              text_color="white")
-        self.status_editor_count.pack(anchor="center", pady=(0, 2))
-        ctk.CTkLabel(self.status_editor_block, text="keywords", font=ctk.CTkFont(size=8),
-                    text_color="lightgray").pack(anchor="center", pady=(0, 6))
-
-        # Estado 2: Keywords procesadas
-        self.status_processed_block = ctk.CTkFrame(status_row, fg_color=COLORS['success'], width=200, height=70)
-        self.status_processed_block.pack(side="left", padx=(0, 10))
-        self.status_processed_block.pack_propagate(False)
-        ctk.CTkLabel(self.status_processed_block, text="⚡ PROCESADAS", font=ctk.CTkFont(size=9, weight="bold"),
-                    text_color="white").pack(anchor="w", padx=6, pady=(6, 0))
-        self.status_processed_count = ctk.CTkLabel(self.status_processed_block, text="0", font=ctk.CTkFont(size=20, weight="bold"),
-                                                 text_color="white")
-        self.status_processed_count.pack(anchor="center", pady=(0, 2))
-        ctk.CTkLabel(self.status_processed_block, text="para scraping", font=ctk.CTkFont(size=8),
-                    text_color="lightgray").pack(anchor="center", pady=(0, 6))
-
-        # Estado 3: Costos calculados
-        self.status_cost_block = ctk.CTkFrame(status_row, fg_color=COLORS['warning'], width=200, height=70)
-        self.status_cost_block.pack(side="left", padx=(0, 10))
-        self.status_cost_block.pack_propagate(False)
-        ctk.CTkLabel(self.status_cost_block, text="💰 COSTO EST.", font=ctk.CTkFont(size=9, weight="bold"),
-                    text_color="white").pack(anchor="w", padx=6, pady=(6, 0))
-        self.status_cost_label = ctk.CTkLabel(self.status_cost_block, text="$0.00", font=ctk.CTkFont(size=18, weight="bold"),
-                                            text_color="white")
-        self.status_cost_label.pack(anchor="center", pady=(0, 2))
-        ctk.CTkLabel(self.status_cost_block, text="estimado", font=ctk.CTkFont(size=8),
-                    text_color="lightgray").pack(anchor="center", pady=(0, 6))
-
-        # Estado 4: Estado de integración
-        self.status_integration_block = ctk.CTkFrame(status_row, fg_color=COLORS['accent'], width=200, height=70)
-        self.status_integration_block.pack(side="left")
-        self.status_integration_block.pack_propagate(False)
-        ctk.CTkLabel(self.status_integration_block, text="🔗 INTEGRACIÓN", font=ctk.CTkFont(size=9, weight="bold"),
-                    text_color="white").pack(anchor="w", padx=6, pady=(6, 0))
-        self.status_integration_label = ctk.CTkLabel(self.status_integration_block, text="LISTO", font=ctk.CTkFont(size=16, weight="bold"),
-                                                   text_color="white")
-        self.status_integration_label.pack(anchor="center", pady=(0, 2))
-        ctk.CTkLabel(self.status_integration_block, text="datos fluirán", font=ctk.CTkFont(size=8),
-                    text_color="lightgray").pack(anchor="center", pady=(0, 6))
-
-        # INICIATIVA PRINCIPAL PARA SCRAPING - EDITOR DE KEYWORDS LISTO PARA SCRAPE
-        main_editor_section = ctk.CTkFrame(main_frame, fg_color=COLORS['secondary'])
-        main_editor_section.pack(fill="x", pady=(0, 20))
-
-        editor_header = ctk.CTkFrame(main_editor_section, fg_color=COLORS['surface'], height=50)
-        editor_header.pack(fill="x", pady=(15, 0))
-        editor_header.pack_propagate(False)
-
-        ctk.CTkLabel(editor_header, text="🎯 KEYWORDS PARA SCRAPING ACTUALES",
-                    font=ctk.CTkFont(size=14, weight="bold"),
-                    text_color=COLORS['text_primary']).pack(side="left", padx=20, pady=10)
-
-        # Botones directos para scraping
-        scraper_actions = ctk.CTkFrame(editor_header, fg_color="transparent")
-        scraper_actions.pack(side="right", padx=20, pady=5)
-
-        ctk.CTkButton(scraper_actions, text="🚀 IR A SCRAPING",
-                     command=self.go_to_scraping_with_current_keywords, fg_color=COLORS['accent'],
-                     height=30, font=ctk.CTkFont(size=11, weight="bold")).pack(side="right")
-
-        ctk.CTkButton(scraper_actions, text="📋 COPIAR A SCRAPING",
-                     command=self.copy_keywords_to_scraping, fg_color=COLORS['info'],
-                     height=30, font=ctk.CTkFont(size=10)).pack(side="right", padx=(0, 5))
-
-        # Editor principal - READY PARA SCRAPING
-        main_editor_frame = ctk.CTkFrame(main_editor_section, fg_color=COLORS['primary'])
-        main_editor_frame.pack(fill="both", padx=15, pady=(10, 15))
-
-        # Este será el editor principal que se conecta con scraping
-        self.main_keywords_text = ctk.CTkTextbox(main_editor_frame,
-                                               font=ctk.CTkFont(family="Consolas", size=12),
-                                               wrap="word")
-        self.main_keywords_text.pack(fill="both", expand=True, padx=10, pady=10)
-        self.main_keywords_text.insert("1.0", "# Keywords listas para scraping\n# Una keyword por línea\n# Estas keywords serán usadas en la pestaña '🚀 Scraping'")
-
-        # Información de integración
-        integration_info = ctk.CTkFrame(main_editor_section, fg_color=COLORS['border'], height=30)
-        integration_info.pack(fill="x", padx=15, pady=(0, 15))
-        integration_info.pack_propagate(False)
-        ctk.CTkLabel(integration_info, text="ℹ️ Estas keywords se usan automáticamente en Scraping • Análisis • Resultados",
-                    font=ctk.CTkFont(size=10), text_color=COLORS['text_secondary']).pack(pady=5)
-
-        # MÉTRICAS PRINCIPALES - SIEMPRE VISIBLES
-        metrics_frame = ctk.CTkFrame(main_frame, fg_color=COLORS['secondary'])
-        metrics_frame.pack(fill="x", pady=(0, 20))
-
-        metrics_grid = ctk.CTkFrame(metrics_frame, fg_color="transparent")
-        metrics_grid.pack(fill="x", padx=20, pady=15)
-
-        # Métrica 1: Total Keywords
-        self.kw_total_block = ctk.CTkFrame(metrics_grid, fg_color=COLORS['accent'], width=180, height=80)
-        self.kw_total_block.pack(side="left", padx=(0, 10))
-        self.kw_total_block.pack_propagate(False)
-        ctk.CTkLabel(self.kw_total_block, text="📊 TOTAL", font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color="white").pack(anchor="w", padx=8, pady=(8, 0))
-        self.kw_total_label = ctk.CTkLabel(self.kw_total_block, text="0", font=ctk.CTkFont(size=24, weight="bold"),
-                                         text_color="white")
-        self.kw_total_label.pack(anchor="center", pady=(0, 5))
-
-        # Métrica 2: Keywords Analizadas
-        self.kw_analyzed_block = ctk.CTkFrame(metrics_grid, fg_color=COLORS['success'], width=180, height=80)
-        self.kw_analyzed_block.pack(side="left", padx=(0, 10))
-        self.kw_analyzed_block.pack_propagate(False)
-        ctk.CTkLabel(self.kw_analyzed_block, text="🔍 ANALIZADAS", font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color="white").pack(anchor="w", padx=8, pady=(8, 0))
-        self.kw_analyzed_label = ctk.CTkLabel(self.kw_analyzed_block, text="0", font=ctk.CTkFont(size=24, weight="bold"),
-                                            text_color="white")
-        self.kw_analyzed_label.pack(anchor="center", pady=(0, 5))
-
-        # Métrica 3: Keywords Únicas
-        self.kw_unique_block = ctk.CTkFrame(metrics_grid, fg_color=COLORS['info'], width=180, height=80)
-        self.kw_unique_block.pack(side="left", padx=(0, 10))
-        self.kw_unique_block.pack_propagate(False)
-        ctk.CTkLabel(self.kw_unique_block, text="💎 ÚNICAS", font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color="white").pack(anchor="w", padx=8, pady=(8, 0))
-        self.kw_unique_label = ctk.CTkLabel(self.kw_unique_block, text="0", font=ctk.CTkFont(size=24, weight="bold"),
-                                          text_color="white")
-        self.kw_unique_label.pack(anchor="center", pady=(0, 5))
-
-        # Métrica 4: Dificultad Promedio
-        self.kw_difficulty_block = ctk.CTkFrame(metrics_grid, fg_color=COLORS['warning'], width=180, height=80)
-        self.kw_difficulty_block.pack(side="left")
-        self.kw_difficulty_block.pack_propagate(False)
-        ctk.CTkLabel(self.kw_difficulty_block, text="🎯 DIFICULTAD", font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color="white").pack(anchor="w", padx=8, pady=(8, 0))
-        self.kw_difficulty_label = ctk.CTkLabel(self.kw_difficulty_block, text="N/A", font=ctk.CTkFont(size=20, weight="bold"),
-                                              text_color="white")
-        self.kw_difficulty_label.pack(anchor="center", pady=(0, 5))
-
-        # HERRAMIENTAS PRINCIPALES
-        tools_frame = ctk.CTkFrame(main_frame, fg_color=COLORS['secondary'])
-        tools_frame.pack(fill="x", pady=(0, 20))
-
-        tools_title = ctk.CTkLabel(tools_frame, text="🛠️ HERRAMIENTAS DE ANÁLISIS DE KEYWORDS",
-                                  font=ctk.CTkFont(size=14, weight="bold"),
-                                  text_color=COLORS['text_primary'])
-        tools_title.pack(anchor="w", padx=20, pady=(15, 10))
-
-        # Grid de herramientas
-        tools_grid = ctk.CTkFrame(tools_frame, fg_color="transparent")
-        tools_grid.pack(fill="x", padx=20, pady=(0, 15))
-
-        # Fila 1 de herramientas
-        tools_row1 = ctk.CTkFrame(tools_grid, fg_color="transparent")
-        tools_row1.pack(fill="x", pady=(0, 10))
-
-        # Herramienta 1: Carga masiva
-        tool1 = ctk.CTkFrame(tools_row1, fg_color=COLORS['surface'], height=80)
-        tool1.pack(side="left", fill="x", expand=True, padx=(0, 10))
-        tool1.pack_propagate(False)
-        ctk.CTkButton(tool1, text="📁 CARGAR ARCHIVO\n(TXT/CSV/JSON)",
-                     command=self.load_keywords_file, height=50,
-                     fg_color=COLORS['accent'], text_color="white").pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(tool1, text="Importar keywords desde archivos", font=ctk.CTkFont(size=9),
-                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
-
-        # Herramienta 2: Google Suggest
-        tool2 = ctk.CTkFrame(tools_row1, fg_color=COLORS['surface'], height=80)
-        tool2.pack(side="left", fill="x", expand=True, padx=(0, 10))
-        tool2.pack_propagate(False)
-
-        suggest_frame = ctk.CTkFrame(tool2, fg_color="transparent")
-        suggest_frame.pack(fill="x", padx=10, pady=5)
-
-        self.suggest_entry = ctk.CTkEntry(suggest_frame, placeholder_text="Ingresa keyword base...",
-                                        height=30, width=150)
-        self.suggest_entry.pack(side="left", padx=(0, 8))
-
-        ctk.CTkButton(suggest_frame, text="🎯 GENERAR\nSUGERENCIAS",
-                     command=self.generate_suggestions, height=30,
-                     fg_color=COLORS['success'], text_color="white").pack(side="left")
-
-        ctk.CTkLabel(tool2, text="Expande tu lista con sugerencias de Google", font=ctk.CTkFont(size=9),
-                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
-
-        # Herramienta 3: Limpieza avanzada
-        tool3 = ctk.CTkFrame(tools_row1, fg_color=COLORS['surface'], height=80)
-        tool3.pack(side="left", fill="x", expand=True)
-        tool3.pack_propagate(False)
-        ctk.CTkButton(tool3, text="🧹 LIMPIEZA\nAVANZADA",
-                     command=self.advanced_keyword_cleaning, height=50,
-                     fg_color=COLORS['error'], text_color="white").pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(tool3, text="Eliminar duplicados y palabras vacías", font=ctk.CTkFont(size=9),
-                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
-
-        # Fila 2 de herramientas
-        tools_row2 = ctk.CTkFrame(tools_grid, fg_color="transparent")
-        tools_row2.pack(fill="x", pady=(0, 10))
-
-        # Herramienta 4: Análisis de competitividad
-        tool4 = ctk.CTkFrame(tools_row2, fg_color=COLORS['surface'], height=80)
-        tool4.pack(side="left", fill="x", expand=True, padx=(0, 10))
-        tool4.pack_propagate(False)
-        ctk.CTkButton(tool4, text="📈 ANÁLISIS DE\nCOMPETITIVIDAD",
-                     command=self.analyze_keyword_competitiveness, height=50,
-                     fg_color=COLORS['info'], text_color="white").pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(tool4, text="Analiza dificultad y oportunidad SEO", font=ctk.CTkFont(size=9),
-                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
-
-        # Herramienta 5: Generador de variantes
-        tool5 = ctk.CTkFrame(tools_row2, fg_color=COLORS['surface'], height=80)
-        tool5.pack(side="left", fill="x", expand=True, padx=(0, 10))
-        tool5.pack_propagate(False)
-        ctk.CTkButton(tool5, text="🔄 GENERAR\nVARIANTES",
+        ctk.CTkButton(import_grid, text="🔄 GENERAR VARIANTES\n(Expansión Inteligente)",
                      command=self.generate_keyword_variants, height=50,
-                     fg_color=COLORS['warning'], text_color="white").pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(tool5, text="Crea variaciones long-tail y relacionadas", font=ctk.CTkFont(size=9),
-                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
+                     fg_color=COLORS['info']).pack(fill="x", pady=(0, 8))
 
-        # Herramienta 6: Exportación
-        tool6 = ctk.CTkFrame(tools_row2, fg_color=COLORS['surface'], height=80)
-        tool6.pack(side="left", fill="x", expand=True)
-        tool6.pack_propagate(False)
-        ctk.CTkButton(tool6, text="💾 EXPORTAR\nLISTA",
+        # Sección 2: PROCESAMIENTO DE KEYWORDS
+        process_section = ctk.CTkFrame(buttons_container, fg_color=COLORS['primary'])
+        process_section.pack(fill="x", pady=(0, 15))
+
+        process_title = ctk.CTkLabel(process_section, text="⚡ PROCESAMIENTO Y LIMPIEZA",
+                                    font=ctk.CTkFont(size=14, weight="bold"),
+                                    text_color=COLORS['text_primary'])
+        process_title.pack(pady=(10, 15))
+
+        process_grid = ctk.CTkFrame(process_section, fg_color="transparent")
+        process_grid.pack(fill="x", padx=15, pady=(0, 10))
+
+        ctk.CTkButton(process_grid, text="🧹 LIMPIEZA AVANZADA\n(Duplicados + Stop Words)",
+                     command=self.advanced_keyword_cleaning, height=50,
+                     fg_color=COLORS['warning']).pack(fill="x", pady=(0, 8))
+
+        ctk.CTkButton(process_grid, text="📊 ACTUALIZAR ESTADÍSTICAS\n(Análisis General)",
+                     command=self.update_keywords_stats, height=50,
+                     fg_color=COLORS['secondary']).pack(fill="x", pady=(0, 8))
+
+        ctk.CTkButton(process_grid, text="📈 ANÁLISIS SEO\n(Competitividad)",
+                     command=self.analyze_keyword_competitiveness, height=50,
+                     fg_color=COLORS['error']).pack(fill="x", pady=(0, 8))
+
+        # Sección 3: SCRAPING DIRECTO
+        scraping_section = ctk.CTkFrame(buttons_container, fg_color=COLORS['primary'])
+        scraping_section.pack(fill="x", pady=(0, 15))
+
+        scraping_title = ctk.CTkLabel(scraping_section, text="🚀 SCRAPING DIRECTO",
+                                     font=ctk.CTkFont(size=14, weight="bold"),
+                                     text_color=COLORS['text_primary'])
+        scraping_title.pack(pady=(10, 15))
+
+        scraping_grid = ctk.CTkFrame(scraping_section, fg_color="transparent")
+        scraping_grid.pack(fill="x", padx=15, pady=(0, 10))
+
+        ctk.CTkButton(scraping_grid, text="🚀 IR A PESTAÑA SCRAPING\n(Con Keywords Actuales)",
+                     command=self.go_to_scraping_with_current_keywords, height=50,
+                     fg_color=COLORS['accent'], font=ctk.CTkFont(size=12, weight="bold")).pack(fill="x", pady=(0, 8))
+
+        # Sección 4: EXPORTACIÓN
+        export_section = ctk.CTkFrame(buttons_container, fg_color=COLORS['primary'])
+        export_section.pack(fill="x", pady=(0, 10))
+
+        export_title = ctk.CTkLabel(export_section, text="💾 EXPORTACIÓN AVANZADA",
+                                   font=ctk.CTkFont(size=14, weight="bold"),
+                                   text_color=COLORS['text_primary'])
+        export_title.pack(pady=(10, 15))
+
+        export_grid = ctk.CTkFrame(export_section, fg_color="transparent")
+        export_grid.pack(fill="x", padx=15, pady=(0, 10))
+
+        ctk.CTkButton(export_grid, text="📋 EXPORTAR KEYWORDS\n(TXT/CSV/JSON/XML)",
                      command=self.export_keywords_advanced, height=50,
-                     fg_color=COLORS['accent'], text_color="white").pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(tool6, text="Guardar en múltiples formatos", font=ctk.CTkFont(size=9),
-                    text_color=COLORS['text_secondary']).pack(anchor="w", padx=10, pady=(0, 5))
+                     fg_color=COLORS['info']).pack(fill="x", pady=(0, 8))
 
-        # EDITOR PRINCIPAL DE KEYWORDS - ALTURA MÁXIMA
-        editor_section = ctk.CTkFrame(main_frame, fg_color=COLORS['secondary'])
-        editor_section.pack(fill="both", expand=True, pady=(0, 10))
+        # ===================== PANEL DERECH0: CONSOLA DESLIZABLE =====================
 
-        editor_header = ctk.CTkFrame(editor_section, fg_color=COLORS['surface'], height=50)
-        editor_header.pack(fill="x", pady=(10, 0))
-        editor_header.pack_propagate(False)
+        # HEADER DE LA CONSOLA
+        console_header = ctk.CTkFrame(right_panel, fg_color=COLORS['surface'], height=40)
+        console_header.pack(fill="x", pady=(10, 0))
+        console_header.pack_propagate(False)
 
-        ctk.CTkLabel(editor_header, text="📝 EDITOR DE KEYWORDS AVANZADO",
-                    font=ctk.CTkFont(size=14, weight="bold"),
-                    text_color=COLORS['text_primary']).pack(side="left", padx=20, pady=10)
+        # Título y botón de toggle
+        console_title_frame = ctk.CTkFrame(console_header, fg_color="transparent")
+        console_title_frame.pack(fill="x", padx=10)
 
-        # Controles del editor - MOVIDOS ARRIBA
-        editor_controls = ctk.CTkFrame(editor_header, fg_color="transparent")
-        editor_controls.pack(side="right", padx=20, pady=10)
+        # Variable para controlar el estado de la consola (plegada/desplegada)
+        self.console_collapsed = ctk.BooleanVar(value=False)
 
-        ctk.CTkButton(editor_controls, text="↻ EDITAR MANUALMENTE",
-                     command=self.edit_keywords_manual, width=140,
-                     fg_color=COLORS['info'], height=30).pack(side="left", padx=(0, 5))
+        toggle_btn = ctk.CTkButton(console_title_frame, text="⬇️",
+                                  command=self.toggle_console, width=30, height=20,
+                                  font=ctk.CTkFont(size=10, weight="bold"))
+        toggle_btn.pack(side="left")
 
-        ctk.CTkButton(editor_controls, text="📊 ACTUALIZAR ESTADÍSTICAS",
-                     command=self.update_keywords_stats, width=160,
-                     fg_color=COLORS['success'], height=30).pack(side="left", padx=(0, 5))
+        ctk.CTkLabel(console_title_frame, text="📋 CONSOLA DE ACTIVIDAD",
+                    font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=10)
 
-        # BOTONES DE CARGA MASIVOS - MOVIDOS ARRIBA DEL EDITOR PARA FLUJO COHERENTE
-        quick_load_frame = ctk.CTkFrame(editor_header, fg_color="transparent")
-        quick_load_frame.pack(side="right", padx=(0, 20), pady=5)
+        # Menú de opciones para la consola
+        console_menu = ctk.CTkFrame(console_title_frame, fg_color="transparent")
+        console_menu.pack(side="right")
 
-        ctk.CTkButton(quick_load_frame, text="📁 CARGAR TXT",
-                     command=lambda: self.load_keywords_file_from_button("txt"),
-                     fg_color=COLORS['accent'], height=30, width=110).pack(side="left", padx=(0, 3))
+        ctk.CTkButton(console_menu, text="🧹 Limpiar",
+                     command=self.clear_console, width=60, height=20,
+                     font=ctk.CTkFont(size=9)).pack(side="left", padx=(0, 5))
 
-        ctk.CTkButton(quick_load_frame, text="📄 CARGAR CSV",
-                     command=lambda: self.load_keywords_file_from_button("csv"),
-                     fg_color=COLORS['success'], height=30, width=110).pack(side="left")
+        ctk.CTkButton(console_menu, text="💾 Guardar",
+                     command=self.save_console_logs, width=60, height=20,
+                     font=ctk.CTkFont(size=9)).pack(side="left")
 
-        # Editor principal - ALTURA MÁXIMA para mejor UX
-        editor_frame = ctk.CTkFrame(editor_section, fg_color=COLORS['primary'])
-        editor_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        # ÁREA DE TEXTO DE LA CONSOLA (ESCODIBLE)
+        self.console_frame = ctk.CTkFrame(right_panel, fg_color=COLORS['primary'])
+        self.console_frame.pack(fill="both", expand=True, padx=10, pady=(5, 10))
 
-        # Crear el text widget con altura máxima
-        self.keywords_text = ctk.CTkTextbox(editor_frame,
-                                         font=ctk.CTkFont(family="Consolas", size=12),
-                                         wrap="word")
-        self.keywords_text.pack(fill="both", expand=True, padx=10, pady=10)
+        # ÁREA PRINCIPAL DE LA CONSOLA
+        self.console_scroll = ctk.CTkScrollableFrame(self.console_frame, fg_color=COLORS['secondary'])
+        self.console_scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # Barra de estado inferior
-        status_bar = ctk.CTkFrame(editor_section, fg_color=COLORS['surface'], height=40)
-        status_bar.pack(fill="x", pady=(0, 10))
-        status_bar.pack_propagate(False)
+        # Área de texto para logs
+        self.console_text = ctk.CTkTextbox(self.console_scroll,
+                                          font=ctk.CTkFont(family="Consolas", size=10),
+                                          wrap="word")
+        self.console_text.pack(fill="both", expand=True, padx=5, pady=5)
 
-        self.keyword_status_label = ctk.CTkLabel(status_bar,
-                                               text="📋 Listo para trabajar con keywords - Una keyword por línea",
-                                               font=ctk.CTkFont(size=11),
-                                               text_color=COLORS['text_secondary'])
-        self.keyword_status_label.pack(side="left", padx=20, pady=10)
+        # Inicializar consola con mensaje de bienvenida
+        self.clear_console()
 
-        # Actualizar estadísticas iniciales
-        self.update_keywords_stats()
+        # CONEXIÓN CON EL SISTEMA DE LOGGING GLOBAL
+        # El sistema de logging ya está conectado al archivo, ahora también a la consola visual
+
+        # Crear un handler personalizado para la consola visual
+        class ConsoleHandler(logging.Handler):
+            def __init__(self, console_callback):
+                super().__init__()
+                self.console_callback = console_callback
+                self.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s - %(message)s', datefmt='%H:%M:%S'))
+
+            def emit(self, record):
+                try:
+                    msg = self.format(record)
+                    # Usar after para asegurar que se actualice en el thread principal
+                    if hasattr(self.console_callback, 'after'):
+                        self.console_callback.after(0, lambda: self.update_console(msg))
+                    else:
+                        self.update_console(msg)
+                except:
+                    pass
+
+            def update_console(self, msg):
+                try:
+                    if hasattr(self.console_callback, 'console_text'):
+                        self.console_callback.console_text.insert("end", msg + "\n")
+                        self.console_callback.console_text.see("end")
+                except:
+                    pass
+
+        # Añadir el handler personalizado a los loggers existentes
+        console_handler = ConsoleHandler(self)
+        console_handler.setLevel(logging.INFO)
+
+        # Conectar con el logger del scraper
+        if hasattr(self, 'scraper') and self.scraper and hasattr(self.scraper, 'logger'):
+            self.scraper.logger.addHandler(console_handler)
+
+    def toggle_console(self):
+        """Alterna entre mostrar/ocultar la consola deslizable"""
+        if self.console_collapsed.get():
+            # Mostrar consola
+            self.console_frame.pack(fill="both", expand=True, padx=10, pady=(5, 10))
+            self.console_collapsed.set(False)
+            # Cambiar ícono del botón también cambiaría aquí si se quiere
+        else:
+            # Ocultar consola
+            self.console_frame.pack_forget()
+            self.console_collapsed.set(True)
+
+    def clear_console(self):
+        """Limpia el contenido de la consola"""
+        try:
+            self.console_text.delete("1.0", "end")
+            welcome_msg = f"""🖥️ CONSOLA DE ACTIVIDAD - Keyword Scraper Pro
+{'='*60}
+📅 {time.strftime('%d/%m/%Y %H:%M:%S')}
+🎯 Listo para procesar keywords...
+
+💡 Funciones disponibles:
+• Importación de archivos TXT/CSV/JSON
+• Generación de sugerencias con Google Suggest
+• Creación de variantes long-tail
+• Limpieza avanzada de keywords
+• Análisis de competitividad SEO
+• Scraping con Google API
+• Exportación en múltiples formatos
+
+📋 Todos los procesos se mostrarán aquí en tiempo real...
+{'='*60}
+
+"""
+            self.console_text.insert("1.0", welcome_msg)
+            self.console_text.see("end")
+        except Exception as e:
+            print(f"Error limpiando consola: {e}")
+
+    def save_console_logs(self):
+        """Guarda el contenido actual de la consola en un archivo"""
+        try:
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            filename = f"consola_logs_{timestamp}.txt"
+
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".txt",
+                filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+                initialfile=filename
+            )
+
+            if file_path:
+                content = self.console_text.get("1.0", "end")
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(content)
+
+                messagebox.showinfo("Éxito", f"Logs de consola guardados en:\n{file_path}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error guardando logs: {e}")
         
     def setup_scraping_tab(self):
         """Configura la pestaña de scraping con interfaz mejorada"""

@@ -180,7 +180,244 @@ class StealthSerpScraper:
 
         self.logger.info(f"✅ Proceso completado - Total posiciones encontradas: {len(all_results)}")
         return all_results
-    
+
+    def google_suggest_scraper(self, base_keyword, country="US", language="en", max_suggestions=25):
+        """Obtiene sugerencias de Google Suggest API para completar keywords"""
+        suggestions = []
+
+        try:
+            self.logger.info(f"🔍 Obteniendo sugerencias para: '{base_keyword}'")
+
+            # URL de Google Suggest API
+            suggest_url = "https://suggestqueries.google.com/complete/search"
+
+            # Variaciones de búsqueda para obtener más sugerencias
+            variations = [base_keyword]
+
+            # Añadir variaciones con conectores comunes
+            variations.extend([
+                f"{base_keyword} o",
+                f"{base_keyword} y",
+                f"{base_keyword} con",
+                f"{base_keyword} para",
+                f"{base_keyword} en",
+                f"{base_keyword} de",
+                f"{base_keyword} como",
+                f"{base_keyword} precio",
+                f"{base_keyword} más"
+            ])
+
+            for variation in variations:
+                params = {
+                    'client': 'firefox',
+                    'q': variation,
+                    'hl': language.lower(),
+                    'gl': country.upper(),
+                    'ds': 'yt'  # También incluya búsquedas de YouTube
+                }
+
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0',
+                    'Accept': '*/*',
+                    'Accept-Language': f'{language.lower()},{language.lower()};q=0.8,en-US;q=0.5,en;q=0.3',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Cache-Control': 'max-age=0',
+                }
+
+                try:
+                    response = requests.get(
+                        suggest_url,
+                        params=params,
+                        headers=headers,
+                        timeout=self.config.get('REQUEST_TIMEOUT', 10)
+                    )
+
+                    if response.status_code == 200:
+                        try:
+                            data = response.json()
+                            if len(data) >= 2 and isinstance(data[1], list):
+                                new_suggestions = data[1]
+                                suggestions.extend(new_suggestions)
+                        except json.JSONDecodeError:
+                            self.logger.warning(f"TA respuesta de Google Suggest no es JSON válida para '{variation}'")
+                    else:
+                        self.logger.warning(f"Sugerencias HTTP {response.status_code} para '{variation}'")
+
+                except requests.RequestException as e:
+                    self.logger.warning(f"Error conectando con Google Suggest: {e}")
+                    continue
+
+                # Pequeño delay entre búsquedas
+                time.sleep(0.5)
+
+            # Limpiar y filtrar sugerencias
+            clean_suggestions = []
+            base_lower = base_keyword.lower()
+
+            for sug in suggestions:
+                if sug and isinstance(sug, str):
+                    clean_sug = sug.strip()
+                    if (len(clean_sug) > len(base_keyword) + 1 and  # Al menos 2 caracteres adicionales
+                        clean_sug.lower() != base_lower and       # No igual a la palabra base
+                        not clean_sug.lower().startswith(f"{base_lower} {base_lower}")):  # Evitar duplicados
+                        clean_suggestions.append(clean_sug)
+
+            # Eliminar duplicados manteniendo el orden
+            seen = set()
+            unique_suggestions = []
+            for sug in clean_suggestions:
+                if sug.lower() not in seen:
+                    unique_suggestions.append(sug)
+                    seen.add(sug.lower())
+
+            # Limitar cantidad
+            final_suggestions = unique_suggestions[:max_suggestions]
+
+            self.logger.info(f"✅ Obtenidas {len(final_suggestions)} sugerencias únicas de Google Suggest")
+            return final_suggestions
+
+        except Exception as e:
+            self.logger.error(f"❌ Error obteniendo sugerencias: {e}")
+            return []
+
+    def keyword_variants_generator(self, keywords, prefix_words=None, suffix_words=None, max_variants_per_keyword=20):
+        """Genera variantes long-tail de keywords base"""
+        variants = []
+        base_keywords = keywords if isinstance(keywords, list) else [keywords]
+
+        # Palabras comunes para prefixes (antes)
+        default_prefixes = [
+            "mejor", "como", "donde", "precio", "comprar", "tutorial", "guía", "ejemplos",
+            "tips", "formulario", "requisitos", "procesos", "sistema", "estándar", "normas",
+            "últimas", "nuevo", "actual", "completo", "fácil", "rápido", "sin", "con",
+            "para", "por", "gratis", "barato", "profesional", "certificado"
+        ]
+
+        # Palabras comunes para suffixes (después)
+        default_suffixes = [
+            "españa", "madrid", "barcelona", "online", "internet", "web", "app", "móvil",
+            "2025", "2024", "actual", "nuevo", "paso a paso", "gratuito", "fácil", "rápido",
+            "barato", "profesional", "certificado", "autorizado", "oficial", "sistema",
+            "completo", "integral", "total", "incluye", "descuento", "oferta", "promoción"
+        ]
+
+        prefix_words = prefix_words or default_prefixes
+        suffix_words = suffix_words or default_suffixes
+
+        self.logger.info(f"🔄 Generando variantes para {len(base_keywords)} keywords base")
+
+        for keyword in base_keywords:
+            keyword_variants = []
+
+            # Mantener la keyword original
+            keyword_variants.append(keyword)
+
+            # Generar variantes con números y cantidades
+            if len(keyword.split()) <= 2:  # Solo keywords cortas
+                keyword_variants.extend([
+                    f"{keyword} 2025",
+                    f"mejor {keyword}",
+                    f"{keyword} paso a paso",
+                    f"como {keyword}",
+                    f"donde {keyword}",
+                    f"precio {keyword}",
+                    f"{keyword} online",
+                    f"{keyword} gratuito",
+                    f"comprar {keyword}",
+                    f"{keyword} barato",
+                    f"{keyword} profesional"
+                ])
+
+            # Variantes más específicas si la keyword es muy corta
+            if len(keyword) < 10 and len(keyword.split()) == 1:
+                keyword_variants.extend([
+                    f"{keyword} en españa",
+                    f"{keyword} madrid",
+                    f"{keyword} barcelona",
+                    f"cursillo {keyword}",
+                    f"curso {keyword}",
+                    f"temario {keyword}",
+                    f"certificación {keyword}"
+                ])
+
+            # Limpiar y añadir las variantes únicas
+            clean_variants = []
+            seen = set()
+            for variant in keyword_variants:
+                clean_variant = variant.strip()
+                if clean_variant and clean_variant.lower() not in seen and len(clean_variant.split()) <= 4:  # Máximo 4 palabras
+                    clean_variants.append(clean_variant)
+                    seen.add(clean_variant.lower())
+
+            # Limitar por keyword
+            variants.extend(clean_variants[:max_variants_per_keyword])
+
+        # Eliminar duplicados globales
+        unique_variants = list(set(variants))
+
+        self.logger.info(f"✅ Generadas {len(unique_variants)} variantes únicas")
+        return unique_variants
+
+    def analyze_keyword_competitiveness(self, keyword):
+        """Analiza la competitividad de una keyword simulando métricas SEO"""
+        # Esta es una implementación simplificada ya que las APIs reales de KW research son pagas
+        score = 3.0  # Base neutral
+
+        # Análisis basado en características del keyword
+        keyword_length = len(keyword)
+        word_count = len(keyword.split())
+        has_geo_terms = any(term in keyword.lower() for term in ['españa', 'madrid', 'barcelona', 'español', 'castellano'])
+        has_commercial_intent = any(term in keyword.lower() for term in ['comprar', 'precio', 'barato', 'venta', 'oferta', 'promocia'])
+        has_long_tail = word_count >= 3
+
+        # Calcular score basado en complejidad y competitividad
+        if has_long_tail:
+            score -= 1.0  # Long-tail menos competitivo
+        if keyword_length < 10:
+            score += 1.0  # Keywords cortas más competitivas
+        if has_geo_terms:
+            score -= 0.5  # Términos geográficos suelen ser menos competitivos
+        if has_commercial_intent:
+            score += 2.0  # Intent comercial muy competitivo
+        if word_count == 1:
+            score += 3.0  # Keywords de una palabra muy competitivas
+
+        # Volumen estimado (muy grosero)
+        base_volume = 1000
+        if keyword_length < 10:
+            volume_multiplier = 5.0
+        elif keyword_length < 20:
+            volume_multiplier = 2.0
+        elif keyword_length < 30:
+            volume_multiplier = 1.0
+        else:
+            volume_multiplier = 0.5
+
+        if has_commercial_intent:
+            volume_multiplier *= 1.5
+        if has_geo_terms:
+            volume_multiplier *= 0.7
+
+        estimated_volume = int(base_volume * volume_multiplier)
+
+        # Dificultad basada en score de competencia
+        difficulty = min(100, score * 12 + (word_count - 1) * 5)
+
+        # Oportunidad = inverso de dificultad
+        opportunity = max(0, 100 - difficulty)
+        if has_long_tail:
+            opportunity += 10  # Long-tail tiene más oportunidades
+
+        return {
+            'keyword': keyword,
+            'competition_score': round(score, 1),
+            'estimated_volume': estimated_volume,
+            'difficulty': round(difficulty, 0),
+            'opportunity_score': round(opportunity, 0),
+        }
+
     def save_results(self, results, filename=None):
         """Guarda resultados en CSV y JSON"""
         if not results:
