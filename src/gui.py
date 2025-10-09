@@ -814,7 +814,6 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
 
         self.tab_projects = self.tabview.add("🏢 Proyectos")
         self.tab_config = self.tabview.add("⚙️ Configuración")
-        self.tab_keywords = self.tabview.add("🎯 Keywords Suggest")
         self.tab_my_rankings = self.tabview.add("🏆 Mi Ranking")
         self.tab_scraping = self.tabview.add("🚀 Scraping")
         self.tab_results = self.tabview.add("📊 Resultados")
@@ -825,7 +824,6 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         # Configurar cada pestaña
         self.setup_projects_tab()
         self.setup_config_tab()
-        self.setup_keywords_tab()
         self.setup_my_rankings_tab()
         self.setup_scraping_tab()
         self.setup_results_tab()
@@ -1116,57 +1114,6 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         # Verificar estado al inicio
         self.check_search_console_auth()
 
-    def setup_keywords_tab(self):
-        """Configura la pestaña de keywords suggest - solo para keywords relacionadas"""
-        main_frame = ctk.CTkFrame(self.tab_keywords)
-        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
-
-        # Título con descripción
-        title_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        title_frame.pack(fill="x", pady=(0, 10))
-        
-        ctk.CTkLabel(title_frame, text="🎯 Keywords Suggest", 
-                    font=ctk.CTkFont(size=20, weight="bold")).pack(pady=(0, 5))
-        
-        # Descripción de la pestaña
-        description_text = "Esta pestaña está optimizada exclusivamente para la gestión de keywords relacionadas y sugerencias. El campo principal de keywords para scraping se encuentra ahora en la pestaña '🚀 Scraping'."
-        ctk.CTkLabel(title_frame, text=description_text, 
-                    font=ctk.CTkFont(size=12), 
-                    text_color=COLORS['text_secondary'],
-                    wraplength=800).pack(pady=(0, 10))
-
-        # Área completa para keywords relacionadas
-        related_frame = ctk.CTkFrame(main_frame)
-        related_frame.pack(fill="both", expand=True, padx=10, pady=5)
-
-        ctk.CTkLabel(related_frame, text="🎯 Keywords Relacionadas", 
-                    font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 5))
-
-        # Campo de entrada para keyword base
-        input_frame = ctk.CTkFrame(related_frame)
-        input_frame.pack(fill="x", padx=10, pady=(0, 5))
-        
-        self.related_keyword_entry = ctk.CTkEntry(input_frame, placeholder_text="Ingresa keyword principal...")
-        self.related_keyword_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
-        
-        ctk.CTkButton(input_frame, text="🔍 Buscar", command=self.find_related_keywords, width=80).pack(side="right")
-
-        # Área de resultados de keywords relacionadas (más grande)
-        self.related_text = ctk.CTkTextbox(related_frame, height=300, wrap="word")
-        self.related_text.pack(fill="both", expand=True, padx=10, pady=(5, 0))
-        self.related_text.configure(state="disabled")
-
-        # Contador y botón de añadir
-        actions_frame = ctk.CTkFrame(related_frame)
-        actions_frame.pack(fill="x", padx=10, pady=(5, 10))
-        
-        self.related_count_label = ctk.CTkLabel(actions_frame, text="(0 sugerencias)")
-        self.related_count_label.pack(side="left")
-        
-        self.add_to_keywords_button = ctk.CTkButton(actions_frame, text="➕ Añadir a Scraping", 
-                                                  state="disabled", command=self.add_related_to_keywords,
-                                                  width=150)
-        self.add_to_keywords_button.pack(side="right")
 
     def setup_my_rankings_tab(self):
         """Configura la pestaña de análisis 'Mi Ranking' - Keywords donde posiciona mi dominio"""
@@ -1238,7 +1185,7 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         scrollbar.pack(side="right", fill="y")
 
     def setup_scraping_tab(self):
-        """Configura la pestaña de scraping con interfaz mejorada"""
+        """Configura la pestaña de scraping con interfaz mejorada - 3 COLUMNAS"""
         main_frame = ctk.CTkScrollableFrame(self.tab_scraping)
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -1249,56 +1196,52 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         ctk.CTkLabel(config_section, text="⚙️ Configuración del Scraper",
                     font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", padx=15, pady=(15, 5))
 
-        # Configuración del scraper - Layout más compacto
+        # Configuración del scraper - Layout compacto en una sola fila
         scraper_frame = ctk.CTkFrame(config_section)
         scraper_frame.pack(fill="x", padx=15, pady=(0, 15))
 
-        # Primera fila: Dominio y páginas
-        row1 = ctk.CTkFrame(scraper_frame, fg_color="transparent")
-        row1.pack(fill="x", pady=(0, 10))
+        # Fila única con todos los controles
+        controls_row = ctk.CTkFrame(scraper_frame, fg_color="transparent")
+        controls_row.pack(fill="x", pady=(0, 5))
 
         # Dominio objetivo
-        domain_frame = ctk.CTkFrame(row1, fg_color="transparent")
-        domain_frame.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        domain_frame = ctk.CTkFrame(controls_row, fg_color="transparent")
+        domain_frame.pack(side="left", padx=(0, 15))
         ctk.CTkLabel(domain_frame, text="Dominio objetivo:").pack(anchor="w", pady=(0, 2))
-        self.domain_entry = ctk.CTkEntry(domain_frame, placeholder_text="ejemplo.com", height=32)
-        self.domain_entry.pack(fill="x")
+        self.domain_entry = ctk.CTkEntry(domain_frame, placeholder_text="ejemplo.com", width=150, height=32)
+        self.domain_entry.pack()
 
         # Páginas a scrapear
-        pages_frame = ctk.CTkFrame(row1, fg_color="transparent")
-        pages_frame.pack(side="right", padx=(0, 0))
+        pages_frame = ctk.CTkFrame(controls_row, fg_color="transparent")
+        pages_frame.pack(side="left", padx=(0, 15))
         ctk.CTkLabel(pages_frame, text="Páginas:").pack(anchor="w", pady=(0, 2))
         pages_controls = ctk.CTkFrame(pages_frame, fg_color="transparent")
         pages_controls.pack(fill="x")
         self.pages_var = ctk.DoubleVar(value=1.0)
-        pages_slider = ctk.CTkSlider(pages_controls, from_=1, to=10, number_of_steps=9, variable=self.pages_var, command=self.update_pages_label, width=100, height=16)
+        pages_slider = ctk.CTkSlider(pages_controls, from_=1, to=10, number_of_steps=9, variable=self.pages_var, command=self.update_pages_label, width=80, height=16)
         pages_slider.pack(side="left", padx=(0, 8))
         self.pages_label = ctk.CTkLabel(pages_controls, text="1 págs", font=ctk.CTkFont(size=10))
         self.pages_label.pack(side="right")
 
-        # Segunda fila: País, idioma y delays
-        row2 = ctk.CTkFrame(scraper_frame, fg_color="transparent")
-        row2.pack(fill="x", pady=(0, 5))
-
         # País
-        country_frame = ctk.CTkFrame(row2, fg_color="transparent")
-        country_frame.pack(side="left", padx=(0, 10))
+        country_frame = ctk.CTkFrame(controls_row, fg_color="transparent")
+        country_frame.pack(side="left", padx=(0, 15))
         ctk.CTkLabel(country_frame, text="País:").pack(anchor="w", pady=(0, 2))
         self.country_var = ctk.StringVar(value="US")
-        country_combo = ctk.CTkComboBox(country_frame, values=["US", "ES", "FR", "DE", "IT", "UK", "BR", "MX"], variable=self.country_var, width=80, height=28)
+        country_combo = ctk.CTkComboBox(country_frame, values=["US", "ES", "FR", "DE", "IT", "UK", "BR", "MX"], variable=self.country_var, width=70, height=28)
         country_combo.pack()
 
         # Idioma
-        lang_frame = ctk.CTkFrame(row2, fg_color="transparent")
-        lang_frame.pack(side="left", padx=(0, 10))
+        lang_frame = ctk.CTkFrame(controls_row, fg_color="transparent")
+        lang_frame.pack(side="left", padx=(0, 15))
         ctk.CTkLabel(lang_frame, text="Idioma:").pack(anchor="w", pady=(0, 2))
         self.language_var = ctk.StringVar(value="en")
-        language_combo = ctk.CTkComboBox(lang_frame, values=["en", "es", "fr", "de", "it", "pt", "ru"], variable=self.language_var, width=80, height=28)
+        language_combo = ctk.CTkComboBox(lang_frame, values=["en", "es", "fr", "de", "it", "pt", "ru"], variable=self.language_var, width=70, height=28)
         language_combo.pack()
 
         # Delays
-        delays_frame = ctk.CTkFrame(row2, fg_color="transparent")
-        delays_frame.pack(side="left", padx=(0, 10))
+        delays_frame = ctk.CTkFrame(controls_row, fg_color="transparent")
+        delays_frame.pack(side="left", padx=(0, 15))
         ctk.CTkLabel(delays_frame, text="Delays (seg):", font=ctk.CTkFont(size=10)).pack(anchor="w", pady=(0, 2))
         delays_inputs = ctk.CTkFrame(delays_frame, fg_color="transparent")
         delays_inputs.pack()
@@ -1314,23 +1257,65 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         # Línea separadora
         ctk.CTkLabel(main_frame, text="-"*60).pack(pady=10)
 
-        # === ÁREA DE KEYWORDS PARA SCRAPING ===
+        # === ÁREA DE KEYWORDS PARA SCRAPING - 3 COLUMNAS ===
         keywords_section = ctk.CTkFrame(main_frame)
-        keywords_section.pack(fill="x", pady=(0, 10))
+        keywords_section.pack(fill="both", expand=True, pady=(0, 10))
 
-        ctk.CTkLabel(keywords_section, text="📝 Keywords para Scraping", 
-                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", padx=15, pady=(15, 5))
+        # Configurar grid para 3 columnas
+        keywords_section.grid_columnconfigure(0, weight=1)
+        keywords_section.grid_columnconfigure(1, weight=1)
+        keywords_section.grid_columnconfigure(2, weight=1)
+
+        # === COLUMNA 1: Keywords Suggest ===
+        col1 = ctk.CTkFrame(keywords_section)
+        col1.grid(row=0, column=0, padx=(15, 7), pady=15, sticky="nsew")
+
+        ctk.CTkLabel(col1, text="🎯 Keywords Suggest", 
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", padx=10, pady=(10, 5))
+
+        # Campo de entrada para keyword base
+        input_frame = ctk.CTkFrame(col1)
+        input_frame.pack(fill="x", padx=10, pady=(0, 5))
+        
+        self.scraping_related_keyword_entry = ctk.CTkEntry(input_frame, placeholder_text="Ingresa keyword principal...")
+        self.scraping_related_keyword_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        
+        ctk.CTkButton(input_frame, text="🔍 Buscar", command=self.find_related_keywords_scraping, width=80).pack(side="right")
+
+        # Área de resultados de keywords relacionadas
+        self.scraping_related_text = ctk.CTkTextbox(col1, height=120, wrap="word")
+        self.scraping_related_text.pack(fill="both", expand=True, padx=10, pady=(5, 0))
+        self.scraping_related_text.configure(state="disabled")
+
+        # Contador y botón de añadir
+        actions_frame = ctk.CTkFrame(col1)
+        actions_frame.pack(fill="x", padx=10, pady=(5, 10))
+        
+        self.scraping_related_count_label = ctk.CTkLabel(actions_frame, text="(0 sugerencias)")
+        self.scraping_related_count_label.pack(side="left")
+        
+        self.scraping_add_to_keywords_button = ctk.CTkButton(actions_frame, text="➕ Añadir", 
+                                                          state="disabled", command=self.add_related_to_keywords_scraping,
+                                                          width=100)
+        self.scraping_add_to_keywords_button.pack(side="right")
+
+        # === COLUMNA 2: Keywords para Scraping ===
+        col2 = ctk.CTkFrame(keywords_section)
+        col2.grid(row=0, column=1, padx=(7, 7), pady=15, sticky="nsew")
+
+        ctk.CTkLabel(col2, text="📝 Keywords para Scraping", 
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", padx=10, pady=(10, 5))
 
         # Área de edición de keywords
-        keywords_frame = ctk.CTkFrame(keywords_section)
-        keywords_frame.pack(fill="x", padx=15, pady=(0, 10))
+        keywords_frame = ctk.CTkFrame(col2)
+        keywords_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
         ctk.CTkLabel(keywords_frame, text="Keywords (una por línea):", 
                     font=ctk.CTkFont(weight="bold")).pack(anchor="w")
         
         # Textbox para keywords
         self.main_keywords_text = ctk.CTkTextbox(keywords_frame, height=120, font=ctk.CTkFont(family="Consolas", size=11))
-        self.main_keywords_text.pack(fill="x", pady=(5, 5))
+        self.main_keywords_text.pack(fill="both", expand=True, pady=(5, 5))
 
         # Contador de keywords
         self.keywords_count_label = ctk.CTkLabel(keywords_frame, text="0 keywords", font=ctk.CTkFont(size=10))
@@ -1340,11 +1325,51 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         keywords_buttons_frame = ctk.CTkFrame(keywords_frame)
         keywords_buttons_frame.pack(fill="x", pady=(0, 5))
 
-        ctk.CTkButton(keywords_buttons_frame, text="📁 Cargar Archivo", command=self.load_keywords_file, width=120).pack(side="left", padx=2)
-        ctk.CTkButton(keywords_buttons_frame, text="🔍 Último Scan SC", command=self.show_last_sc_scan_selector, fg_color=COLORS['accent'], width=120).pack(side="left", padx=2)
-        ctk.CTkButton(keywords_buttons_frame, text="☑️ Selector", command=self.show_keyword_selector, fg_color=COLORS['warning'], width=100).pack(side="left", padx=2)
-        ctk.CTkButton(keywords_buttons_frame, text="🧹 Limpiar Duplicados", command=self.deduplicate_keywords, width=140).pack(side="left", padx=2)
-        ctk.CTkButton(keywords_buttons_frame, text="💾 Guardar", command=self.save_keywords, width=100).pack(side="left", padx=2)
+        ctk.CTkButton(keywords_buttons_frame, text="📁 Cargar", command=self.load_keywords_file, width=80).pack(side="left", padx=2)
+        ctk.CTkButton(keywords_buttons_frame, text="🔍 SC", command=self.show_last_sc_scan_selector, fg_color=COLORS['accent'], width=60).pack(side="left", padx=2)
+        ctk.CTkButton(keywords_buttons_frame, text="☑️", command=self.show_keyword_selector, fg_color=COLORS['warning'], width=40).pack(side="left", padx=2)
+        ctk.CTkButton(keywords_buttons_frame, text="🧹", command=self.deduplicate_keywords, width=40).pack(side="left", padx=2)
+        ctk.CTkButton(keywords_buttons_frame, text="💾", command=self.save_keywords, width=40).pack(side="left", padx=2)
+
+        # === COLUMNA 3: Search Console Keywords ===
+        col3 = ctk.CTkFrame(keywords_section)
+        col3.grid(row=0, column=2, padx=(7, 15), pady=15, sticky="nsew")
+
+        ctk.CTkLabel(col3, text="🔍 Search Console Keywords", 
+                    font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", padx=10, pady=(10, 5))
+
+        # Información del proyecto actual
+        sc_info_frame = ctk.CTkFrame(col3)
+        sc_info_frame.pack(fill="x", padx=10, pady=(0, 5))
+        
+        self.sc_current_project_label = ctk.CTkLabel(sc_info_frame, text="Proyecto: No seleccionado", font=ctk.CTkFont(size=11))
+        self.sc_current_project_label.pack(anchor="w")
+        
+        self.sc_last_scan_label = ctk.CTkLabel(sc_info_frame, text="Último scan: No disponible", font=ctk.CTkFont(size=10), text_color=COLORS['text_secondary'])
+        self.sc_last_scan_label.pack(anchor="w")
+
+        # Botones de acción para SC
+        sc_buttons_frame = ctk.CTkFrame(col3)
+        sc_buttons_frame.pack(fill="x", padx=10, pady=(0, 5))
+        
+        ctk.CTkButton(sc_buttons_frame, text="🔄 Obtener", command=self.load_sc_keywords_from_scraping, width=90).pack(side="left", padx=2)
+        ctk.CTkButton(sc_buttons_frame, text="📊 Ver", command=self.show_sc_keywords_selector, fg_color=COLORS['info'], width=70).pack(side="left", padx=2)
+        ctk.CTkButton(sc_buttons_frame, text="➕ Añadir", command=self.add_sc_keywords_to_scraping, fg_color=COLORS['success'], width=80).pack(side="left", padx=2)
+
+        # Área de keywords de SC
+        self.sc_keywords_text = ctk.CTkTextbox(col3, height=120, wrap="word")
+        self.sc_keywords_text.pack(fill="both", expand=True, padx=10, pady=(5, 0))
+        self.sc_keywords_text.configure(state="disabled")
+
+        # Contador de keywords SC
+        sc_stats_frame = ctk.CTkFrame(col3)
+        sc_stats_frame.pack(fill="x", padx=10, pady=(5, 10))
+        
+        self.sc_keywords_count_label = ctk.CTkLabel(sc_stats_frame, text="0 keywords disponibles")
+        self.sc_keywords_count_label.pack(side="left")
+        
+        self.sc_last_update_label = ctk.CTkLabel(sc_stats_frame, text="", font=ctk.CTkFont(size=9), text_color=COLORS['text_secondary'])
+        self.sc_last_update_label.pack(side="right")
 
         # Línea separadora
         ctk.CTkLabel(main_frame, text="-"*60).pack(pady=10)
@@ -3068,6 +3093,481 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
             self.clear_related_keywords()
         else:
             messagebox.showinfo("Información", "Todas las sugerencias ya están en tu lista de keywords")
+
+    # ========== MÉTODOS PARA KEYWORDS SUGGEST EN SCRAPING ==========
+
+    def find_related_keywords_scraping(self):
+        """Busca keywords relacionadas desde la pestaña de Scraping"""
+        keyword = self.scraping_related_keyword_entry.get().strip()
+
+        if not keyword:
+            messagebox.showwarning("Advertencia", "Ingresa una keyword principal")
+            return
+
+        # Validar credenciales de Google API
+        if not self.api_key_var.get().strip() or not self.search_engine_id_var.get().strip():
+            messagebox.showwarning("Error", "Configura tus credenciales de Google API primero\n\nVe a la pestaña '🔐 Google API'")
+            return
+
+        self.scraping_related_text.configure(state="normal")
+        self.scraping_related_text.delete("1.0", "end")
+        self.scraping_related_text.insert("1.0", "🔍 Buscando sugerencias con Google Suggest...\n\n")
+        self.scraping_related_text.configure(state="disabled")
+
+        def search_thread():
+            try:
+                # Crear instancia del scraper
+                from config.settings import config
+                scraper_config = config.copy()
+                scraper_config.update({
+                    'DEFAULT_COUNTRY': self.country_var.get(),
+                    'DEFAULT_LANGUAGE': self.language_var.get()
+                })
+
+                scraper = StealthSerpScraper(scraper_config)
+
+                # Buscar sugerencias usando múltiples variaciones
+                search_variations = [
+                    keyword, f"{keyword} ", f"{keyword} o", f"{keyword} c",
+                    f"{keyword} d", f"{keyword} p", f"{keyword} q"
+                ]
+
+                all_suggestions = []
+
+                for i, variation in enumerate(search_variations, 1):
+                    try:
+                        suggests = scraper.google_suggest_scraper(
+                            variation,
+                            country=self.country_var.get(),
+                            language=self.language_var.get()
+                        )
+
+                        # Filtrar sugerencias relevantes
+                        relevant = [s for s in suggests if
+                                  s.lower().startswith(keyword.lower()) and
+                                  s.lower() != keyword.lower() and
+                                  len(s) > len(keyword) + 2]
+
+                        all_suggestions.extend(relevant[:10])  # Máximo 10 por variación
+
+                    except Exception as e:
+                        continue
+
+                # Filtrar duplicados y mostrar resultados
+                unique_suggestions = list(set(all_suggestions))[:25]  # Máximo 25 total
+
+                self.scraping_related_text.configure(state="normal")
+                self.scraping_related_text.delete("1.0", "end")
+
+                if unique_suggestions:
+                    result_text = f"🎯 KEYWORDS RELACIONADAS - '{keyword}'\n"
+                    result_text += f"📅 {time.strftime('%d/%m/%Y %H:%M:%S')}\n"
+                    result_text += f"📊 Encontradas: {len(unique_suggestions)} sugerencias\n\n"
+
+                    for i, sug in enumerate(unique_suggestions, 1):
+                        result_text += f"{i:2d}. {sug}\n"
+
+                    result_text += f"\n💡 Para usar estas keywords, haz click en '➕ Añadir'"
+
+                    self.scraping_related_text.insert("1.0", result_text)
+                    self.scraping_related_count_label.configure(text=f"({len(unique_suggestions)} sugerencias)")
+                    self.scraping_add_to_keywords_button.configure(state="normal")
+                    self.scraping_related_suggestions = unique_suggestions
+
+                    self.log_message(f"✅ Encontradas {len(unique_suggestions)} keywords relacionadas para '{keyword}'")
+                else:
+                    self.scraping_related_text.insert("1.0", f"❌ No se encontraron sugerencias relacionadas para '{keyword}'\n\n💡 Intenta con una keyword más popular o verifica tu conexión.")
+                    self.scraping_related_count_label.configure(text="(0 sugerencias)")
+                    self.scraping_add_to_keywords_button.configure(state="disabled")
+
+            except Exception as e:
+                self.scraping_related_text.configure(state="normal")
+                self.scraping_related_text.delete("1.0", "end")
+                self.scraping_related_text.insert("1.0", f"❌ Error durante la búsqueda:\n\n{str(e)}\n\n💡 Verifica tu conexión a internet.")
+                self.scraping_related_count_label.configure(text="(error)")
+                self.scraping_add_to_keywords_button.configure(state="disabled")
+
+            finally:
+                self.scraping_related_text.configure(state="disabled")
+
+        # Ejecutar en hilo separado
+        threading.Thread(target=search_thread, daemon=True).start()
+
+    def add_related_to_keywords_scraping(self):
+        """Añade las keywords relacionadas desde la pestaña de Scraping a la lista principal"""
+        if not hasattr(self, 'scraping_related_suggestions') or not self.scraping_related_suggestions:
+            messagebox.showwarning("Aviso", "No hay sugerencias para añadir")
+            return
+
+        current_keywords = self.get_current_keywords()
+        existing_keywords = set(kw.lower() for kw in current_keywords)
+
+        new_keywords = []
+        for suggestion in self.scraping_related_suggestions:
+            if suggestion.lower() not in existing_keywords:
+                new_keywords.append(suggestion)
+                existing_keywords.add(suggestion.lower())
+
+        if new_keywords:
+            combined_keywords = current_keywords + new_keywords
+            self.set_current_keywords(combined_keywords)
+            self.update_keywords_count()
+
+            messagebox.showinfo("Éxito", f"✅ Añadidas {len(new_keywords)} keywords nuevas a la lista")
+            self.log_message(f"➕ Añadidas {len(new_keywords)} keywords relacionadas desde Scraping")
+            
+            # Limpiar el área de sugerencias después de añadir
+            self.scraping_related_text.configure(state="normal")
+            self.scraping_related_text.delete("1.0", "end")
+            self.scraping_related_text.configure(state="disabled")
+            self.scraping_related_count_label.configure(text="(0 sugerencias)")
+            self.scraping_add_to_keywords_button.configure(state="disabled")
+            self.scraping_related_keyword_entry.delete(0, "end")
+        else:
+            messagebox.showinfo("Información", "Todas las sugerencias ya están en tu lista de keywords")
+
+    # ========== MÉTODOS PARA SEARCH CONSOLE EN SCRAPING ==========
+
+    def load_sc_keywords_from_scraping(self):
+        """Carga las keywords del último scan de Search Console desde la pestaña de Scraping"""
+        try:
+            # Verificar autenticación
+            if not self.search_console_api.is_authenticated():
+                messagebox.showwarning("Advertencia",
+                                     "Debes autenticarte con Search Console primero.\n\n"
+                                     "Ve a la pestaña '🔍 Search Console' para autenticarte.")
+                return
+
+            # Obtener proyecto activo
+            active_project = self.project_manager.get_active_project()
+            if not active_project:
+                messagebox.showwarning("Advertencia", "No hay proyecto activo seleccionado")
+                return
+
+            if not active_project.get('search_console_property'):
+                messagebox.showwarning("Advertencia",
+                                     "Este proyecto no tiene configurada una URL de Search Console.\n\n"
+                                     "Ve a '🏢 Proyectos' y edita el proyecto para agregar la URL.")
+                return
+
+            self.sc_current_project_label.configure(text=f"Proyecto: {active_project['name']}")
+            self.sc_last_scan_label.configure(text="Último scan: Obteniendo datos...")
+            self.sc_keywords_text.configure(state="normal")
+            self.sc_keywords_text.delete("1.0", "end")
+            self.sc_keywords_text.insert("1.0", "🔄 Obteniendo keywords de Search Console...\n\n")
+            self.sc_keywords_text.configure(state="disabled")
+
+            def load_thread():
+                try:
+                    site_url = active_project['search_console_property']
+                    
+                    # Obtener datos de Search Console (últimos 30 días, top 100 keywords)
+                    keywords_data = self.search_console_api.get_keywords_with_enriched_data(
+                        site_url, days=30, limit=100
+                    )
+
+                    if not keywords_data:
+                        self.sc_keywords_text.configure(state="normal")
+                        self.sc_keywords_text.delete("1.0", "end")
+                        self.sc_keywords_text.insert("1.0", 
+                            "❌ No se encontraron datos en Search Console\n\n"
+                            "Posibles causas:\n"
+                            "• No hay datos en los últimos 30 días\n"
+                            "• El sitio no está recibiendo tráfico\n"
+                            "• La propiedad no está correctamente configurada"
+                        )
+                        self.sc_keywords_text.configure(state="disabled")
+                        self.sc_keywords_count_label.configure(text="0 keywords disponibles")
+                        self.sc_last_update_label.configure(text="")
+                        return
+
+                    # Ordenar por clicks (más relevantes primero)
+                    keywords_data_sorted = sorted(keywords_data, key=lambda x: x.get('clicks', 0), reverse=True)
+
+                    # Actualizar la interfaz
+                    self.sc_keywords_text.configure(state="normal")
+                    self.sc_keywords_text.delete("1.0", "end")
+
+                    result_text = f"🔍 ÚLTIMO SCAN SEARCH CONSOLE\n"
+                    result_text += f"📅 {time.strftime('%d/%m/%Y %H:%M:%S')}\n"
+                    result_text += f"📊 {len(keywords_data_sorted)} keywords encontradas\n\n"
+
+                    for i, kw_data in enumerate(keywords_data_sorted[:50], 1):  # Mostrar top 50
+                        keyword = kw_data['keyword']
+                        clicks = kw_data.get('clicks', 0)
+                        impressions = kw_data.get('impressions', 0)
+                        ctr = kw_data.get('ctr', 0) * 100
+                        position = kw_data.get('position', 0)
+
+                        result_text += f"{i:2d}. {keyword}\n"
+                        result_text += f"    👁️ {impressions} | 👆 {clicks} | 📊 {ctr:.1f}% | 🎯 {position:.1f}\n\n"
+
+                    if len(keywords_data_sorted) > 50:
+                        result_text += f"... y {len(keywords_data_sorted) - 50} más\n\n"
+
+                    result_text += "💡 Haz click en '➕ Añadir' para usar estas keywords en Scraping"
+
+                    self.sc_keywords_text.insert("1.0", result_text)
+                    self.sc_keywords_text.configure(state="disabled")
+
+                    # Actualizar contadores
+                    self.sc_keywords_count_label.configure(text=f"{len(keywords_data_sorted)} keywords disponibles")
+                    self.sc_last_update_label.configure(text=f"Actualizado: {time.strftime('%H:%M:%S')}")
+                    self.sc_last_scan_label.configure(text=f"Último scan: {time.strftime('%d/%m/%Y %H:%M')}")
+
+                    # Guardar datos para uso posterior
+                    self.scraping_sc_keywords = keywords_data_sorted
+
+                    self.log_message(f"✅ Cargadas {len(keywords_data_sorted)} keywords de Search Console")
+
+                except Exception as e:
+                    self.sc_keywords_text.configure(state="normal")
+                    self.sc_keywords_text.delete("1.0", "end")
+                    self.sc_keywords_text.insert("1.0", 
+                        f"❌ Error obteniendo datos:\n\n{str(e)}\n\n"
+                        "💡 Verifica tu conexión y autenticación"
+                    )
+                    self.sc_keywords_text.configure(state="disabled")
+                    self.sc_keywords_count_label.configure(text="Error al cargar")
+                    self.log_message(f"❌ Error cargando keywords SC: {str(e)}")
+
+            # Ejecutar en hilo separado
+            threading.Thread(target=load_thread, daemon=True).start()
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error iniciando carga:\n\n{str(e)}")
+
+    def show_sc_keywords_selector(self):
+        """Muestra selector de keywords de Search Console para selección manual"""
+        try:
+            if not hasattr(self, 'scraping_sc_keywords') or not self.scraping_sc_keywords:
+                messagebox.showwarning("Advertencia", 
+                                     "No hay keywords de Search Console cargadas.\n\n"
+                                     "Primero haz click en '🔄 Obtener' para cargar las keywords.")
+                return
+
+            # Crear ventana de selección
+            selector_window = ctk.CTkToplevel(self.root)
+            selector_window.title("🔍 Selector de Keywords - Search Console")
+            selector_window.geometry("900x700")
+            selector_window.transient(self.root)
+            selector_window.grab_set()
+
+            main_frame = ctk.CTkFrame(selector_window)
+            main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+            # Header
+            header_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            header_frame.pack(fill="x", pady=(0, 15))
+
+            ctk.CTkLabel(
+                header_frame,
+                text="🔍 Seleccionar Keywords de Search Console",
+                font=ctk.CTkFont(size=18, weight="bold")
+            ).pack(side="left")
+
+            # Contador
+            count_label = ctk.CTkLabel(
+                header_frame,
+                text=f"Total: {len(self.scraping_sc_keywords)}",
+                font=ctk.CTkFont(size=14)
+            )
+            count_label.pack(side="right")
+
+            # Frame de búsqueda/filtro
+            search_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            search_frame.pack(fill="x", pady=(0, 10))
+
+            search_var = tk.StringVar()
+            search_entry = ctk.CTkEntry(
+                search_frame,
+                placeholder_text="🔍 Filtrar keywords...",
+                textvariable=search_var
+            )
+            search_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
+
+            # Lista de keywords con checkboxes
+            list_frame = ctk.CTkScrollableFrame(main_frame, height=400)
+            list_frame.pack(fill="both", expand=True, pady=(10, 15))
+
+            # Variables y checkboxes
+            checkbox_vars = {}
+            checkbox_widgets = []
+
+            def filter_keywords(*args):
+                search_text = search_var.get().lower()
+                for widget in checkbox_widgets:
+                    kw_text = widget.cget("text").lower()
+                    if search_text in kw_text:
+                        widget.pack(anchor="w", pady=2, fill="x")
+                    else:
+                        widget.pack_forget()
+
+            search_var.trace("w", filter_keywords)
+
+            for kw_data in self.scraping_sc_keywords:
+                keyword = kw_data['keyword']
+                clicks = kw_data.get('clicks', 0)
+                impressions = kw_data.get('impressions', 0)
+                ctr = kw_data.get('ctr', 0) * 100
+                position = kw_data.get('position', 0)
+
+                var = tk.BooleanVar(value=False)
+                checkbox_vars[keyword] = var
+
+                # Crear checkbox con estadísticas
+                checkbox_frame = ctk.CTkFrame(list_frame)
+                checkbox_frame.pack(fill="x", pady=2)
+
+                cb = ctk.CTkCheckBox(
+                    checkbox_frame,
+                    text=f"{keyword}",
+                    variable=var,
+                    font=ctk.CTkFont(size=12, weight="bold")
+                )
+                cb.pack(side="left", anchor="w", padx=(10, 5))
+
+                # Estadísticas
+                stats_text = f"👁️ {impressions} | 👆 {clicks} | 📊 {ctr:.1f}% | 🎯 {position:.1f}"
+                stats_label = ctk.CTkLabel(
+                    checkbox_frame,
+                    text=stats_text,
+                    font=ctk.CTkFont(size=10),
+                    text_color=COLORS['text_secondary']
+                )
+                stats_label.pack(side="left", padx=(0, 10))
+
+                checkbox_widgets.append(checkbox_frame)
+
+            # Botones de selección rápida
+            quick_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            quick_frame.pack(fill="x", pady=(0, 10))
+
+            def select_top_clicks():
+                select_none()
+                top_keywords = sorted(self.scraping_sc_keywords, key=lambda x: x.get('clicks', 0), reverse=True)[:20]
+                for kw_data in top_keywords:
+                    if kw_data['keyword'] in checkbox_vars:
+                        checkbox_vars[kw_data['keyword']].set(True)
+
+            def select_top_impressions():
+                select_none()
+                top_keywords = sorted(self.scraping_sc_keywords, key=lambda x: x.get('impressions', 0), reverse=True)[:20]
+                for kw_data in top_keywords:
+                    if kw_data['keyword'] in checkbox_vars:
+                        checkbox_vars[kw_data['keyword']].set(True)
+
+            def select_best_ctr():
+                select_none()
+                # Filtrar keywords con al menos 10 impresiones
+                filtered = [kw for kw in self.scraping_sc_keywords if kw.get('impressions', 0) >= 10]
+                top_keywords = sorted(filtered, key=lambda x: x.get('ctr', 0), reverse=True)[:20]
+                for kw_data in top_keywords:
+                    if kw_data['keyword'] in checkbox_vars:
+                        checkbox_vars[kw_data['keyword']].set(True)
+
+            def select_all():
+                for var in checkbox_vars.values():
+                    var.set(True)
+
+            def select_none():
+                for var in checkbox_vars.values():
+                    var.set(False)
+
+            ctk.CTkButton(quick_frame, text="🔥 Top Clicks", command=select_top_clicks, width=120).pack(side="left", padx=5)
+            ctk.CTkButton(quick_frame, text="👁️ Top Impresiones", command=select_top_impressions, width=120).pack(side="left", padx=5)
+            ctk.CTkButton(quick_frame, text="📊 Mejor CTR", command=select_best_ctr, width=120).pack(side="left", padx=5)
+            ctk.CTkButton(quick_frame, text="✅ Todas", command=select_all, width=100).pack(side="left", padx=5)
+            ctk.CTkButton(quick_frame, text="❌ Ninguna", command=select_none, width=100).pack(side="left", padx=5)
+
+            # Botones finales
+            buttons_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            buttons_frame.pack(fill="x", pady=(10, 0))
+
+            def apply_selection():
+                selected = [kw for kw, var in checkbox_vars.items() if var.get()]
+
+                if not selected:
+                    messagebox.showwarning("Sin selección", "No has seleccionado ninguna keyword")
+                    return
+
+                # Mostrar resumen y confirmar
+                if messagebox.askyesno("Confirmar", 
+                                      f"¿Añadir {len(selected)} keywords seleccionadas a la lista de scraping?\n\n"
+                                      f"Se añadirán a las keywords actuales."):
+                    current_keywords = self.get_current_keywords()
+                    existing_keywords = set(kw.lower() for kw in current_keywords)
+
+                    new_keywords = []
+                    for keyword in selected:
+                        if keyword.lower() not in existing_keywords:
+                            new_keywords.append(keyword)
+                            existing_keywords.add(keyword.lower())
+
+                    if new_keywords:
+                        combined_keywords = current_keywords + new_keywords
+                        self.set_current_keywords(combined_keywords)
+                        self.update_keywords_count()
+
+                        messagebox.showinfo("Éxito", f"✅ Añadidas {len(new_keywords)} keywords nuevas a la lista")
+                        self.log_message(f"➕ Añadidas {len(new_keywords)} keywords de Search Console")
+                    else:
+                        messagebox.showinfo("Información", "Todas las keywords seleccionadas ya están en tu lista")
+
+                    selector_window.destroy()
+
+            ctk.CTkButton(
+                buttons_frame,
+                text=f"✅ Aplicar Selección",
+                command=apply_selection,
+                fg_color=COLORS['success'],
+                width=200
+            ).pack(side="left", padx=5)
+
+            ctk.CTkButton(
+                buttons_frame,
+                text="❌ Cancelar",
+                command=selector_window.destroy,
+                fg_color=COLORS['error'],
+                width=150
+            ).pack(side="left", padx=5)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error abriendo selector de SC:\n\n{str(e)}")
+            self.log_message(f"❌ Error en selector SC: {str(e)}")
+
+    def add_sc_keywords_to_scraping(self):
+        """Añade todas las keywords de Search Console a la lista de scraping"""
+        try:
+            if not hasattr(self, 'scraping_sc_keywords') or not self.scraping_sc_keywords:
+                messagebox.showwarning("Advertencia", 
+                                     "No hay keywords de Search Console cargadas.\n\n"
+                                     "Primero haz click en '🔄 Obtener' para cargar las keywords.")
+                return
+
+            current_keywords = self.get_current_keywords()
+            existing_keywords = set(kw.lower() for kw in current_keywords)
+
+            new_keywords = []
+            for kw_data in self.scraping_sc_keywords:
+                keyword = kw_data['keyword']
+                if keyword.lower() not in existing_keywords:
+                    new_keywords.append(keyword)
+                    existing_keywords.add(keyword.lower())
+
+            if new_keywords:
+                combined_keywords = current_keywords + new_keywords
+                self.set_current_keywords(combined_keywords)
+                self.update_keywords_count()
+
+                messagebox.showinfo("Éxito", f"✅ Añadidas {len(new_keywords)} keywords de Search Console a la lista")
+                self.log_message(f"➕ Añadidas {len(new_keywords)} keywords de Search Console")
+            else:
+                messagebox.showinfo("Información", "Todas las keywords de Search Console ya están en tu lista")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error añadiendo keywords:\n\n{str(e)}")
+            self.log_message(f"❌ Error añadiendo keywords SC: {str(e)}")
 
     # ========== MÉTODOS PARA MI RANKING ==========
 
