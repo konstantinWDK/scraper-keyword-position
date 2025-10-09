@@ -9,6 +9,7 @@ Uso: python run_gui.py
 import sys
 import os
 import argparse
+from sys import exit
 
 def main():
     """Función principal - lanza la interfaz gráfica"""

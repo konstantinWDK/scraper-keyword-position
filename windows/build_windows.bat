@@ -9,6 +9,7 @@ python --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo ERROR: Python no está instalado o no está en el PATH
     echo Por favor instala Python 3.8+ desde https://python.org
+    echo IMPORTANTE: Durante la instalación, marcar "Add Python to PATH"
     pause
     exit /b 1
 )
@@ -16,8 +17,47 @@ if %errorlevel% neq 0 (
 echo ✓ Python encontrado
 echo.
 
+REM Verificar que tkinter está instalado (necesario para GUI)
+python -c "import tkinter" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo ERROR: tkinter no está disponible
+    echo tkinter viene incluido con Python en Windows
+    echo Si no funciona, reinstala Python y asegúrate de que tkinter esté incluido
+    pause
+    exit /b 1
+)
+echo ✓ tkinter encontrado
+echo.
+
 REM Cambiar al directorio padre (donde está requirements.txt)
 cd /d "%~dp0\.."
+
+REM Crear entorno virtual para evitar conflictos
+echo Creando entorno virtual...
+python -m venv build_env
+if %errorlevel% neq 0 (
+    echo ERROR: Falló la creación del entorno virtual
+    pause
+    exit /b 1
+)
+
+REM Activar entorno virtual
+call build_env\Scripts\activate.bat
+
+echo ✓ Entorno virtual creado y activado
+echo.
+
+REM Actualizar pip
+echo Actualizando pip...
+python -m pip install --upgrade pip
+if %errorlevel% neq 0 (
+    echo ERROR: Falló la actualización de pip
+    pause
+    exit /b 1
+)
+
+echo ✓ pip actualizado
+echo.
 
 REM Instalar dependencias
 echo Instalando dependencias...
@@ -48,7 +88,7 @@ cd windows
 
 REM Compilar la aplicación
 echo Compilando aplicación...
-pyinstaller scraper.spec
+pyinstaller scraper.spec --clean
 if %errorlevel% neq 0 (
     echo ERROR: Falló la compilación
     pause
@@ -62,4 +102,38 @@ echo ========================================
 echo.
 echo El ejecutable se encuentra en: dist\KeywordPositionScraper.exe
 echo.
+
+REM Crear script de lanzamiento para usuario
+echo Creando script de lanzamiento para usuario...
+(
+echo @echo off
+echo rem Script de lanzamiento para Keyword Position Scraper
+echo rem Este script puede ejecutarse desde cualquier ubicación
+echo.
+echo set "SCRIPT_DIR=%%~dp0"
+echo "%%SCRIPT_DIR%%windows\dist\KeywordPositionScraper.exe"
+) > ..\run_scraper.bat
+
+echo ✓ Script de lanzamiento creado: run_scraper.bat
+echo.
+echo Para ejecutar la aplicación:
+echo   run_scraper.bat
+echo.
+echo O directamente:
+echo   windows\dist\KeywordPositionScraper.exe
+echo.
+echo La aplicación está lista para usar a nivel de usuario.
+echo.
+
+REM Desactivar entorno virtual
+call deactivate
+
+REM Preguntar si eliminar entorno virtual
+echo ¿Deseas eliminar el entorno virtual de compilación? (s/N)
+set /p response=
+if /i "%response%"=="s" (
+    rmdir /s /q ..\build_env
+    echo ✓ Entorno virtual eliminado
+)
+
 pause
