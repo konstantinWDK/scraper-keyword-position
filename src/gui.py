@@ -1370,16 +1370,13 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         self.sc_last_update_label = ctk.CTkLabel(sc_stats_frame, text="", font=ctk.CTkFont(size=9), text_color=COLORS['text_secondary'])
         self.sc_last_update_label.pack(side="right")
 
-        # Línea separadora
-        ctk.CTkLabel(main_frame, text="-"*60).pack(pady=10)
-
-        # Título principal con información de estado
-        header_frame = ctk.CTkFrame(main_frame)
-        header_frame.pack(fill="x", pady=(0, 5))
+        # === SECCIÓN DE CONTROL DE SCRAPING (ARRIBA DEL TODO) ===
+        control_section = ctk.CTkFrame(main_frame)
+        control_section.pack(fill="x", pady=(0, 10))
 
         # Título y estado
-        title_frame = ctk.CTkFrame(header_frame)
-        title_frame.pack(fill="x", pady=(0, 5))
+        title_frame = ctk.CTkFrame(control_section)
+        title_frame.pack(fill="x", padx=10, pady=(10, 5))
 
         title_label = ctk.CTkLabel(title_frame, text="🚀 Scraping en Tiempo Real", font=ctk.CTkFont(size=20, weight="bold"))
         title_label.pack(side="left")
@@ -1388,55 +1385,22 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         self.scraping_status_label = ctk.CTkLabel(title_frame, text="⏸️ Listo para comenzar", font=ctk.CTkFont(size=14, weight="bold"), text_color="orange")
         self.scraping_status_label.pack(side="right")
 
-        # Información de configuración
-        config_info = f"📊 Keywords: {len(self.keywords_list)} | 🎯 Dominio: {self.domain_entry.get() or 'Todos'} | 🌍 País: {self.country_var.get()} | 📄 Páginas: {int(self.pages_var.get())}"
-        self.config_info_label = ctk.CTkLabel(header_frame, text=config_info, font=ctk.CTkFont(size=11))
-        self.config_info_label.pack(anchor="w")
-
-        # Inicializar variables de costos que usa update_cost_display
-        self.total_consults = 0
-        self.total_cost = 0.0
-        self.today_consults = 0
-
-        # Panel de costos mejorado
-        costs_panel = ctk.CTkFrame(main_frame)
-        costs_panel.pack(fill="x", padx=10, pady=(0, 10))
-
-        ctk.CTkLabel(costs_panel, text="💰 Calculadora de Costos Google API", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(10,5))
-
-        # Costos en filas separadas para mejor visualización
-        costs_grid = ctk.CTkFrame(costs_panel)
-        costs_grid.pack(fill="x", pady=(0, 10))
-
-        self.free_consults_label = ctk.CTkLabel(costs_grid, text="🟢 Consultas GRATIS (100/día): 100 restantes", font=ctk.CTkFont(size=12))
-        self.free_consults_label.pack(anchor="w", pady=(0, 5))
-
-        self.paid_consults_label = ctk.CTkLabel(costs_grid, text="🔴 Consultas PAGAS: $0.00", font=ctk.CTkFont(size=12))
-        self.paid_consults_label.pack(anchor="w", pady=(0, 5))
-
-        self.total_cost_label = ctk.CTkLabel(costs_grid, text="💸 Costo total estimado: $0.00", font=ctk.CTkFont(size=14, weight="bold"))
-        self.total_cost_label.pack(anchor="w")
-
-        # Información sobre cuotas
-        quota_info = ctk.CTkLabel(costs_panel, text="ℹ️ 100 consultas gratis por día | $5 por cada 1000 consultas adicionales", font=ctk.CTkFont(size=10), text_color="gray")
-        quota_info.pack(anchor="w", pady=(5, 10))
-
         # Botones de control mejorados
-        buttons_frame = ctk.CTkFrame(main_frame)
-        buttons_frame.pack(fill="x", padx=10, pady=(0, 10))
+        buttons_frame = ctk.CTkFrame(control_section)
+        buttons_frame.pack(fill="x", padx=10, pady=(5, 10))
 
-        self.start_button = ctk.CTkButton(buttons_frame, text="🚀 Iniciar Scraping", command=self.start_scraping, fg_color="green", hover_color="dark green", height=40, font=ctk.CTkFont(size=12, weight="bold"))
+        self.start_button = ctk.CTkButton(buttons_frame, text="🚀 Iniciar Scraping", command=self.start_scraping, fg_color="#10b981", hover_color="#0da271", height=40, font=ctk.CTkFont(size=12, weight="bold"))
         self.start_button.pack(side="left", padx=(0, 5), fill="x", expand=True)
 
-        self.stop_button = ctk.CTkButton(buttons_frame, text="⏹️ Detener", command=self.stop_scraping, fg_color="red", hover_color="dark red", height=40, font=ctk.CTkFont(size=12, weight="bold"), state="disabled")
+        self.stop_button = ctk.CTkButton(buttons_frame, text="⏹️ Detener", command=self.stop_scraping, fg_color=COLORS['secondary'], hover_color="#3a3a4c", height=40, font=ctk.CTkFont(size=12, weight="bold"), state="disabled")
         self.stop_button.pack(side="left", padx=(5, 0))
 
-        self.restart_button = ctk.CTkButton(buttons_frame, text="🔄 Reiniciar", command=self.restart_scraping, fg_color="#FF6B35", hover_color="#E55A2B", height=40, font=ctk.CTkFont(size=12, weight="bold"), state="disabled")
+        self.restart_button = ctk.CTkButton(buttons_frame, text="🔄 Reiniciar", command=self.restart_scraping, fg_color=COLORS['secondary'], hover_color="#3a3a4c", height=40, font=ctk.CTkFont(size=12, weight="bold"), state="disabled")
         self.restart_button.pack(side="left", padx=(5, 0))
 
         # Barra de progreso mejorada
-        progress_frame = ctk.CTkFrame(main_frame)
-        progress_frame.pack(fill="x", padx=10, pady=(0, 5))
+        progress_frame = ctk.CTkFrame(control_section)
+        progress_frame.pack(fill="x", padx=10, pady=(0, 10))
 
         ctk.CTkLabel(progress_frame, text="📈 Progreso del Scraping:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
 
@@ -1454,6 +1418,104 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         # Estadísticas en tiempo real
         self.scraping_stats_label = ctk.CTkLabel(progress_info_frame, text="Keywords: 0 | Procesadas: 0 | Restantes: 0", font=ctk.CTkFont(size=10), text_color="gray")
         self.scraping_stats_label.pack(side="right")
+
+        # Línea separadora
+        ctk.CTkLabel(main_frame, text="-"*60).pack(pady=10)
+
+        # === SECCIÓN DE CONFIGURACIÓN Y COSTOS ===
+        config_costs_section = ctk.CTkFrame(main_frame)
+        config_costs_section.pack(fill="x", pady=(0, 10))
+
+        # Configuración del scraper
+        config_frame = ctk.CTkFrame(config_costs_section)
+        config_frame.pack(fill="x", padx=10, pady=(0, 10))
+
+        ctk.CTkLabel(config_frame, text="⚙️ Configuración del Scraper", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        # Fila única con todos los controles
+        controls_row = ctk.CTkFrame(config_frame, fg_color="transparent")
+        controls_row.pack(fill="x", pady=(0, 5))
+
+        # Dominio objetivo
+        domain_frame = ctk.CTkFrame(controls_row, fg_color="transparent")
+        domain_frame.pack(side="left", padx=(0, 15))
+        ctk.CTkLabel(domain_frame, text="Dominio objetivo:").pack(anchor="w", pady=(0, 2))
+        self.domain_entry = ctk.CTkEntry(domain_frame, placeholder_text="ejemplo.com", width=150, height=32)
+        self.domain_entry.pack()
+
+        # Páginas a scrapear
+        pages_frame = ctk.CTkFrame(controls_row, fg_color="transparent")
+        pages_frame.pack(side="left", padx=(0, 15))
+        ctk.CTkLabel(pages_frame, text="Páginas:").pack(anchor="w", pady=(0, 2))
+        pages_controls = ctk.CTkFrame(pages_frame, fg_color="transparent")
+        pages_controls.pack(fill="x")
+        self.pages_var = ctk.DoubleVar(value=1.0)
+        pages_slider = ctk.CTkSlider(pages_controls, from_=1, to=10, number_of_steps=9, variable=self.pages_var, command=self.update_pages_label, width=80, height=16)
+        pages_slider.pack(side="left", padx=(0, 8))
+        self.pages_label = ctk.CTkLabel(pages_controls, text="1 págs", font=ctk.CTkFont(size=10))
+        self.pages_label.pack(side="right")
+
+        # País
+        country_frame = ctk.CTkFrame(controls_row, fg_color="transparent")
+        country_frame.pack(side="left", padx=(0, 15))
+        ctk.CTkLabel(country_frame, text="País:").pack(anchor="w", pady=(0, 2))
+        self.country_var = ctk.StringVar(value="US")
+        country_combo = ctk.CTkComboBox(country_frame, values=["US", "ES", "FR", "DE", "IT", "UK", "BR", "MX"], variable=self.country_var, width=70, height=28)
+        country_combo.pack()
+
+        # Idioma
+        lang_frame = ctk.CTkFrame(controls_row, fg_color="transparent")
+        lang_frame.pack(side="left", padx=(0, 15))
+        ctk.CTkLabel(lang_frame, text="Idioma:").pack(anchor="w", pady=(0, 2))
+        self.language_var = ctk.StringVar(value="en")
+        language_combo = ctk.CTkComboBox(lang_frame, values=["en", "es", "fr", "de", "it", "pt", "ru"], variable=self.language_var, width=70, height=28)
+        language_combo.pack()
+
+        # Delays
+        delays_frame = ctk.CTkFrame(controls_row, fg_color="transparent")
+        delays_frame.pack(side="left", padx=(0, 15))
+        ctk.CTkLabel(delays_frame, text="Delays (seg):", font=ctk.CTkFont(size=10)).pack(anchor="w", pady=(0, 2))
+        delays_inputs = ctk.CTkFrame(delays_frame, fg_color="transparent")
+        delays_inputs.pack()
+        min_delay_entry = ctk.CTkEntry(delays_inputs, placeholder_text="Min", width=45, height=28)
+        min_delay_entry.pack(side="left", padx=(0, 3))
+        self.min_delay_var = ctk.StringVar(value="5")
+        min_delay_entry.configure(textvariable=self.min_delay_var)
+        max_delay_entry = ctk.CTkEntry(delays_inputs, placeholder_text="Max", width=45, height=28)
+        max_delay_entry.pack(side="left")
+        self.max_delay_var = ctk.StringVar(value="15")
+        max_delay_entry.configure(textvariable=self.max_delay_var)
+
+        # Calculadora de costos minimalista
+        costs_frame = ctk.CTkFrame(config_costs_section)
+        costs_frame.pack(fill="x", padx=10, pady=(0, 10))
+
+        costs_header = ctk.CTkFrame(costs_frame, fg_color="transparent")
+        costs_header.pack(fill="x", pady=(5, 5))
+
+        ctk.CTkLabel(costs_header, text="💰 Costos API", font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
+        
+        # Inicializar variables de costos que usa update_cost_display
+        self.total_consults = 0
+        self.total_cost = 0.0
+        self.today_consults = 0
+
+        # Costos en una sola línea compacta
+        costs_row = ctk.CTkFrame(costs_frame, fg_color="transparent")
+        costs_row.pack(fill="x", pady=(0, 5))
+
+        self.free_consults_label = ctk.CTkLabel(costs_row, text="🟢 100 gratis", font=ctk.CTkFont(size=10))
+        self.free_consults_label.pack(side="left", padx=(0, 10))
+
+        self.paid_consults_label = ctk.CTkLabel(costs_row, text="🔴 $0.00", font=ctk.CTkFont(size=10))
+        self.paid_consults_label.pack(side="left", padx=(0, 10))
+
+        self.total_cost_label = ctk.CTkLabel(costs_row, text="💸 Total: $0.00", font=ctk.CTkFont(size=11, weight="bold"))
+        self.total_cost_label.pack(side="left")
+
+        # Información de configuración
+        config_info = ctk.CTkLabel(config_costs_section, text=f"📊 Keywords: {len(self.keywords_list)} | 🎯 Dominio: {self.domain_entry.get() or 'Todos'} | 🌍 País: {self.country_var.get()} | 📄 Páginas: {int(self.pages_var.get())}", font=ctk.CTkFont(size=10), text_color="gray")
+        config_info.pack(anchor="w")
 
         # Logs en tiempo real
         logs_frame = ctk.CTkFrame(main_frame)
