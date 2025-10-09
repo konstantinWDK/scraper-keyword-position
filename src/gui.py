@@ -1326,7 +1326,6 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         keywords_buttons_frame.pack(fill="x", pady=(0, 5))
 
         ctk.CTkButton(keywords_buttons_frame, text="📁 Cargar", command=self.load_keywords_file, width=80).pack(side="left", padx=2)
-        ctk.CTkButton(keywords_buttons_frame, text="🔍 SC", command=self.show_last_sc_scan_selector, fg_color=COLORS['accent'], width=60).pack(side="left", padx=2)
         ctk.CTkButton(keywords_buttons_frame, text="☑️", command=self.show_keyword_selector, fg_color=COLORS['warning'], width=40).pack(side="left", padx=2)
         ctk.CTkButton(keywords_buttons_frame, text="🧹", command=self.deduplicate_keywords, width=40).pack(side="left", padx=2)
         ctk.CTkButton(keywords_buttons_frame, text="💾", command=self.save_keywords, width=40).pack(side="left", padx=2)
