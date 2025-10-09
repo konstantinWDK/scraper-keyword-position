@@ -40,10 +40,7 @@ cd scraper-keyword-position
 
 ### 3. Ejecutar la aplicación
 ```bash
-# Opción 1: Usar el script de lanzamiento (recomendado)
-./run_scraper.sh
-
-# Opción 2: Ejecutar directamente
+# Ejecutar directamente
 ./linux/dist/KeywordPositionScraper
 ```
 
@@ -56,21 +53,62 @@ cd scraper-keyword-position
 
 ### 2. Compilar la aplicación
 ```cmd
-# Abrir CMD o PowerShell como administrador
+# Abrir CMD o PowerShell
 # Navegar al directorio del proyecto
-cd scraper-keyword-position
+cd scraper-keyword-position\windows
 
 # Ejecutar el script de compilación
-windows\build_windows.bat
+build_windows.bat
 ```
 
-### 3. Ejecutar la aplicación
-```cmd
-# Opción 1: Usar el script de lanzamiento (recomendado)
-run_scraper.bat
+**Durante la compilación:**
+- Se creará un entorno virtual automáticamente
+- Se instalarán todas las dependencias
+- Al final preguntará si eliminar el entorno virtual
+- **Recomendación:** Responder `s` (sí) para ahorrar espacio
 
-# Opción 2: Ejecutar directamente
-windows\dist\KeywordPositionScraper.exe
+### 3. Crear instalador (OPCIONAL)
+```cmd
+# Después de compilar exitosamente
+create_installer.bat
+```
+
+**Opciones de instalador:**
+
+#### **Versión Portátil (Recomendado si no tienes Inno Setup)**
+- **Ubicación:** `portable_installer\`
+- **Características:**
+  - No requiere instalación
+  - Totalmente portátil
+  - Puede copiarse a cualquier ubicación
+  - Incluye script de lanzamiento `Run_Scraper.bat`
+
+#### **Instalador Profesional (Requiere Inno Setup)**
+- **Requisito:** Instalar [Inno Setup](https://jrsoftware.org/isdl.php)
+- **Ubicación:** `installer\KeywordPositionScraper_Setup.exe`
+- **Características:**
+  - Interfaz gráfica moderna de instalación
+  - Creación de accesos directos en menú Inicio y escritorio
+  - Desinstalador completo
+  - Registro en Panel de Control
+  - Soporte multilingüe (Español/Inglés)
+
+#### **Configuración de Inno Setup**
+El archivo `installer.iss` contiene la configuración completa del instalador:
+- **Nombre:** Keyword Position Scraper
+- **Versión:** 1.0.0
+- **Editor:** Tu nombre/empresa
+- **URL:** Tu sitio web (opcional)
+- **Icono:** `icon.ico` personalizado
+- **Archivos incluidos:** Ejecutable + carpetas de configuración
+
+### 4. Ejecutar la aplicación
+```cmd
+# Opción 1: Ejecutar directamente
+dist\KeywordPositionScraper.exe
+
+# Opción 2: Usar versión portátil
+portable_installer\Run_Scraper.bat
 ```
 
 ## 🔧 Características de los Scripts de Compilación Mejorados
@@ -103,11 +141,9 @@ windows\dist\KeywordPositionScraper.exe
 
 #### En Linux:
 - `linux/dist/KeywordPositionScraper` - Ejecutable principal
-- `run_scraper.sh` - Script de lanzamiento para usuario
 
 #### En Windows:
 - `windows/dist/KeywordPositionScraper.exe` - Ejecutable principal
-- `run_scraper.bat` - Script de lanzamiento para usuario
 
 ## 🚀 Ejecución a Nivel de Usuario
 
@@ -115,8 +151,8 @@ La aplicación está diseñada para ejecutarse sin privilegios de administrador:
 
 ### Linux:
 ```bash
-# Desde cualquier ubicación del proyecto
-./run_scraper.sh
+# Ejecutar directamente desde el directorio de compilación
+./linux/dist/KeywordPositionScraper
 
 # O copiar el ejecutable a una ubicación del PATH
 sudo cp linux/dist/KeywordPositionScraper /usr/local/bin/
@@ -126,8 +162,8 @@ KeywordPositionScraper
 
 ### Windows:
 ```cmd
-# Desde cualquier ubicación del proyecto
-run_scraper.bat
+# Ejecutar directamente desde el directorio de compilación
+windows\dist\KeywordPositionScraper.exe
 
 # O crear un acceso directo al ejecutable
 # Click derecho en KeywordPositionScraper.exe → "Crear acceso directo"
@@ -181,6 +217,8 @@ scraper-keyword-position/
 ├── windows/
 │   ├── build_windows.bat       # Script de compilación Windows
 │   ├── scraper.spec            # Configuración PyInstaller Windows
+│   ├── installer.iss           # Configuración Inno Setup
+│   ├── create_installer.bat    # Script para crear instaladores
 │   └── dist/                   # Ejecutable generado (después de compilar)
 ├── src/                        # Código fuente
 ├── config/                     # Configuraciones
@@ -188,8 +226,8 @@ scraper-keyword-position/
 ├── logs/                       # Archivos de log
 ├── projects/                   # Proyectos guardados
 ├── reports/                    # Reportes generados
-├── run_scraper.sh              # Script de lanzamiento Linux
-├── run_scraper.bat             # Script de lanzamiento Windows
+├── patch_gui.py                # Script de parche para GUI
+├── run_gui.py                  # Script principal de la aplicación
 └── requirements.txt            # Dependencias de Python
 ```
 

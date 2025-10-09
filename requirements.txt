@@ -1,17 +1,22 @@
-# Dependencias para Google API Scraper
-requests==2.31.0
-pandas==2.1.3
-python-dotenv==1.0.0
-colorama==0.4.6
-tqdm==4.66.1
-customtkinter==5.2.1
-matplotlib==3.8.2
-seaborn==0.13.0
-Pillow==10.1.0
-openpyxl==3.1.2
+# Dependencias para Google API Scraper - Versión compatible con Python 3.13
+requests>=2.31.0
+pandas>=2.2.0
+python-dotenv>=1.0.0
+colorama>=0.4.6
+tqdm>=4.66.1
+customtkinter>=5.2.1
+matplotlib>=3.8.2
+seaborn>=0.13.0
+Pillow>=10.1.0
+openpyxl>=3.1.2
 
 # Google API para Search Console
 google-auth>=2.23.0
 google-auth-oauthlib>=1.1.0
 google-auth-httplib2>=0.1.1
 google-api-python-client>=2.100.0
+
+# Dependencias adicionales para compatibilidad
+numpy>=2.2.0
+setuptools>=69.0.0
+wheel>=0.43.0

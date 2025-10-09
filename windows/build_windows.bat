@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo  Keyword Position Scraper - Windows Build
+echo  Keyword Position Scraper - Windows Build FIXED
 echo ========================================
 echo.
 
@@ -59,13 +59,71 @@ if %errorlevel% neq 0 (
 echo ✓ pip actualizado
 echo.
 
-REM Instalar dependencias
-echo Instalando dependencias...
+REM SOLUCIÓN: Habilitar soporte para rutas largas en Windows
+echo Configurando soporte para rutas largas en Windows...
+python -c "import sys; print('Python version:', sys.version)"
+python -c "import os; print('Current working directory:', os.getcwd())"
+
+REM SOLUCIÓN: Instalar dependencias problemáticas primero con flags especiales
+echo Instalando dependencias problemáticas primero...
+pip install --no-cache-dir numpy>=2.2.0
+if %errorlevel% neq 0 (
+    echo ERROR: Falló la instalación de numpy
+    echo Intentando método alternativo...
+    pip install --no-cache-dir --only-binary=all numpy
+    if %errorlevel% neq 0 (
+        echo ERROR: Falló la instalación alternativa de numpy
+        pause
+        exit /b 1
+    )
+)
+
+echo ✓ numpy instalado
+echo.
+
+REM Instalar pandas con flags especiales
+echo Instalando pandas...
+pip install --no-cache-dir pandas>=2.2.0
+if %errorlevel% neq 0 (
+    echo ERROR: Falló la instalación de pandas
+    echo Intentando método alternativo...
+    pip install --no-cache-dir --only-binary=all pandas
+    if %errorlevel% neq 0 (
+        echo ERROR: Falló la instalación alternativa de pandas
+        pause
+        exit /b 1
+    )
+)
+
+echo ✓ pandas instalado
+echo.
+
+REM Instalar el resto de dependencias
+echo Instalando el resto de dependencias...
 pip install -r requirements.txt
 if %errorlevel% neq 0 (
     echo ERROR: Falló la instalación de dependencias
-    pause
-    exit /b 1
+    echo Intentando instalar dependencias individualmente...
+    
+    pip install requests==2.31.0
+    pip install python-dotenv==1.0.0
+    pip install colorama==0.4.6
+    pip install tqdm==4.66.1
+    pip install customtkinter==5.2.1
+    pip install matplotlib==3.8.2
+    pip install seaborn==0.13.0
+    pip install Pillow==10.1.0
+    pip install openpyxl==3.1.2
+    pip install google-auth>=2.23.0
+    pip install google-auth-oauthlib>=1.1.0
+    pip install google-auth-httplib2>=0.1.1
+    pip install google-api-python-client>=2.100.0
+    
+    if %errorlevel% neq 0 (
+        echo ERROR: Falló la instalación individual de dependencias
+        pause
+        exit /b 1
+    )
 )
 
 echo ✓ Dependencias instaladas
@@ -94,6 +152,8 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
+
+echo ✓ Compilación completada exitosamente
 
 echo.
 echo ========================================
