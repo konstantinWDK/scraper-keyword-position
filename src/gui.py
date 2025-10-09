@@ -1189,57 +1189,6 @@ No necesitas configurar URIs manualmente para apps de escritorio."""
         main_frame = ctk.CTkScrollableFrame(self.tab_scraping)
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # === SECCIÓN DE CONTROL DE SCRAPING (ARRIBA DEL TODO) ===
-        control_section = ctk.CTkFrame(main_frame)
-        control_section.pack(fill="x", pady=(0, 10))
-
-        # Título y estado
-        title_frame = ctk.CTkFrame(control_section)
-        title_frame.pack(fill="x", padx=10, pady=(10, 5))
-
-        title_label = ctk.CTkLabel(title_frame, text="🚀 Scraping en Tiempo Real", font=ctk.CTkFont(size=20, weight="bold"))
-        title_label.pack(side="left")
-
-        # Indicador de estado
-        self.scraping_status_label = ctk.CTkLabel(title_frame, text="⏸️ Listo para comenzar", font=ctk.CTkFont(size=14, weight="bold"), text_color="orange")
-        self.scraping_status_label.pack(side="right")
-
-        # Botones de control mejorados
-        buttons_frame = ctk.CTkFrame(control_section)
-        buttons_frame.pack(fill="x", padx=10, pady=(5, 10))
-
-        self.start_button = ctk.CTkButton(buttons_frame, text="🚀 Iniciar Scraping", command=self.start_scraping, fg_color="#10b981", hover_color="#0da271", height=40, font=ctk.CTkFont(size=12, weight="bold"))
-        self.start_button.pack(side="left", padx=(0, 5), fill="x", expand=True)
-
-        self.stop_button = ctk.CTkButton(buttons_frame, text="⏹️ Detener", command=self.stop_scraping, fg_color=COLORS['secondary'], hover_color="#3a3a4c", height=40, font=ctk.CTkFont(size=12, weight="bold"), state="disabled")
-        self.stop_button.pack(side="left", padx=(5, 0))
-
-        self.restart_button = ctk.CTkButton(buttons_frame, text="🔄 Reiniciar", command=self.restart_scraping, fg_color=COLORS['secondary'], hover_color="#3a3a4c", height=40, font=ctk.CTkFont(size=12, weight="bold"), state="disabled")
-        self.restart_button.pack(side="left", padx=(5, 0))
-
-        # Barra de progreso mejorada
-        progress_frame = ctk.CTkFrame(control_section)
-        progress_frame.pack(fill="x", padx=10, pady=(0, 10))
-
-        ctk.CTkLabel(progress_frame, text="📈 Progreso del Scraping:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
-
-        self.progress_bar = ctk.CTkProgressBar(progress_frame, height=20)
-        self.progress_bar.pack(fill="x", pady=(5, 0))
-        self.progress_bar.set(0)
-
-        # Información detallada del progreso
-        progress_info_frame = ctk.CTkFrame(progress_frame)
-        progress_info_frame.pack(fill="x", pady=(5, 0))
-
-        self.progress_label = ctk.CTkLabel(progress_info_frame, text="⏸️ Esperando iniciar scraping...", font=ctk.CTkFont(size=12))
-        self.progress_label.pack(side="left")
-
-        # Estadísticas en tiempo real
-        self.scraping_stats_label = ctk.CTkLabel(progress_info_frame, text="Keywords: 0 | Procesadas: 0 | Restantes: 0", font=ctk.CTkFont(size=10), text_color="gray")
-        self.scraping_stats_label.pack(side="right")
-
-        # Línea separadora
-        ctk.CTkLabel(main_frame, text="-"*60).pack(pady=10)
 
         # === SECCIÓN CONFIGURACIÓN DEL SCRAPER ===
         config_section = ctk.CTkFrame(main_frame)
